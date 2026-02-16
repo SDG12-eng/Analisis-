@@ -3,228 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Analytics Dashboard</title>
+    <title>Analizador Excel Pro v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-50 font-sans h-screen flex flex-col">
 
-    <div class="flex h-screen">
-        <aside class="w-64 bg-white shadow-md flex flex-col p-4">
-            <h1 class="text-2xl font-bold text-blue-600 mb-6">DataMaster</h1>
+    <header class="bg-white shadow-sm p-4 flex justify-between items-center z-10">
+        <h1 class="text-xl font-bold text-gray-800"><i class="fas fa-chart-line text-blue-600 mr-2"></i>Data Analytics</h1>
+        <div class="text-sm text-gray-500" id="fileStatus">Esperando archivo...</div>
+    </header>
+
+    <div class="flex flex-1 overflow-hidden">
+        <aside class="w-80 bg-white border-r p-5 overflow-y-auto flex flex-col gap-6">
             
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">1. Subir Excel (.xlsx, .csv)</label>
-                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+            <div class="p-4 border-2 border-dashed border-blue-200 rounded-lg bg-blue-50 text-center hover:bg-blue-100 transition cursor-pointer relative">
+                <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"/>
+                <i class="fas fa-cloud-upload-alt text-3xl text-blue-500 mb-2"></i>
+                <p class="text-sm font-medium text-blue-700">Arrastra o Click para subir Excel</p>
             </div>
 
-            <div id="controls" class="hidden space-y-4">
-                <h3 class="text-sm font-semibold text-gray-500 uppercase">2. Parámetros</h3>
-                
-                <div>
-                    <label class="block text-xs text-gray-600">Eje X (Categoría/Fecha)</label>
-                    <select id="xAxisSelect" class="w-full border rounded p-2 mt-1 bg-gray-50"></select>
+            <div id="controls" class="hidden flex-col gap-4">
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-gray-700 mb-3">Configurar Gráfico</h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase">Eje X (Categoría/Fecha)</label>
+                            <select id="xAxisSelect" class="w-full p-2 border rounded bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase">Eje Y (Valor Numérico)</label>
+                            <select id="yAxisSelect" class="w-full p-2 border rounded bg-gray-50 focus:ring-2 focus:ring-blue-500 outline-none"></select>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-semibold text-gray-500 uppercase">Tipo de Visualización</label>
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <button onclick="selectType('bar')" class="type-btn active p-2 border rounded hover:bg-gray-100 text-center text-sm" data-type="bar"><i class="fas fa-chart-bar"></i> Barras</button>
+                                <button onclick="selectType('line')" class="type-btn p-2 border rounded hover:bg-gray-100 text-center text-sm" data-type="line"><i class="fas fa-chart-area"></i> Línea</button>
+                                <button onclick="selectType('pie')" class="type-btn p-2 border rounded hover:bg-gray-100 text-center text-sm" data-type="pie"><i class="fas fa-chart-pie"></i> Pastel</button>
+                                <button onclick="selectType('doughnut')" class="type-btn p-2 border rounded hover:bg-gray-100 text-center text-sm" data-type="doughnut"><i class="fas fa-circle-notch"></i> Dona</button>
+                            </div>
+                            <input type="hidden" id="chartType" value="bar">
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-xs text-gray-600">Eje Y (Valores/Datos)</label>
-                    <select id="yAxisSelect" class="w-full border rounded p-2 mt-1 bg-gray-50"></select>
+                <div class="bg-yellow-50 p-3 rounded border border-yellow-200">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="groupDataCheck" checked class="w-4 h-4 text-blue-600 rounded">
+                        <span class="text-sm font-medium text-gray-700">Agrupar datos repetidos</span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1 ml-6">Si hay múltiples filas con la misma fecha/categoría, se sumarán sus valores.</p>
                 </div>
 
-                <div>
-                    <label class="block text-xs text-gray-600">Tipo de Gráfico</label>
-                    <select id="chartType" class="w-full border rounded p-2 mt-1 bg-gray-50">
-                        <option value="bar">Barras</option>
-                        <option value="line">Línea (Tendencia)</option>
-                        <option value="pie">Pastel (Porcentajes)</option>
-                        <option value="doughnut">Dona</option>
-                    </select>
-                </div>
-
-                <button onclick="generateDashboard()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Generar Dashboard</button>
+                <button onclick="addDashboardWidget()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded shadow-lg transition transform active:scale-95">
+                    <i class="fas fa-plus-circle mr-2"></i> Crear Dashboard
+                </button>
             </div>
         </aside>
 
-        <main class="flex-1 p-8 overflow-y-auto">
-            <div id="metricsPanel" class="grid grid-cols-4 gap-4 mb-8 hidden">
-                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
-                    <p class="text-gray-500 text-sm">Total Registros</p>
-                    <p class="text-2xl font-bold" id="metricCount">0</p>
+        <main class="flex-1 bg-gray-100 p-8 overflow-y-auto">
+            <div id="kpi-bar" class="hidden grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 </div>
-                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
-                    <p class="text-gray-500 text-sm">Suma Total</p>
-                    <p class="text-2xl font-bold" id="metricSum">0</p>
-                </div>
-                <div class="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
-                    <p class="text-gray-500 text-sm">Promedio</p>
-                    <p class="text-2xl font-bold" id="metricAvg">0</p>
-                </div>
-                <div class="bg-white p-4 rounded shadow border-l-4 border-purple-500">
-                    <p class="text-gray-500 text-sm">Máximo Valor</p>
-                    <p class="text-2xl font-bold" id="metricMax">0</p>
-                </div>
-            </div>
 
-            <div id="dashboardArea" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                </div>
-            
-            <div class="mt-8 bg-white rounded shadow hidden" id="tablePreview">
-                <div class="p-4 border-b">
-                    <h3 class="font-bold">Vista Previa de Datos</h3>
-                </div>
-                <div class="overflow-x-auto p-4">
-                    <table class="min-w-full text-sm text-left text-gray-500" id="dataTable">
-                        </table>
+            <div id="dashboardGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div id="emptyState" class="col-span-full flex flex-col items-center justify-center h-64 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+                    <i class="fas fa-chart-simple text-4xl mb-3"></i>
+                    <p>Sube un archivo y configura tus parámetros para empezar</p>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        let globalData = [];
-        let chartInstances = [];
+        let rawData = [];
+        let currentChartType = 'bar';
 
-        // 1. Escuchar la carga del archivo
-        document.getElementById('fileInput').addEventListener('change', handleFile);
-
-        function handleFile(e) {
+        // --- Manejo de Archivos ---
+        document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
-            const reader = new FileReader();
+            if (!file) return;
 
-            reader.onload = function(event) {
-                const data = new Uint8Array(event.target.result);
-                const workbook = XLSX.read(data, {type: 'array'});
-                
-                // Tomamos la primera hoja del Excel
-                const firstSheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[firstSheetName];
-                
-                // Convertimos a JSON
-                globalData = XLSX.utils.sheet_to_json(worksheet);
+            document.getElementById('fileStatus').innerHTML = `<span class="text-blue-600 animate-pulse">Procesando ${file.name}...</span>`;
+            
+            const data = await file.arrayBuffer();
+            const workbook = XLSX.read(data);
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            rawData = XLSX.utils.sheet_to_json(sheet);
 
-                if (globalData.length > 0) {
-                    populateControls();
-                    renderTablePreview(globalData.slice(0, 5)); // Mostrar solo 5 primeras filas
-                    document.getElementById('controls').classList.remove('hidden');
-                    document.getElementById('tablePreview').classList.remove('hidden');
-                }
-            };
-            reader.readAsArrayBuffer(file);
-        }
+            if (rawData.length > 0) {
+                initApp(file.name);
+            }
+        });
 
-        // 2. Llenar los selectores con las columnas del Excel
-        function populateControls() {
-            const keys = Object.keys(globalData[0]);
+        function initApp(filename) {
+            document.getElementById('controls').classList.remove('hidden');
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('fileStatus').innerText = `Archivo: ${filename} (${rawData.length} filas)`;
+            
+            // Llenar Selectores
+            const columns = Object.keys(rawData[0]);
             const xSelect = document.getElementById('xAxisSelect');
             const ySelect = document.getElementById('yAxisSelect');
             
-            xSelect.innerHTML = '';
-            ySelect.innerHTML = '';
-
-            keys.forEach(key => {
-                xSelect.innerHTML += `<option value="${key}">${key}</option>`;
-                ySelect.innerHTML += `<option value="${key}">${key}</option>`;
+            xSelect.innerHTML = ySelect.innerHTML = '';
+            
+            columns.forEach(col => {
+                xSelect.innerHTML += `<option value="${col}">${col}</option>`;
+                // Intentar detectar columnas numéricas para el eje Y por defecto
+                const isNumber = typeof rawData[0][col] === 'number';
+                ySelect.innerHTML += `<option value="${col}" ${isNumber ? 'selected' : ''}>${col}</option>`;
             });
+
+            generateGlobalKPIs();
         }
 
-        // 3. Generar Dashboard y Métricas
-        function generateDashboard() {
+        // --- Lógica de Agrupación (Pivot) ---
+        function processData(xKey, yKey, shouldGroup) {
+            if (!shouldGroup) {
+                return {
+                    labels: rawData.map(d => d[xKey]),
+                    values: rawData.map(d => parseFloat(d[yKey]) || 0)
+                };
+            }
+
+            // Agrupación (Pivot): Sumar valores si la llave X se repite
+            const grouped = {};
+            rawData.forEach(row => {
+                const key = row[xKey];
+                const val = parseFloat(row[yKey]) || 0;
+                
+                if (grouped[key]) {
+                    grouped[key] += val;
+                } else {
+                    grouped[key] = val;
+                }
+            });
+
+            return {
+                labels: Object.keys(grouped),
+                values: Object.values(grouped)
+            };
+        }
+
+        // --- Generación de Gráficos ---
+        function addDashboardWidget() {
             const xKey = document.getElementById('xAxisSelect').value;
             const yKey = document.getElementById('yAxisSelect').value;
-            const type = document.getElementById('chartType').value;
-
-            // Preparar datos para el gráfico
-            const labels = globalData.map(item => item[xKey]);
-            const dataValues = globalData.map(item => parseFloat(item[yKey]) || 0);
-
-            // Calcular métricas
-            calculateMetrics(dataValues);
-
-            // Crear contenedor para el nuevo gráfico
-            const dashboardArea = document.getElementById('dashboardArea');
-            const canvasContainer = document.createElement('div');
-            canvasContainer.className = "bg-white p-4 rounded shadow h-80 relative";
+            const shouldGroup = document.getElementById('groupDataCheck').checked;
             
-            // Botón para borrar gráfico
-            const closeBtn = document.createElement('button');
-            closeBtn.innerText = "X";
-            closeBtn.className = "absolute top-2 right-2 text-red-500 font-bold hover:text-red-700";
-            closeBtn.onclick = () => canvasContainer.remove();
+            const data = processData(xKey, yKey, shouldGroup);
             
+            // Crear elemento DOM
+            const container = document.createElement('div');
+            container.className = "bg-white p-4 rounded-xl shadow-sm border border-gray-100 h-80 relative group hover:shadow-md transition";
+            
+            // Botón eliminar
+            const btnDelete = document.createElement('button');
+            btnDelete.innerHTML = '<i class="fas fa-times"></i>';
+            btnDelete.className = "absolute top-2 right-2 text-gray-300 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition";
+            btnDelete.onclick = () => container.remove();
+
+            // Título
+            const title = document.createElement('h4');
+            title.className = "text-sm font-bold text-gray-600 mb-2";
+            title.innerText = `${yKey} vs ${xKey} (${shouldGroup ? 'Agrupado' : 'Detallado'})`;
+
             const canvas = document.createElement('canvas');
-            canvasContainer.appendChild(closeBtn);
-            canvasContainer.appendChild(canvas);
-            dashboardArea.prepend(canvasContainer);
 
-            // Renderizar Gráfico
+            container.append(btnDelete, title, canvas);
+            document.getElementById('dashboardGrid').prepend(container);
+
+            // Generar Chart.js
             new Chart(canvas, {
-                type: type,
+                type: currentChartType,
                 data: {
-                    labels: labels,
+                    labels: data.labels,
                     datasets: [{
-                        label: `${yKey} por ${xKey}`,
-                        data: dataValues,
-                        backgroundColor: [
-                            'rgba(59, 130, 246, 0.6)',
-                            'rgba(16, 185, 129, 0.6)',
-                            'rgba(245, 158, 11, 0.6)',
-                            'rgba(239, 68, 68, 0.6)',
-                            'rgba(139, 92, 246, 0.6)'
-                        ],
+                        label: yKey,
+                        data: data.values,
+                        backgroundColor: getColors(data.values.length),
+                        borderColor: '#fff',
                         borderWidth: 1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    scales: {
-                        y: { beginAtZero: true }
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 10} } }
                     }
                 }
             });
         }
 
-        // 4. Calcular estadísticas básicas
-        function calculateMetrics(values) {
-            document.getElementById('metricsPanel').classList.remove('hidden');
-            
-            const count = values.length;
-            const sum = values.reduce((a, b) => a + b, 0);
-            const avg = sum / count;
-            const max = Math.max(...values);
+        // --- Métricas Globales (KPIs) ---
+        function generateGlobalKPIs() {
+            // Ejemplo simple: conteo y búsqueda de la primera col numérica para sumar
+            const kpiBar = document.getElementById('kpi-bar');
+            kpiBar.classList.remove('hidden');
+            kpiBar.innerHTML = '';
 
-            document.getElementById('metricCount').innerText = count;
-            document.getElementById('metricSum').innerText = sum.toLocaleString(); // Formato número
-            document.getElementById('metricAvg').innerText = avg.toFixed(2);
-            document.getElementById('metricMax').innerText = max.toLocaleString();
+            // Card 1: Total Registros
+            kpiBar.innerHTML += createKpiCard('Total Registros', rawData.length, 'blue');
+
+            // Intentar buscar una columna de 'Ventas', 'Total', 'Precio' o genérica numérica
+            const numKey = Object.keys(rawData[0]).find(k => typeof rawData[0][k] === 'number');
+            if (numKey) {
+                const total = rawData.reduce((sum, row) => sum + (parseFloat(row[numKey])||0), 0);
+                const avg = total / rawData.length;
+                
+                kpiBar.innerHTML += createKpiCard(`Total ${numKey}`, total.toLocaleString(), 'green');
+                kpiBar.innerHTML += createKpiCard(`Promedio ${numKey}`, avg.toFixed(2), 'purple');
+            }
         }
 
-        // 5. Tabla visual simple
-        function renderTablePreview(data) {
-            const table = document.getElementById('dataTable');
-            table.innerHTML = '';
-            
-            // Headers
-            const thead = table.createTHead();
-            const row = thead.insertRow();
-            Object.keys(data[0]).forEach(key => {
-                const th = document.createElement("th");
-                th.innerText = key;
-                th.className = "px-4 py-2 bg-gray-50 border";
-                row.appendChild(th);
-            });
+        function createKpiCard(label, value, color) {
+            const colors = {
+                blue: 'border-blue-500 text-blue-600',
+                green: 'border-green-500 text-green-600',
+                purple: 'border-purple-500 text-purple-600'
+            };
+            return `
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 ${colors[color] || colors.blue}">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">${label}</p>
+                    <p class="text-2xl font-bold text-gray-800">${value}</p>
+                </div>
+            `;
+        }
 
-            // Body
-            const tbody = table.createTBody();
-            data.forEach(item => {
-                const tr = tbody.insertRow();
-                Object.values(item).forEach(val => {
-                    const td = tr.insertCell();
-                    td.innerText = val;
-                    td.className = "px-4 py-2 border";
-                });
+        // --- Utilidades ---
+        function selectType(type) {
+            currentChartType = type;
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.remove('bg-blue-50', 'text-blue-600', 'border-blue-200');
+                if(b.dataset.type === type) b.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-200');
             });
+        }
+
+        function getColors(count) {
+            const palette = [
+                'rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(245, 158, 11, 0.7)', 
+                'rgba(239, 68, 68, 0.7)', 'rgba(139, 92, 246, 0.7)', 'rgba(236, 72, 153, 0.7)'
+            ];
+            // Repetir paleta si hay muchos datos
+            return Array(count).fill().map((_, i) => palette[i % palette.length]);
         }
     </script>
 </body>
