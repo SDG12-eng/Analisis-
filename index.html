@@ -3,27 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Data Workspace v7 - Studio</title>
+    <title>Cloud Data Workspace v8 - Excel Style</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .tab-active { border-bottom: 3px solid #3b82f6; color: #1d4ed8; font-weight: bold; }
-        /* Scrollbar personalizado para el panel de filtros */
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Efecto de giro para ver la tabla */
+        .flip-container { perspective: 1000px; }
+        .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; height: 100%; width: 100%; }
+        .front, .back { backface-visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+        .front { z-index: 2; transform: rotateY(0deg); }
+        .back { transform: rotateY(180deg); background: white; overflow: auto; }
+        .flipped .flipper { transform: rotateY(180deg); }
     </style>
 </head>
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden">
 
     <header class="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center z-20">
-        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-chart-pie text-blue-400 mr-2"></i> DATA<span class="font-light">STUDIO</span></h1>
+        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-chart-line text-green-400 mr-2"></i> EXCEL<span class="font-light">WORKSPACE</span></h1>
         <div class="flex gap-4">
             <button id="tab1" class="px-4 py-2 tab-active transition" onclick="switchView(1)">1. Inicio</button>
             <button id="tab2" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>2. Preparar Datos</button>
-            <button id="tab3" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>3. Dashboard</button>
+            <button id="tab3" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>3. Dashboard Dinámico</button>
         </div>
     </header>
 
@@ -57,13 +64,13 @@
                     <div class="flex gap-4 items-end flex-wrap">
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hoja del Excel</label>
-                            <select id="sheetSelector" class="w-48 p-2 border rounded bg-blue-50 text-blue-800" onchange="changeSheet()"></select>
+                            <select id="sheetSelector" class="w-48 p-2 border rounded bg-blue-50 text-blue-800 font-bold outline-none" onchange="changeSheet()"></select>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Fila Encabezados</label>
-                            <input type="number" id="headerRow" value="1" min="1" class="w-24 p-2 border rounded text-center font-bold">
+                            <input type="number" id="headerRow" value="1" min="1" class="w-24 p-2 border rounded text-center font-bold outline-none">
                         </div>
-                        <button onclick="extractData()" class="bg-green-600 text-white px-6 py-2 rounded font-bold shadow hover:bg-green-700">Confirmar <i class="fas fa-check ml-1"></i></button>
+                        <button onclick="extractData()" class="bg-green-600 text-white px-6 py-2 rounded font-bold shadow hover:bg-green-700">Confirmar Datos <i class="fas fa-arrow-right ml-1"></i></button>
                     </div>
                 </div>
                 <div class="flex-1 overflow-auto border rounded relative">
@@ -72,79 +79,81 @@
             </div>
         </div>
 
-        <div id="view-playground" class="absolute inset-0 hidden flex bg-slate-100">
-            <aside class="w-96 bg-white shadow-xl z-10 flex flex-col border-r border-slate-200">
+        <div id="view-playground" class="absolute inset-0 hidden flex bg-slate-200">
+            <aside class="w-96 bg-white shadow-xl z-10 flex flex-col border-r border-slate-300">
                 <div class="p-4 bg-slate-800 text-white flex justify-between items-center">
-                    <h3 class="font-bold"><i class="fas fa-sliders-h mr-2"></i> Constructor de Gráficos</h3>
+                    <h3 class="font-bold"><i class="fas fa-sliders-h mr-2"></i> Opciones de Gráfico</h3>
                 </div>
                 
-                <div class="p-5 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
+                <div class="p-5 overflow-y-auto flex-1 flex flex-col gap-5 custom-scroll">
                     
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Título del Gráfico</label>
-                        <input type="text" id="widgetTitle" placeholder="Ej: Progreso de Digitalización" class="w-full p-2 border rounded border-slate-300 focus:border-blue-500 outline-none">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Gráficos Disponibles</label>
+                        <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                            <button onclick="selectChartType('column')" class="chart-btn p-2 border rounded hover:bg-blue-50 bg-blue-100 border-blue-400" data-type="column"><i class="fas fa-chart-bar text-xl text-blue-600 block mb-1"></i>Columna</button>
+                            <button onclick="selectChartType('bar')" class="chart-btn p-2 border rounded hover:bg-blue-50" data-type="bar"><i class="fas fa-align-left text-xl text-blue-600 block mb-1"></i>Barra</button>
+                            <button onclick="selectChartType('line')" class="chart-btn p-2 border rounded hover:bg-blue-50" data-type="line"><i class="fas fa-chart-line text-xl text-green-600 block mb-1"></i>Línea</button>
+                            <button onclick="selectChartType('area')" class="chart-btn p-2 border rounded hover:bg-blue-50" data-type="area"><i class="fas fa-chart-area text-xl text-green-600 block mb-1"></i>Área</button>
+                            <button onclick="selectChartType('pie')" class="chart-btn p-2 border rounded hover:bg-blue-50" data-type="pie"><i class="fas fa-chart-pie text-xl text-orange-500 block mb-1"></i>Circular</button>
+                            <button onclick="selectChartType('doughnut')" class="chart-btn p-2 border rounded hover:bg-blue-50" data-type="doughnut"><i class="fas fa-circle-notch text-xl text-orange-500 block mb-1"></i>Dona</button>
+                            <button onclick="selectChartType('scatter')" class="chart-btn p-2 border rounded hover:bg-blue-50" data-type="scatter"><i class="fas fa-braille text-xl text-purple-500 block mb-1"></i>Disperso</button>
+                        </div>
+                        <input type="hidden" id="selectedChartType" value="column">
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo de Visualización</label>
-                        <select id="widgetType" class="w-full p-2 border rounded bg-slate-50 outline-none font-medium">
-                            <option value="column">&#xf080; Columna (Vertical)</option>
-                            <option value="bar">&#xf0c9; Barra (Horizontal)</option>
-                            <option value="line">&#xf201; Línea (Tendencia)</option>
-                            <option value="area">&#xf1fe; Área</option>
-                            <option value="pie">&#xf200; Circular (Pastel)</option>
-                            <option value="doughnut">&#xf1ce; Dona</option>
-                            <option value="scatter">&#xf00a; Dispersión</option>
-                        </select>
-                    </div>
-
-                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 flex flex-col gap-3">
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-200 flex flex-col gap-3 shadow-inner">
                         <div>
-                            <label class="block text-xs font-bold text-blue-800 uppercase mb-1">Agrupar por (Categoría / Eje X)</label>
-                            <select id="axisX" class="w-full p-2 border rounded column-selector outline-none text-sm" onchange="generateFilters()"></select>
+                            <label class="block text-xs font-bold text-blue-900 uppercase mb-1">Nombre de la Métrica</label>
+                            <input type="text" id="widgetTitle" placeholder="Ej: Total Documentos por Mes..." class="w-full p-2 border rounded border-blue-300 text-sm outline-none focus:ring-2 focus:ring-blue-400">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-blue-900 uppercase mb-1">Eje X (Filas / Categorías)</label>
+                            <select id="axisX" class="w-full p-2 border rounded border-blue-300 column-selector outline-none text-sm font-semibold" onchange="generateFilters()"></select>
                         </div>
                         
-                        <div class="grid grid-cols-3 gap-2">
+                        <div class="grid grid-cols-3 gap-2 border-t border-blue-200 pt-3">
                             <div class="col-span-1">
-                                <label class="block text-xs font-bold text-blue-800 uppercase mb-1">Cálculo</label>
-                                <select id="aggType" class="w-full p-2 border rounded outline-none text-sm" onchange="toggleYAxis()">
+                                <label class="block text-xs font-bold text-blue-900 uppercase mb-1">Cálculo</label>
+                                <select id="aggType" class="w-full p-2 border rounded border-blue-300 outline-none text-sm font-semibold text-green-700">
                                     <option value="count">Contar</option>
                                     <option value="sum">Sumar</option>
                                     <option value="avg">Promedio</option>
                                 </select>
                             </div>
                             <div class="col-span-2">
-                                <label class="block text-xs font-bold text-blue-800 uppercase mb-1" id="labelY">Basado en (Eje Y)</label>
-                                <select id="axisY" class="w-full p-2 border rounded column-selector outline-none text-sm bg-gray-200" disabled title="No requerido para Contar"></select>
+                                <label class="block text-xs font-bold text-blue-900 uppercase mb-1">Eje Y (Valores)</label>
+                                <select id="axisY" class="w-full p-2 border rounded border-blue-300 column-selector outline-none text-sm font-semibold"></select>
                             </div>
                         </div>
+                        <p class="text-[10px] text-blue-600 mt-1 leading-tight"><i class="fas fa-info-circle"></i> Tienes control total. Si eliges "Contar", contará cuántas filas válidas existen en la columna del Eje Y.</p>
                     </div>
 
-                    <div class="border border-slate-200 rounded-lg">
-                        <div class="bg-slate-100 p-2 border-b rounded-t-lg">
-                            <h4 class="text-xs font-bold text-slate-600 uppercase"><i class="fas fa-filter mr-1"></i> Filtros (Excluir Datos)</h4>
+                    <div class="border border-slate-300 rounded-lg bg-white">
+                        <div class="bg-slate-100 p-2 border-b border-slate-300 rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-xs font-bold text-slate-700 uppercase"><i class="fas fa-filter mr-1"></i> Filtros de Datos</h4>
                         </div>
                         <div id="filterContainer" class="p-3 max-h-40 overflow-y-auto custom-scroll text-sm space-y-1">
-                            <p class="text-xs text-slate-400 italic">Selecciona un Eje X arriba para ver las opciones a filtrar.</p>
+                            <p class="text-xs text-slate-400 italic">Selecciona un Eje X arriba para cargar los filtros.</p>
                         </div>
                     </div>
 
-                    <button onclick="buildWidget()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition mt-2">
-                        <i class="fas fa-plus-circle mr-2"></i> Generar Dashboard
+                    <button onclick="buildWidget()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-green-700 transition mt-auto transform active:scale-95 border-b-4 border-green-800">
+                        <i class="fas fa-play mr-2"></i> Generar Medición
                     </button>
 
                 </div>
 
-                <div class="p-4 bg-yellow-50 border-t border-yellow-200">
-                    <input type="text" id="projectName" placeholder="Nombre del archivo nube..." class="w-full p-2 text-sm border border-yellow-300 rounded mb-2">
-                    <button onclick="saveToFirebase()" id="btnSave" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded font-bold shadow transition">
-                        <i class="fas fa-cloud-upload-alt mr-2"></i> Guardar Proyecto
+                <div class="p-4 bg-slate-800 border-t border-slate-900">
+                    <input type="text" id="projectName" placeholder="Nombre de este Dashboard..." class="w-full p-2 text-sm border-none rounded mb-2 bg-slate-700 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <button onclick="saveToFirebase()" id="btnSave" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold shadow transition flex justify-center items-center">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Guardar en Firebase
                     </button>
                 </div>
             </aside>
 
-            <main class="flex-1 p-6 overflow-y-auto relative bg-slate-200" id="dashboardCanvas">
-                <div id="widgetsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10"></div>
+            <main class="flex-1 p-8 overflow-y-auto relative bg-slate-200" id="dashboardCanvas">
+                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10"></div>
             </main>
         </div>
     </main>
@@ -170,13 +179,9 @@
         let finalData = [];
         let columns = [];
         let savedWidgetsConfig = []; 
-        let uniqueValuesForX = []; // Guarda los valores únicos para el filtro
+        let uniqueValuesForX = []; 
 
-        // FontAwesome support inside select tags
-        document.getElementById('widgetType').style.fontFamily = "'Font Awesome 6 Free', 'Arial'";
-        document.getElementById('widgetType').style.fontWeight = "900";
-
-        // --- NAVEGACIÓN Y CARGA DE DATOS (MANTENIDO DE V6) ---
+        // --- NAVEGACIÓN ---
         window.switchView = function(step) {
             document.getElementById('view-upload').classList.add('hidden');
             document.getElementById('view-range').classList.add('hidden');
@@ -185,11 +190,12 @@
             if(step === 2) document.getElementById('view-range').classList.remove('hidden', 'flex');
             if(step === 3) document.getElementById('view-playground').classList.remove('hidden');
             
-            document.getElementById('tab1').className = step === 1 ? "px-4 py-2 tab-active" : "px-4 py-2 text-slate-300";
-            document.getElementById('tab2').className = step === 2 ? "px-4 py-2 tab-active" : (step>2?"px-4 py-2 text-slate-300":"px-4 py-2 text-slate-500 cursor-not-allowed");
-            document.getElementById('tab3').className = step === 3 ? "px-4 py-2 tab-active" : "px-4 py-2 text-slate-500 cursor-not-allowed";
+            document.getElementById('tab1').className = step === 1 ? "px-4 py-2 tab-active" : "px-4 py-2 text-slate-400 hover:text-white";
+            document.getElementById('tab2').className = step === 2 ? "px-4 py-2 tab-active" : (step>2?"px-4 py-2 text-slate-400 hover:text-white":"px-4 py-2 text-slate-600 cursor-not-allowed");
+            document.getElementById('tab3').className = step === 3 ? "px-4 py-2 tab-active" : "px-4 py-2 text-slate-600 cursor-not-allowed";
         }
 
+        // --- MANEJO DE ARCHIVOS ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -212,8 +218,8 @@
             tbody.innerHTML = '';
             for(let i = 0; i < Math.min(rawArray.length, 30); i++) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="p-2 bg-slate-200 text-slate-500 font-bold border-r w-10 text-center">${i + 1}</td>`;
-                rawArray[i].forEach(cell => tr.innerHTML += `<td class="p-2 border-r truncate max-w-xs text-slate-700">${cell}</td>`);
+                tr.innerHTML = `<td class="p-2 bg-slate-200 text-slate-500 font-bold border-r w-10 text-center border-b">${i + 1}</td>`;
+                rawArray[i].forEach(cell => tr.innerHTML += `<td class="p-2 border-r truncate max-w-xs text-slate-700 border-b">${cell}</td>`);
                 tbody.appendChild(tr);
             }
         }
@@ -237,188 +243,227 @@
             
             document.getElementById('widgetsGrid').innerHTML = '';
             savedWidgetsConfig = [];
-            window.generateFilters(); // Cargar filtros iniciales
+            window.generateFilters(); 
             window.switchView(3);
         }
 
-        // --- LÓGICA DEL NUEVO CONSTRUCTOR (STUDIO) ---
+        // --- CONSTRUCTOR MANUAL ---
         
-        // Desactiva el Eje Y si solo estamos contando
-        window.toggleYAxis = function() {
-            const agg = document.getElementById('aggType').value;
-            const yAxis = document.getElementById('axisY');
-            if(agg === 'count') {
-                yAxis.disabled = true;
-                yAxis.classList.add('bg-gray-200');
-            } else {
-                yAxis.disabled = false;
-                yAxis.classList.remove('bg-gray-200');
-            }
+        window.selectChartType = function(type) {
+            document.getElementById('selectedChartType').value = type;
+            document.querySelectorAll('.chart-btn').forEach(b => {
+                b.classList.remove('bg-blue-100', 'border-blue-400');
+                if(b.dataset.type === type) b.classList.add('bg-blue-100', 'border-blue-400');
+            });
         }
 
-        // Genera los Checkboxes para filtrar según el Eje X elegido
         window.generateFilters = function() {
             const xCol = document.getElementById('axisX').value;
             if(!xCol) return;
-
-            // Encontrar valores únicos
             let uniqueSet = new Set();
             finalData.forEach(row => {
                 let val = row[xCol];
-                if (val !== null && val !== undefined) uniqueSet.add(val.toString().trim());
+                if (val !== null && val !== undefined && val !== '') uniqueSet.add(val.toString().trim());
             });
-            
             uniqueValuesForX = Array.from(uniqueSet).sort();
             
-            // Dibujar checkboxes (Todos marcados por defecto)
             const container = document.getElementById('filterContainer');
             container.innerHTML = '';
             uniqueValuesForX.forEach(val => {
                 container.innerHTML += `
-                    <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-200 p-1 rounded">
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-200 p-1.5 rounded transition">
                         <input type="checkbox" value="${val}" checked class="filter-checkbox w-4 h-4 text-blue-600 rounded">
-                        <span class="truncate" title="${val}">${val === "" ? "(Vacío)" : val}</span>
+                        <span class="truncate font-medium text-slate-700" title="${val}">${val}</span>
                     </label>
                 `;
             });
         }
 
-        // Captura los datos del formulario y crea el objeto de configuración
         window.buildWidget = function(existingConfig = null) {
             let config = existingConfig;
 
             if (!config) {
-                // Obtener filtros seleccionados
                 let checkedFilters = Array.from(document.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
-                
-                let userTitle = document.getElementById('widgetTitle').value;
                 let axisX = document.getElementById('axisX').value;
+                let axisY = document.getElementById('axisY').value;
                 let agg = document.getElementById('aggType').value;
+                let userTitle = document.getElementById('widgetTitle').value || `Medición: ${agg.toUpperCase()} de ${axisY} por ${axisX}`;
 
                 config = {
-                    title: userTitle || `${agg.toUpperCase()} por ${axisX}`,
-                    type: document.getElementById('widgetType').value,
+                    title: userTitle,
+                    type: document.getElementById('selectedChartType').value,
                     axisX: axisX,
-                    axisY: document.getElementById('axisY').value,
+                    axisY: axisY,
                     agg: agg,
                     allowedFilters: checkedFilters
                 };
                 savedWidgetsConfig.push(config);
             }
 
-            // Crear UI del Widget
             const widgetId = 'w_' + Date.now() + Math.random().toString(36).substr(2, 5);
             const grid = document.getElementById('widgetsGrid');
             const card = document.createElement('div');
-            card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative group flex flex-col min-h-[350px] transition hover:shadow-lg";
+            
+            // Estructura con Volteo (Flip) para ver la Tabla
+            card.className = "flip-container h-[450px] w-full bg-transparent perspective-1000";
             card.innerHTML = `
-                <button onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash-alt text-lg"></i></button>
-                <h3 class="font-bold text-slate-800 text-lg mb-1 truncate pr-8" title="${config.title}">${config.title}</h3>
-                <p class="text-xs text-slate-400 mb-4 uppercase tracking-wide border-b pb-2">${config.agg} | Eje X: ${config.axisX}</p>
-                <div class="flex-1 relative w-full h-full min-h-[250px]"><canvas id="${widgetId}"></canvas></div>
+                <div class="flipper rounded-2xl shadow-lg border border-slate-200 bg-white" id="flipper_${widgetId}">
+                    
+                    <div class="front p-6 flex flex-col bg-white rounded-2xl">
+                        <div class="flex justify-between items-start mb-4 border-b border-slate-100 pb-2">
+                            <div class="flex-1 pr-4">
+                                <h3 class="font-bold text-slate-800 text-lg truncate" title="${config.title}">${config.title}</h3>
+                                <p class="text-xs text-slate-400 uppercase tracking-wide">
+                                    <span class="font-bold text-blue-500">${config.agg}</span>(${config.axisY}) agrupar por <span class="font-bold text-blue-500">${config.axisX}</span>
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="document.getElementById('flipper_${widgetId}').parentNode.classList.toggle('flipped')" class="text-slate-400 hover:text-blue-600 transition p-2 bg-slate-50 rounded" title="Ver Datos como Tabla Dinámica"><i class="fas fa-table"></i></button>
+                                <button onclick="this.closest('.flip-container').remove()" class="text-slate-400 hover:text-red-500 transition p-2 bg-slate-50 rounded" title="Eliminar"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 relative w-full h-full min-h-0"><canvas id="${widgetId}"></canvas></div>
+                    </div>
+
+                    <div class="back p-6 flex flex-col bg-slate-50 rounded-2xl border-2 border-blue-400">
+                        <div class="flex justify-between items-center mb-4 border-b border-slate-300 pb-2">
+                            <h3 class="font-bold text-blue-800 text-lg"><i class="fas fa-table mr-2"></i>Datos: ${config.title}</h3>
+                            <button onclick="document.getElementById('flipper_${widgetId}').parentNode.classList.toggle('flipped')" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded shadow text-sm font-bold transition"><i class="fas fa-chart-bar mr-1"></i> Volver al Gráfico</button>
+                        </div>
+                        <div class="flex-1 overflow-auto custom-scroll border border-slate-200 rounded bg-white">
+                            <table class="min-w-full text-sm text-left" id="table_${widgetId}">
+                                <thead class="bg-blue-100 text-blue-900 sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-4 py-2 border-b border-r">${config.axisX} (Filas)</th>
+                                        <th class="px-4 py-2 border-b">${config.agg.toUpperCase()} de ${config.axisY} (Valores)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100" id="tbody_${widgetId}"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
             `;
             grid.appendChild(card);
 
             setTimeout(() => renderAdvancedChart(config, widgetId), 50);
-            
-            // Limpiar título para el siguiente
-            document.getElementById('widgetTitle').value = '';
+            document.getElementById('widgetTitle').value = ''; // Limpiar
         }
 
-        // DIBUJAR EL GRÁFICO BASADO EN LA CONFIGURACIÓN
         function renderAdvancedChart(config, canvasId) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // 1. APLICAR FILTROS
+            // 1. FILTRAR
             let filteredData = finalData.filter(row => {
                 let xVal = row[config.axisX] !== null && row[config.axisX] !== undefined ? row[config.axisX].toString().trim() : "";
                 return config.allowedFilters.includes(xVal);
             });
 
-            // 2. AGRUPAR DATOS (PIVOT)
+            // 2. LÓGICA MANUAL (AGRUPAR Y CALCULAR)
             let grouped = {};
-            let countsForAvg = {};
             
             filteredData.forEach(row => {
-                let key = row[config.axisX] || 'Vacío';
-                let yVal = parseFloat(row[config.axisY]) || 0;
+                let key = row[config.axisX] || '(Vacío)';
+                let rawY = row[config.axisY];
+                let yVal = parseFloat(rawY) || 0;
+
+                if (!grouped[key]) grouped[key] = { sum: 0, count: 0, validElements: 0 };
 
                 if (config.agg === 'count') {
-                    grouped[key] = (grouped[key] || 0) + 1;
+                    // Contar si el Eje Y tiene algún valor válido (no vacío/null)
+                    if (rawY !== null && rawY !== undefined && rawY !== '') {
+                        grouped[key].validElements += 1;
+                    }
                 } else {
-                    grouped[key] = (grouped[key] || 0) + yVal;
-                    countsForAvg[key] = (countsForAvg[key] || 0) + 1;
+                    grouped[key].sum += yVal;
+                    grouped[key].count += 1; // Para el promedio
                 }
             });
 
-            // Ordenar por valor para que se vea mejor (descendente)
-            let sortedKeys = Object.keys(grouped).sort((a, b) => grouped[b] - grouped[a]);
-            let finalLabels = sortedKeys;
-            let finalValues = sortedKeys.map(k => config.agg === 'avg' ? (grouped[k] / countsForAvg[k]) : grouped[k]);
+            // Preparar arrays para Chart.js y la Tabla
+            let finalLabels = [];
+            let finalValues = [];
+            let tbodyHtml = '';
+            let totalGeneral = 0;
+
+            let sortedKeys = Object.keys(grouped).sort((a, b) => {
+                let valA = config.agg === 'count' ? grouped[a].validElements : grouped[a].sum;
+                let valB = config.agg === 'count' ? grouped[b].validElements : grouped[b].sum;
+                return valB - valA; // Mayor a menor
+            });
+
+            sortedKeys.forEach(k => {
+                let val = 0;
+                if(config.agg === 'count') val = grouped[k].validElements;
+                else if(config.agg === 'sum') val = grouped[k].sum;
+                else if(config.agg === 'avg') val = grouped[k].sum / grouped[k].count;
+
+                // Redondear a 2 decimales si tiene decimales
+                val = Math.round(val * 100) / 100;
+
+                finalLabels.push(k);
+                finalValues.push(val);
+                totalGeneral += val;
+
+                // Construir fila de la Tabla de Datos
+                tbodyHtml += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-4 py-2 border-r text-slate-700 font-medium">${k}</td>
+                        <td class="px-4 py-2 font-bold text-slate-900">${val.toLocaleString('en-US')}</td>
+                    </tr>
+                `;
+            });
+
+            // Añadir Total General a la tabla
+            tbodyHtml += `
+                <tr class="bg-slate-100 font-black text-slate-900">
+                    <td class="px-4 py-3 border-r text-right">TOTAL GENERAL:</td>
+                    <td class="px-4 py-3">${(Math.round(totalGeneral * 100) / 100).toLocaleString('en-US')}</td>
+                </tr>
+            `;
+            document.getElementById(`tbody_${canvasId}`).innerHTML = tbodyHtml;
 
             // 3. MAPEAR A CHART.JS
-            let cType = 'bar'; // default
-            let cOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-            let cDataset = { 
-                label: config.title, 
-                data: finalValues,
-                backgroundColor: getColors(finalLabels.length)
+            let cType = 'bar'; 
+            let cOptions = { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: { label: function(context) { return ` ${config.axisY}: ${context.raw.toLocaleString()}`; } }
+                    }
+                } 
             };
+            let cDataset = { label: config.axisY, data: finalValues, backgroundColor: getColors(finalLabels.length) };
 
             switch(config.type) {
-                case 'column': 
-                    cType = 'bar'; 
-                    break;
-                case 'bar': 
-                    cType = 'bar'; 
-                    cOptions.indexAxis = 'y'; // Vuelve la barra horizontal
-                    break;
-                case 'line': 
-                    cType = 'line'; 
-                    cDataset.borderColor = '#3b82f6'; 
-                    cDataset.tension = 0.3; // Curva suave
-                    cDataset.fill = false;
-                    break;
-                case 'area': 
-                    cType = 'line'; 
-                    cDataset.borderColor = '#10b981'; 
-                    cDataset.backgroundColor = 'rgba(16, 185, 129, 0.2)';
-                    cDataset.fill = true;
-                    cDataset.tension = 0.3;
-                    break;
-                case 'pie': 
-                    cType = 'pie'; 
-                    cOptions.plugins.legend = { display: true, position: 'right' };
-                    break;
-                case 'doughnut': 
-                    cType = 'doughnut'; 
-                    cOptions.plugins.legend = { display: true, position: 'right' };
-                    break;
+                case 'column': cType = 'bar'; break;
+                case 'bar': cType = 'bar'; cOptions.indexAxis = 'y'; break;
+                case 'line': cType = 'line'; cDataset.borderColor = '#2563eb'; cDataset.tension = 0.3; cDataset.fill = false; break;
+                case 'area': cType = 'line'; cDataset.borderColor = '#16a34a'; cDataset.backgroundColor = 'rgba(22, 163, 74, 0.2)'; cDataset.fill = true; cDataset.tension = 0.3; break;
+                case 'pie': cType = 'pie'; cOptions.plugins.legend = { display: true, position: 'right' }; break;
+                case 'doughnut': cType = 'doughnut'; cOptions.plugins.legend = { display: true, position: 'right' }; break;
                 case 'scatter':
-                    // Scatter no agrupa, muestra todos los puntos crudos (X numerico, Y numerico)
                     cType = 'scatter';
                     cOptions.plugins.legend = { display: true };
-                    let scatterData = filteredData.map(r => ({
-                        x: parseFloat(r[config.axisX]) || 0,
-                        y: parseFloat(r[config.axisY]) || 0
-                    }));
-                    cDataset = { label: 'Datos', data: scatterData, backgroundColor: '#ef4444' };
-                    finalLabels = []; // Scatter no usa labels tradicionales
+                    let scatterData = filteredData.map(r => ({ x: parseFloat(r[config.axisX])||0, y: parseFloat(r[config.axisY])||0 }));
+                    cDataset = { label: 'Dispersión', data: scatterData, backgroundColor: '#ef4444' };
+                    finalLabels = [];
                     break;
             }
 
             new Chart(ctx, { type: cType, data: { labels: finalLabels, datasets: [cDataset] }, options: cOptions });
         }
 
-        // Paleta de colores atractiva
         function getColors(count) {
-            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b', '#84cc16', '#14b8a6'];
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b', '#84cc16'];
             return Array(count).fill().map((_, i) => colors[i % colors.length]);
         }
 
-        // --- FIREBASE GUARDAR Y CARGAR ---
+        // --- FIREBASE NUBE ---
         window.saveToFirebase = async function() {
-            const name = document.getElementById('projectName').value || "Reporte sin nombre";
+            const name = document.getElementById('projectName').value || "Dashboard Dinámico";
             const btn = document.getElementById('btnSave');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
             btn.disabled = true;
@@ -432,13 +477,12 @@
                     datosJSON: JSON.stringify(finalData),
                     configuracionGraficos: savedWidgetsConfig
                 });
-                alert("¡Proyecto guardado!");
+                alert("¡Dashboard guardado con éxito!");
                 loadCloudProjects();
             } catch (error) {
-                console.error(error);
                 alert("Error al guardar.");
             } finally {
-                btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> Guardar Proyecto';
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> Guardar en Firebase';
                 btn.disabled = false;
             }
         }
@@ -458,7 +502,7 @@
                     btn.onclick = () => openCloudProject(data);
                     listDiv.appendChild(btn);
                 });
-            } catch (error) { console.log(error); }
+            } catch (error) {}
         }
 
         window.openCloudProject = function(firebaseData) {
@@ -479,8 +523,6 @@
         }
 
         loadCloudProjects();
-        // Inicializar UI
-        window.toggleYAxis(); 
     </script>
 </body>
 </html>
