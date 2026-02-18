@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v24 - Flujo Final</title>
+    <title>DataMaster v24 - Flujo Final Integrado</title>
     
-    <!-- Librerías Externas -->
+    <!-- Librerías -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,28 +15,30 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         
-        .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
         
-        /* TARJETAS GIRATORIAS (FLIP) */
+        /* EFECTO 3D DE GIRO (FLIP) */
         .flip-container { perspective: 1000px; cursor: pointer; }
         .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; height: 100%; width: 100%; }
         .front, .back { 
             backface-visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-            border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
         .front { z-index: 2; transform: rotateY(0deg); background: white; }
         .back { transform: rotateY(180deg); background: #ffffff; overflow: hidden; border: 2px solid #4f46e5; }
         .flipped .flipper { transform: rotateY(180deg); }
 
-        .mobile-panel { transition: transform 0.3s ease-in-out; transform: translateY(100%); }
-        .mobile-panel.open { transform: translateY(0); }
+        /* UTILIDADES */
+        .tab-active { background-color: #4f46e5; color: white; border-bottom: none; }
+        .tab-inactive { background-color: white; color: #64748b; }
+        .tab-disabled { opacity: 0.5; cursor: not-allowed; background-color: #f1f5f9; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <!-- 1. BARRA DE NAVEGACIÓN (FLUJO) -->
+    <!-- BARRA DE NAVEGACIÓN (FLUJO) -->
     <header class="bg-white border-b border-slate-200 shadow-sm z-30 flex-none h-16">
         <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -44,25 +46,25 @@
                 <h1 class="text-xl font-bold tracking-tight hidden md:block">DATA<span class="text-indigo-600">MASTER</span></h1>
             </div>
             
-            <nav class="flex bg-slate-100 p-1 rounded-lg">
-                <button id="tab1" onclick="switchView(1)" class="px-4 py-1.5 rounded-md text-xs font-bold bg-white text-indigo-600 shadow-sm transition-all">1. Cargar Excel</button>
-                <button id="tab2" onclick="switchView(2)" disabled class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 disabled:opacity-50 transition-all">2. Preparar</button>
-                <button id="tab3" onclick="switchView(3)" disabled class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 disabled:opacity-50 transition-all">3. Dashboard</button>
-                <button id="tab4" onclick="switchView(4)" disabled class="px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 disabled:opacity-50 transition-all">4. Comparar/Unir</button>
+            <nav class="flex bg-slate-100 p-1 rounded-lg gap-1">
+                <button id="tab1" onclick="switchView(1)" class="px-4 py-1.5 rounded-md text-xs font-bold transition-all tab-active">1. Cargar</button>
+                <button id="tab2" onclick="switchView(2)" disabled class="px-4 py-1.5 rounded-md text-xs font-bold transition-all tab-disabled">2. Fuentes</button>
+                <button id="tab3" onclick="switchView(3)" disabled class="px-4 py-1.5 rounded-md text-xs font-bold transition-all tab-disabled">3. Dashboard</button>
+                <button id="tab4" onclick="switchView(4)" disabled class="px-4 py-1.5 rounded-md text-xs font-bold transition-all tab-disabled">4. Unificar</button>
             </nav>
         </div>
     </header>
 
     <main class="flex-1 relative overflow-hidden bg-slate-50">
 
-        <!-- PASO 1: CARGA -->
+        <!-- VISTA 1: CARGA -->
         <div id="view-upload" class="absolute inset-0 flex flex-col items-center justify-center p-6 overflow-y-auto fade-in">
-            <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-100 text-center max-w-lg w-full">
-                <div class="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+            <div class="bg-white p-10 rounded-3xl shadow-xl border border-slate-200 text-center max-w-lg w-full transform transition hover:scale-[1.01]">
+                <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6">
                     <i class="fas fa-file-excel text-4xl"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Paso 1: Cargar Archivos</h2>
-                <p class="text-slate-500 mb-8 text-sm">Selecciona uno o varios archivos Excel para comenzar.</p>
+                <p class="text-slate-500 mb-8 text-sm">Sube tus reportes (.xlsx, .csv) para comenzar.</p>
                 
                 <label class="block mb-4">
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" multiple class="hidden"/>
@@ -77,173 +79,95 @@
                 </button>
             </div>
             
-            <!-- Lista de Proyectos Nube -->
-            <div class="mt-8 w-full max-w-lg">
-                <div class="flex justify-between items-center mb-2 px-2">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase">Guardados en la Nube</h3>
-                    <button onclick="loadProjs()" class="text-xs text-indigo-600 hover:underline"><i class="fas fa-sync"></i> Actualizar</button>
-                </div>
-                <div id="cloudProjectsList" class="bg-white rounded-xl shadow-sm border border-slate-200 p-2 max-h-40 overflow-y-auto custom-scroll space-y-1">
-                    <p class="text-xs text-slate-400 text-center italic py-2">Conectando a Firebase...</p>
-                </div>
+            <div class="mt-8 w-full max-w-lg text-center">
+                <button onclick="loadProjs()" class="text-xs text-indigo-600 hover:underline font-bold"><i class="fas fa-cloud-download-alt"></i> Cargar Proyectos de la Nube</button>
+                <div id="cloudProjectsList" class="mt-2 space-y-1"></div>
             </div>
         </div>
 
-        <!-- PASO 2: PREPARAR FUENTES -->
+        <!-- VISTA 2: PREPARAR FUENTES -->
         <div id="view-range" class="hidden absolute inset-0 flex flex-col md:flex-row fade-in">
-            <!-- Sidebar -->
             <div class="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col z-20 h-full shadow-lg">
                 <div class="p-6 bg-slate-50 border-b border-slate-100">
                     <h3 class="font-bold text-slate-800 text-lg">Paso 2: Definir Fuentes</h3>
-                    <p class="text-xs text-slate-500">Configura qué hojas vas a utilizar.</p>
                 </div>
                 <div class="p-6 flex flex-col gap-5 overflow-y-auto flex-1">
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Archivo</label>
-                        <select id="fileSelector" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500" onchange="changeActiveFile()"></select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Hoja</label>
-                        <select id="sheetSelector" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500" onchange="renderRawPreview()"></select>
-                    </div>
-                    <div>
-                        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Fila de Encabezados</label>
-                        <input type="number" id="headerRow" value="1" min="1" class="w-full p-3 bg-white border border-slate-200 rounded-xl text-center font-bold outline-none focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <button onclick="saveAsDataSource()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold shadow hover:bg-slate-700 transition flex justify-center items-center gap-2">
-                        <i class="fas fa-plus-circle"></i> Guardar como Fuente
-                    </button>
-                    
-                    <div class="border-t pt-4">
-                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Fuentes Listas:</h4>
-                        <div id="processedSourcesList" class="space-y-2 max-h-40 overflow-y-auto custom-scroll"></div>
-                    </div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Archivo</label><select id="fileSelector" class="w-full p-3 border rounded-xl text-sm outline-none bg-slate-50" onchange="changeActiveFile()"></select></div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Hoja</label><select id="sheetSelector" class="w-full p-3 border rounded-xl text-sm outline-none bg-slate-50" onchange="renderRawPreview()"></select></div>
+                    <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Fila Encabezados</label><input type="number" id="headerRow" value="1" min="1" class="w-full p-3 border rounded-xl text-center font-bold bg-slate-50"></div>
+                    <button onclick="saveAsDataSource()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold shadow hover:bg-slate-700 flex justify-center gap-2"><i class="fas fa-plus-circle"></i> Crear Fuente</button>
+                    <div class="border-t pt-4"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Fuentes Listas:</h4><div id="processedSourcesList" class="space-y-2 max-h-40 overflow-y-auto custom-scroll"></div></div>
                 </div>
                 <div class="p-4 border-t bg-white flex gap-2">
-                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="flex-1 bg-indigo-50 text-indigo-700 py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition">Ir a Dashboard</button>
-                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="flex-1 bg-emerald-50 text-emerald-700 py-3 rounded-xl font-bold text-sm disabled:opacity-50 transition">Ir a Unificar</button>
+                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="flex-1 bg-indigo-50 text-indigo-700 py-3 rounded-xl font-bold text-xs disabled:opacity-50">Dashboard</button>
+                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="flex-1 bg-emerald-50 text-emerald-700 py-3 rounded-xl font-bold text-xs disabled:opacity-50">Unificar</button>
                 </div>
             </div>
-            <!-- Preview -->
             <div class="flex-1 bg-slate-100 p-6 overflow-hidden flex flex-col">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex-1 overflow-hidden flex flex-col">
-                    <div class="p-3 bg-slate-50 border-b border-slate-100 font-bold text-xs text-slate-500 uppercase">Vista Previa Datos Crudos</div>
-                    <div class="flex-1 overflow-auto custom-scroll">
-                        <table class="w-full text-xs text-left" id="rawTablePreview"></table>
-                    </div>
+                    <div class="p-3 bg-slate-50 border-b font-bold text-xs text-slate-500 uppercase">Vista Previa</div>
+                    <div class="flex-1 overflow-auto custom-scroll"><table class="w-full text-xs text-left" id="rawTablePreview"></table></div>
                 </div>
             </div>
         </div>
 
-        <!-- PASO 3: DASHBOARD INDIVIDUAL -->
+        <!-- VISTA 3: DASHBOARD INDIVIDUAL -->
         <div id="view-playground" class="hidden absolute inset-0 flex flex-col md:flex-row fade-in">
-            <!-- Sidebar Config -->
-            <aside class="w-full md:w-[450px] bg-white border-r border-slate-200 flex flex-col h-full z-20 shadow-xl overflow-hidden">
-                <div class="p-5 border-b border-slate-100 bg-white flex justify-between items-center">
-                    <h3 class="font-bold text-slate-800 text-lg">Paso 3: Dashboard</h3>
-                </div>
-                
-                <div class="p-5 overflow-y-auto flex-1 flex flex-col gap-6 custom-scroll">
-                    <!-- 1. Fuente -->
+            <aside class="w-full md:w-[420px] bg-white border-r border-slate-200 flex flex-col h-full z-20 shadow-xl overflow-hidden">
+                <div class="p-5 border-b border-slate-100 bg-white"><h3 class="font-bold text-slate-800 text-lg">Paso 3: Dashboard</h3></div>
+                <div class="p-5 overflow-y-auto flex-1 flex flex-col gap-5 custom-scroll">
                     <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
                         <label class="text-[10px] font-bold text-indigo-900 uppercase mb-1 block">1. Seleccionar Fuente</label>
                         <select id="dsSelector" class="w-full p-2 bg-white border-0 rounded-lg text-sm font-bold shadow-sm outline-none" onchange="onDataSourceChange()"></select>
                     </div>
-
-                    <!-- 2. Configuración -->
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Nombre del Gráfico</label>
-                            <input type="text" id="widgetTitle" placeholder="Ej: Avance por Departamento" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Eje X (Agrupar Por)</label>
-                            <select id="axisX" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm font-semibold outline-none column-selector"></select>
-                        </div>
+                    <div class="space-y-3">
+                        <input type="text" id="widgetTitle" placeholder="Nombre del Gráfico..." class="w-full p-2.5 border rounded-lg text-sm outline-none">
+                        <div><label class="text-[10px] font-bold text-slate-500 uppercase block">Agrupar Por (Eje X)</label><select id="axisX" class="w-full p-2.5 border rounded-lg text-sm font-semibold column-selector"></select></div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Cálculo</label>
-                                <select id="aggType" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none" onchange="togglePercentUI()">
-                                    <option value="count">Contar Filas</option>
-                                    <option value="sum">Sumar Valores</option>
-                                    <option value="percent">Porcentaje (%)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1 block">Columna a Evaluar</label>
-                                <select id="axisY" class="w-full p-2.5 border border-slate-300 rounded-lg text-sm column-selector outline-none" onchange="updatePercentTargets()"></select>
-                            </div>
+                            <div><label class="text-[10px] font-bold text-slate-500 uppercase block">Cálculo</label><select id="aggType" class="w-full p-2.5 border rounded-lg text-sm" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="percent">Porcentaje %</option></select></div>
+                            <div><label class="text-[10px] font-bold text-slate-500 uppercase block">Columna Evaluar</label><select id="axisY" class="w-full p-2.5 border rounded-lg text-sm column-selector" onchange="updatePercentTargets()"></select></div>
                         </div>
-                        
-                        <!-- Target Dinámico -->
                         <div id="percentTargetUI" class="hidden bg-yellow-50 p-3 rounded-xl border border-yellow-200">
-                            <label class="text-[10px] font-bold text-yellow-800 uppercase mb-1 block">Valor que cuenta como "Éxito" (Multi)</label>
+                            <label class="text-[10px] font-bold text-yellow-800 uppercase block mb-1">Valor de "Éxito"</label>
                             <div id="percentTargetValue" class="max-h-24 overflow-y-auto bg-white p-2 rounded border border-yellow-300 text-xs"></div>
                         </div>
                     </div>
-
-                    <!-- 3. Filtros -->
-                    <div class="border border-slate-200 rounded-xl p-4 bg-slate-50">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[10px] font-bold text-slate-500 uppercase">Filtros Activos</span>
-                            <button onclick="addGlobalFilter()" class="bg-white border border-slate-300 text-slate-600 px-2 py-1 rounded text-xs font-bold hover:bg-slate-100">+ Filtro</button>
-                        </div>
-                        <div id="globalFiltersArea" class="flex flex-col gap-2 max-h-40 overflow-y-auto custom-scroll p-1"></div>
+                    <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
+                        <div class="flex justify-between items-center mb-2"><span class="text-[10px] font-bold text-slate-500 uppercase">Filtros</span><button onclick="addGlobalFilter()" class="bg-white border px-2 py-1 rounded text-xs font-bold">+ Añadir</button></div>
+                        <div id="globalFiltersArea" class="flex flex-col gap-2 max-h-32 overflow-y-auto custom-scroll"></div>
                     </div>
-
-                    <!-- 4. Tipo -->
                     <div>
-                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-2 block">Tipo de Gráfico</label>
+                        <label class="text-[10px] font-bold text-slate-500 uppercase mb-2 block">Tipo Gráfico</label>
                         <div class="grid grid-cols-3 gap-2">
-                            <button onclick="selectChartType('bar')" class="chart-btn active p-3 border rounded-xl hover:bg-slate-100 flex justify-center transition bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar"></i></button>
-                            <button onclick="selectChartType('line')" class="chart-btn p-3 border rounded-xl hover:bg-slate-100 flex justify-center transition" data-type="line"><i class="fas fa-chart-line"></i></button>
-                            <button onclick="selectChartType('doughnut')" class="chart-btn p-3 border rounded-xl hover:bg-slate-100 flex justify-center transition" data-type="doughnut"><i class="fas fa-chart-pie"></i></button>
+                            <button onclick="selectChartType('bar')" class="chart-btn active p-3 border rounded-xl hover:bg-slate-100 flex justify-center bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar"></i></button>
+                            <button onclick="selectChartType('line')" class="chart-btn p-3 border rounded-xl hover:bg-slate-100 flex justify-center" data-type="line"><i class="fas fa-chart-line"></i></button>
+                            <button onclick="selectChartType('doughnut')" class="chart-btn p-3 border rounded-xl hover:bg-slate-100 flex justify-center" data-type="doughnut"><i class="fas fa-chart-pie"></i></button>
                             <input type="hidden" id="selectedChartType" value="bar">
                         </div>
                     </div>
-
-                    <!-- BOTÓN GENERAR -->
-                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition active:scale-95 mt-auto border-b-4 border-indigo-800">
-                        GENERAR GRÁFICO
-                    </button>
+                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 mt-auto">GENERAR GRÁFICO</button>
                 </div>
-                <!-- Botón Guardar -->
-                <div class="p-4 bg-slate-900 text-white border-t border-slate-800">
-                    <div class="flex gap-2">
-                        <input type="text" id="projectName3" placeholder="Nombre Proyecto..." class="flex-1 p-2 text-slate-900 rounded mb-2 text-sm outline-none">
-                        <button onclick="saveToFirebase()" id="btnSave3" class="w-24 bg-blue-600 py-2 rounded font-bold hover:bg-blue-500 text-xs">Guardar</button>
-                    </div>
+                <div class="p-4 bg-slate-900 text-white border-t border-slate-800 flex gap-2">
+                    <input type="text" id="projectName3" placeholder="Nombre Proyecto..." class="flex-1 p-2 text-slate-900 rounded text-sm outline-none">
+                    <button onclick="saveToFirebase()" id="btnSave3" class="w-24 bg-blue-600 py-2 rounded font-bold hover:bg-blue-500 text-xs">Guardar</button>
                 </div>
             </aside>
-
-            <!-- LIENZO DE RESULTADOS -->
             <div class="flex-1 bg-slate-100 p-6 overflow-y-auto custom-scroll relative">
-                <button onclick="switchView(4)" class="absolute top-6 right-6 bg-white text-slate-700 px-5 py-2 rounded-full font-bold shadow-md hover:shadow-lg transition z-10 flex items-center gap-2 border border-slate-100">
-                    Ir a Unificar <i class="fas fa-arrow-right text-emerald-500"></i>
-                </button>
-
-                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 mt-12 pb-20">
-                    <div id="emptyLocal" class="col-span-full h-96 flex flex-col items-center justify-center text-slate-300 border-4 border-dashed border-slate-200 rounded-3xl">
-                        <i class="fas fa-chart-bar text-6xl mb-4 text-slate-200"></i>
-                        <p class="text-lg font-medium">Configura a la izquierda y pulsa "Generar Gráfico"</p>
-                    </div>
-                </div>
+                <button onclick="switchView(4)" class="absolute top-6 right-6 bg-white text-slate-700 px-5 py-2 rounded-full font-bold shadow-md hover:shadow-lg transition z-10 border border-slate-100">Ir a Unificar <i class="fas fa-arrow-right text-emerald-500"></i></button>
+                <h2 class="text-xl font-bold text-slate-800 mb-4">Lienzo de Resultados</h2>
+                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-20"></div>
             </div>
         </div>
 
-        <!-- PASO 4: UNIFICAR -->
+        <!-- VISTA 4: UNIFICAR -->
         <div id="view-compare" class="hidden absolute inset-0 flex flex-col md:flex-row fade-in">
             <aside class="w-full md:w-[450px] bg-white border-r border-slate-200 flex flex-col h-full z-20 shadow-xl">
-                <div class="p-5 border-b border-slate-100 bg-emerald-50">
-                    <h3 class="font-bold text-emerald-900 text-lg">Paso 4: Unificar/Comparar</h3>
-                </div>
+                <div class="p-5 border-b border-slate-100 bg-emerald-50"><h3 class="font-bold text-emerald-900 text-lg">Paso 4: Unificar/Comparar</h3></div>
                 <div class="p-5 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
-                    
-                    <!-- Config Unificación -->
                     <div class="space-y-3 mb-4">
                         <div class="bg-white p-1 rounded-lg border border-slate-200 flex text-xs font-bold text-center">
-                            <label class="flex-1 cursor-pointer"><input type="radio" name="auditMode" value="merge" class="hidden peer" checked onchange="toggleAuditMode()"><span class="block p-2 rounded-md peer-checked:bg-emerald-600 peer-checked:text-white text-slate-500 transition">Unificar (Suma Total)</span></label>
-                            <label class="flex-1 cursor-pointer"><input type="radio" name="auditMode" value="compare" class="hidden peer" onchange="toggleAuditMode()"><span class="block p-2 rounded-md peer-checked:bg-blue-600 peer-checked:text-white text-slate-500 transition">Comparar (Lado a Lado)</span></label>
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="auditMode" value="merge" class="hidden peer" checked onchange="toggleAuditMode()"><span class="block p-2 rounded-md peer-checked:bg-emerald-600 peer-checked:text-white text-slate-500 transition">Sumar Todo</span></label>
+                            <label class="flex-1 cursor-pointer"><input type="radio" name="auditMode" value="compare" class="hidden peer" onchange="toggleAuditMode()"><span class="block p-2 rounded-md peer-checked:bg-blue-600 peer-checked:text-white text-slate-500 transition">Comparar</span></label>
                         </div>
                         <input type="text" id="auditTitle" placeholder="Título Unificado..." class="w-full p-2.5 border border-slate-300 rounded-lg text-sm outline-none">
                         <div class="grid grid-cols-2 gap-2">
@@ -251,29 +175,17 @@
                             <select id="auditChartType" class="w-full p-2 border rounded-lg text-xs font-bold outline-none bg-slate-50"><option value="bar">Barras</option><option value="doughnut">Dona</option><option value="line">Línea</option></select>
                         </div>
                     </div>
-
-                    <!-- Mapeo Dinámico -->
                     <div id="auditMappingContainer" class="flex flex-col gap-3"></div>
-                    
-                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition mt-4 border-b-4 border-emerald-800">
-                        GENERAR REPORTE
-                    </button>
+                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-emerald-700 mt-4">GENERAR REPORTE</button>
                 </div>
-                <!-- Botón Guardar -->
-                <div class="p-4 bg-slate-900 text-white border-t border-slate-800">
-                    <div class="flex gap-2">
-                        <input type="text" id="projectName4" placeholder="Nombre Proyecto..." class="flex-1 p-2 text-slate-900 rounded mb-2 text-sm outline-none">
-                        <button onclick="saveToFirebase()" id="btnSave4" class="w-24 bg-blue-600 py-2 rounded font-bold hover:bg-blue-500 text-xs">Guardar</button>
-                    </div>
+                <div class="p-4 bg-slate-900 text-white border-t border-slate-800 flex gap-2">
+                    <input type="text" id="projectName4" placeholder="Nombre Proyecto..." class="flex-1 p-2 text-slate-900 rounded text-sm outline-none">
+                    <button onclick="saveToFirebase()" id="btnSave4" class="w-24 bg-blue-600 py-2 rounded font-bold hover:bg-blue-500 text-xs">Guardar</button>
                 </div>
             </aside>
             <div class="flex-1 bg-slate-100 p-6 overflow-y-auto custom-scroll">
-                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-8 pb-20">
-                     <div id="emptyAudit" class="col-span-full h-96 flex flex-col items-center justify-center text-slate-300 border-4 border-dashed border-slate-200 rounded-3xl">
-                        <i class="fas fa-network-wired text-6xl mb-4 text-slate-200"></i>
-                        <p class="text-lg font-medium">Configura a la izquierda y pulsa "Generar Reporte"</p>
-                    </div>
-                </div>
+                <h2 class="text-xl font-bold text-slate-800 mb-4">Lienzo de Resultados Unificados</h2>
+                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-8 pb-20"></div>
             </div>
         </div>
 
@@ -285,23 +197,22 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // FIREBASE CONFIG
+        // FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyCZXwXN15MYVpFP0-QbgR-H4bHqMH4_EFA", authDomain: "reporte-d37d1.firebaseapp.com", projectId: "reporte-d37d1", storageBucket: "reporte-d37d1.firebasestorage.app", messagingSenderId: "995600823465", appId: "1:995600823465:web:3ae9ede621cf0631ad65b8" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Auto-login silencioso
-        signInAnonymously(auth).then(() => {
-            loadProjs();
-        }).catch((e) => console.log("Modo local. (Firebase Auth no disponible o restringido)"));
+        signInAnonymously(auth).then(() => loadProjs()).catch((e) => console.log("Firebase Init: " + e.message));
 
+        // VARIABLES GLOBALES
         let rawWorkbooks = {}; 
         let processedDataSources = {}; 
         let currentFileId = null;
         let savedWidgetsConfig = []; 
         let savedAuditWidgetsConfig = [];
 
+        // NAVEGACIÓN
         window.switchView = function(step) {
             ['view-upload','view-range','view-playground','view-compare'].forEach(v => document.getElementById(v).classList.add('hidden'));
             if(step===1) document.getElementById('view-upload').classList.remove('hidden');
@@ -311,25 +222,21 @@
             
             [1,2,3,4].forEach(n => {
                 const btn = document.getElementById('tab'+n);
-                if(n===step) { btn.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-white text-indigo-600 shadow-sm transition-all"; }
-                else { btn.className = "px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 disabled:opacity-50 transition-all"; }
-                if(n===4 && !document.getElementById('tab4').disabled && n!==step) btn.classList.add('text-emerald-500');
+                if(n===step) { btn.className = "px-4 py-1.5 rounded-md text-xs font-bold bg-white text-indigo-600 shadow-sm transition-all tab-active"; }
+                else { btn.className = "px-4 py-1.5 rounded-md text-xs font-bold text-slate-400 disabled:opacity-50 transition-all tab-inactive"; if(n===4 && !document.getElementById('tab4').disabled && n!==step) btn.classList.add('text-emerald-500'); }
             });
         }
 
         // --- 1. CARGA ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files); if(files.length===0) return;
-            document.getElementById('uploadStatus').innerText = `Procesando ${files.length} archivos...`;
-            
+            document.getElementById('uploadStatus').innerText = `Leyendo ${files.length} archivos...`;
             for(let i=0; i<files.length; i++) {
                 const data = await files[i].arrayBuffer();
                 rawWorkbooks['file_'+i] = { name: files[i].name, workbook: XLSX.read(data) };
             }
-            
             const fSel = document.getElementById('fileSelector'); fSel.innerHTML = '';
             Object.keys(rawWorkbooks).forEach(id => fSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
-            
             document.getElementById('btnNext1').classList.remove('hidden');
             window.changeActiveFile();
             document.getElementById('tab2').disabled = false;
@@ -358,24 +265,16 @@
             const sName = document.getElementById('sheetSelector').value;
             const hRow = parseInt(document.getElementById('headerRow').value)-1;
             const sheet = wb.Sheets[sName]; 
-            
-            let range = XLSX.utils.decode_range(sheet['!ref']); 
-            range.s.r = Math.max(0, hRow);
-            
+            let range = XLSX.utils.decode_range(sheet['!ref']); range.s.r = Math.max(0, hRow);
             let data = XLSX.utils.sheet_to_json(sheet, {range: XLSX.utils.encode_range(range), defval:null});
             let clean = data.map(r => { let c={}; for(let k in r) if(!k.includes("__EMPTY")) c[k.trim()]=r[k]; return c; }).filter(r=>Object.keys(r).length>0);
 
-            if(clean.length===0) return alert("Error: No se encontraron datos en la hoja seleccionada.");
-
+            if(clean.length===0) return alert("Error: Hoja vacía.");
             let id = 'ds_'+Date.now();
             processedDataSources[id] = { id: id, name: `${rawWorkbooks[currentFileId].name} (${sName})`, columns: Object.keys(clean[0]), data: clean };
             
             document.getElementById('processedSourcesList').innerHTML += `<div class="p-2 bg-indigo-50 border border-indigo-100 rounded-lg text-xs text-indigo-800 font-bold mb-1 flex items-center gap-2"><i class="fas fa-database"></i> ${processedDataSources[id].name}</div>`;
-            
-            ['btnGoPlayground','btnGoAudit','tab3','tab4'].forEach(id => {
-                document.getElementById(id).disabled=false; 
-                document.getElementById(id).classList.remove('opacity-50', 'cursor-not-allowed');
-            });
+            ['btnGoPlayground','btnGoAudit','tab3','tab4'].forEach(id => { document.getElementById(id).disabled=false; document.getElementById(id).classList.remove('opacity-50', 'cursor-not-allowed'); });
             updateSelectors();
         }
 
@@ -394,7 +293,6 @@
             const cols = processedDataSources[id].columns;
             document.querySelectorAll('.column-selector').forEach(s => { s.innerHTML = ''; cols.forEach(c => s.innerHTML+=`<option value="${c}">${c}</option>`); });
         }
-
         window.selectChartType = function(type) {
             document.getElementById('selectedChartType').value = type;
             document.querySelectorAll('.chart-btn').forEach(b => {
@@ -402,27 +300,18 @@
                 if(b.dataset.type === type) b.classList.add('bg-slate-800', 'text-white');
             });
         }
-
         window.togglePercentUI = function() { 
             const show = document.getElementById('aggType').value === 'percent' || document.getElementById('aggType').value === 'count'; 
             document.getElementById('percentTargetUI').classList.toggle('hidden', !show); 
             if(show) window.updatePercentTargets(); 
         }
-
         window.updatePercentTargets = function() {
-            const col = document.getElementById('axisY').value; 
-            const id = document.getElementById('dsSelector').value;
+            const col = document.getElementById('axisY').value; const id = document.getElementById('dsSelector').value;
             if(!col || !id) return;
-            let vals = new Set(); 
-            processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
-            
-            const container = document.getElementById('percentTargetValue'); 
-            container.innerHTML = '';
-            Array.from(vals).sort().forEach(v => {
-                container.innerHTML += `<label class="flex items-center gap-2 p-1 hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="target-val-chk rounded text-indigo-600" value="${v}"><span class="truncate">${v}</span></label>`;
-            });
+            let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
+            const container = document.getElementById('percentTargetValue'); container.innerHTML = '';
+            Array.from(vals).sort().forEach(v => { container.innerHTML += `<label class="flex items-center gap-2 p-1 hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="target-val-chk rounded text-indigo-600" value="${v}"><span class="truncate">${v}</span></label>`; });
         }
-
         window.addGlobalFilter = function() {
             const id = document.getElementById('dsSelector').value; const fId = 'gf_'+Date.now();
             const div = document.createElement('div'); div.className = "bg-white border p-1.5 rounded-lg text-xs relative mt-2 shadow-sm";
@@ -435,37 +324,16 @@
             Array.from(vals).sort().forEach(v => box.innerHTML += `<label class="flex items-center gap-2 text-[10px] bg-slate-50 p-1 rounded"><input type="checkbox" checked class="ck_${fId} rounded text-blue-600" value="${v}"><span class="truncate">${v}</span></label>`);
         }
 
-        // --- MOTOR DE GRÁFICOS (Renderizado) ---
+        // MOTOR RENDER
         window.buildWidget = function(cfg=null) {
-            document.getElementById('emptyLocal')?.remove();
             let config = cfg;
-            
             if(!config) {
                 const dsId = document.getElementById('dsSelector').value;
-                if(!dsId) return alert("Selecciona una fuente de datos");
-                
+                if(!dsId) return alert("Selecciona fuente");
                 let filters = []; 
-                document.querySelectorAll('[id^="c_gf_"]').forEach(s => { 
-                    if(s.value) { 
-                        let fid = s.id.split('_')[2]; 
-                        let allowed = Array.from(document.querySelectorAll(`.ck_gf_${fid}:checked`)).map(c=>c.value); 
-                        filters.push({col: s.value, allowed: allowed}); 
-                    } 
-                });
-
-                // Target Multi
+                document.querySelectorAll('[id^="c_gf_"]').forEach(s => { if(s.value) { let fid = s.id.split('_')[2]; let allowed = Array.from(document.querySelectorAll(`.ck_gf_${fid}:checked`)).map(c=>c.value); filters.push({col: s.value, allowed: allowed}); } });
                 let targets = Array.from(document.querySelectorAll('.target-val-chk:checked')).map(c=>c.value);
-
-                config = {
-                    title: document.getElementById('widgetTitle').value || 'Análisis Rápido',
-                    dsId: dsId,
-                    x: document.getElementById('axisX').value,
-                    y: document.getElementById('axisY').value,
-                    agg: document.getElementById('aggType').value,
-                    targets: targets,
-                    type: document.getElementById('selectedChartType').value,
-                    filters: filters
-                };
+                config = { title: document.getElementById('widgetTitle').value || 'Gráfico', dsId: dsId, x: document.getElementById('axisX').value, y: document.getElementById('axisY').value, agg: document.getElementById('aggType').value, targets: targets, type: document.getElementById('selectedChartType').value, filters: filters };
                 savedWidgetsConfig.push(config);
             }
 
@@ -474,67 +342,30 @@
             const card = document.createElement('div');
             card.className = "flip-container w-full h-[400px]"; 
             
-            card.innerHTML = `
-                <div class="flipper" id="flip_${wid}">
-                    <div class="front p-6 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200">
-                        <div class="flex justify-between items-start mb-4">
-                            <div><h3 class="font-bold text-slate-800 text-lg">${config.title}</h3><p class="text-xs text-slate-400 uppercase font-semibold">${config.agg} por ${config.x}</p></div>
-                            <div class="flex gap-2">
-                                <button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="w-8 h-8 rounded-full bg-slate-100 hover:text-blue-600 flex items-center justify-center"><i class="fas fa-table"></i></button>
-                                <button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600 flex items-center justify-center"><i class="fas fa-times"></i></button>
-                            </div>
-                        </div>
-                        <div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div>
-                        <p class="text-[10px] text-center text-slate-400 mt-2 italic"><i class="fas fa-hand-pointer mr-1"></i> Toca para ver datos</p>
-                    </div>
-                    <div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-blue-200 overflow-hidden">
-                        <div class="p-4 border-b border-blue-100 bg-blue-50 flex justify-between items-center">
-                            <h3 class="font-bold text-blue-800"><i class="fas fa-list-ol mr-2"></i> Datos Detallados</h3>
-                            <button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-blue-600 bg-white px-3 py-1 rounded-full shadow-sm">Volver</button>
-                        </div>
-                        <div class="flex-1 overflow-auto custom-scroll bg-white p-2">
-                            <table class="w-full text-xs text-left" id="table_${wid}"></table>
-                        </div>
-                    </div>
-                </div>
-            `;
+            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front p-6 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-start mb-4"><div><h3 class="font-bold text-slate-800 text-lg">${config.title}</h3><p class="text-xs text-slate-400 uppercase font-semibold">${config.agg} por ${config.x}</p></div><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="w-8 h-8 rounded-full bg-slate-100 hover:text-blue-600 flex items-center justify-center"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600 flex items-center justify-center"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[10px] text-center text-slate-400 mt-2 italic"><i class="fas fa-hand-pointer mr-1"></i> Toca para ver datos</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-blue-200 overflow-hidden"><div class="p-4 border-b border-blue-100 bg-blue-50 flex justify-between items-center"><h3 class="font-bold text-blue-800"><i class="fas fa-list-ol mr-2"></i> Datos Detallados</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-blue-600 bg-white px-3 py-1 rounded-full shadow-sm">Volver</button></div><div class="flex-1 overflow-auto custom-scroll bg-white p-2"><table class="w-full text-xs text-left" id="table_${wid}"></table></div></div></div>`;
             grid.prepend(card);
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 100);
+            
+            // Scroll al gráfico
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function renderChart(cfg, canvasId, data) {
             let fdata = data;
-            // Filtros seguros
-            if(cfg.filters) {
-                cfg.filters.forEach(f => {
-                    fdata = fdata.filter(r => { 
-                        let v = r[f.col] ? String(r[f.col]).trim() : ""; 
-                        return f.allowed.includes(v); 
-                    }); 
-                });
-            }
-            
+            if(cfg.filters) { cfg.filters.forEach(f => { fdata = fdata.filter(r => { let v = r[f.col] ? String(r[f.col]).trim() : ""; return f.allowed.includes(v); }); }); }
             let groups = {};
             fdata.forEach(r => {
-                let k = r[cfg.x] ? String(r[cfg.x]).trim() : '(Sin Categoría)';
+                let k = r[cfg.x] ? String(r[cfg.x]).trim() : '(General)';
                 let v = parseFloat(r[cfg.y]) || 0;
                 let rawVal = r[cfg.y] ? String(r[cfg.y]).trim() : "";
-                
                 if(!groups[k]) groups[k] = { sum: 0, count: 0, hits: 0, valid: 0 };
                 groups[k].count++;
-                
-                // Lógica Multi Target (Case Insensitive)
                 if(cfg.agg === 'percent' || cfg.agg === 'count') {
                     if(cfg.targets && cfg.targets.length > 0) {
                         let match = cfg.targets.some(t => t.toLowerCase().trim() === rawVal.toLowerCase().trim());
                         if(match) { groups[k].hits++; groups[k].valid++; }
-                    } else {
-                        // Si no hay targets definidos en count, contar no vacíos
-                        if(cfg.agg === 'count' && r[cfg.y]) groups[k].valid++;
-                    }
-                } else {
-                    groups[k].sum += v;
-                }
+                    } else { if(cfg.agg === 'count' && r[cfg.y]) groups[k].valid++; }
+                } else { groups[k].sum += v; }
             });
 
             let labels = Object.keys(groups);
@@ -545,8 +376,7 @@
                 return groups[l].sum;
             });
 
-            // Llenar Tabla
-            let th = `<thead class="bg-slate-50 text-slate-500"><tr><th class="p-2 border-b">Categoría</th><th class="p-2 border-b text-right">Resultado</th></tr></thead><tbody>`;
+            let th = `<thead class="bg-slate-50 text-slate-500"><tr><th class="p-2 border-b">Categoría</th><th class="p-2 border-b text-right">Valor</th></tr></thead><tbody>`;
             labels.forEach((l, i) => {
                 let display = cfg.agg === 'percent' ? vals[i].toFixed(1) + '%' : vals[i].toLocaleString();
                 th += `<tr class="border-b hover:bg-blue-50"><td class="p-2 font-medium">${l}</td><td class="p-2 text-right font-bold">${display}</td></tr>`;
@@ -555,8 +385,6 @@
             document.getElementById('table_' + canvasId).innerHTML = th;
 
             const ctx = document.getElementById(canvasId).getContext('2d');
-            const colors = ['#4f46e5', '#06b6d4', '#f59e0b', '#ec4899', '#8b5cf6', '#10b981'];
-            
             new Chart(ctx, {
                 type: cfg.type,
                 data: {
@@ -564,118 +392,82 @@
                     datasets: [{
                         label: cfg.agg.toUpperCase(),
                         data: vals,
-                        backgroundColor: cfg.type === 'line' ? 'transparent' : colors,
-                        borderColor: cfg.type === 'line' ? '#4f46e5' : 'transparent',
-                        borderWidth: 2, borderRadius: 4, maxBarThickness: 50
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 4, maxBarThickness: 50
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    onClick: (e) => {
-                        const card = document.getElementById('flip_' + canvasId);
-                        if(card) card.classList.toggle('flipped');
-                    },
+                    onClick: (e) => { const card = document.getElementById('flip_' + canvasId); if(card) card.classList.toggle('flipped'); },
                     scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } }
                 }
             });
         }
 
-        // --- UNIFICACIÓN ---
+        // --- 4. UNIFICACIÓN ---
         window.toggleAuditMode = function() { window.buildAuditSidebar(); }
         window.buildAuditSidebar = function() {
             const agg = document.getElementById('auditAggType').value;
             const container = document.getElementById('auditMappingContainer'); container.innerHTML = '';
-            
             Object.values(processedDataSources).forEach(ds => {
                 let opts = `<option value="">-- Columna --</option>` + ds.columns.map(c => `<option value="${c}">${c}</option>`).join('');
                 let extraInputs = (agg === 'percent' || agg === 'count') 
-                    ? `<select id="ay_${ds.id}" class="w-full p-1 border rounded text-xs mb-1" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_c_${ds.id}" class="max-h-24 overflow-y-auto bg-white border rounded p-1 text-[10px]">Seleccionar Columna...</div>`
+                    ? `<select id="ay_${ds.id}" class="w-full p-1 border rounded text-xs mb-1" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_c_${ds.id}" class="max-h-24 overflow-y-auto bg-white border rounded p-1 text-[10px]">Seleccionar Valor...</div>`
                     : `<select id="ay_${ds.id}" class="w-full p-1 border rounded text-xs">${opts}</select>`;
 
-                container.innerHTML += `
-                    <div class="bg-white border rounded p-2 mb-2 shadow-sm">
-                        <div class="flex justify-between font-bold text-xs mb-1"><span>${ds.name}</span><input type="checkbox" id="inc_${ds.id}" checked></div>
-                        <div class="space-y-1">
-                            <label class="text-[10px] text-slate-400 block">Agrupar Por</label><select id="ax_${ds.id}" class="w-full p-1 border rounded text-xs">${opts}</select>
-                            <label class="text-[10px] text-slate-400 block">Valor/Estado</label>${extraInputs}
-                        </div>
-                    </div>`;
+                container.innerHTML += `<div class="bg-white border rounded p-2 mb-2 shadow-sm"><div class="flex justify-between font-bold text-xs mb-1"><span>${ds.name}</span><input type="checkbox" id="inc_${ds.id}" checked></div><div class="space-y-1"><label class="text-[10px] text-slate-400 block">Agrupar Por</label><select id="ax_${ds.id}" class="w-full p-1 border rounded text-xs">${opts}</select><label class="text-[10px] text-slate-400 block">Valor/Estado</label>${extraInputs}</div></div>`;
             });
         }
 
         window.fillVal = function(id) {
-            const col = document.getElementById(`ay_${id}`).value;
-            const container = document.getElementById(`av_c_${id}`);
+            const col = document.getElementById(`ay_${id}`).value; const container = document.getElementById(`av_c_${id}`);
             if(!col) { container.innerHTML='Seleccionar...'; return; }
             let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
             container.innerHTML = ''; Array.from(vals).forEach(v => container.innerHTML+=`<label class="flex items-center gap-1"><input type="checkbox" class="av_chk_${id}" value="${v}"> ${v}</label>`);
         }
 
         window.generateMergedAudit = function(cfg=null) {
-            document.getElementById('emptyAudit')?.remove();
             let config = cfg;
-            
             if(!config) {
                 const mode = document.querySelector('input[name="auditMode"]:checked').value;
                 const agg = document.getElementById('auditAggType').value;
                 let mappings = [];
-                
                 Object.values(processedDataSources).forEach(ds => {
                     if(document.getElementById(`inc_${ds.id}`).checked) {
                         let targets = [];
-                        if (agg === 'percent' || agg === 'count') {
-                            targets = Array.from(document.querySelectorAll(`.av_chk_${ds.id}:checked`)).map(c=>c.value);
-                        }
+                        if (agg === 'percent' || agg === 'count') { targets = Array.from(document.querySelectorAll(`.av_chk_${ds.id}:checked`)).map(c=>c.value); }
                         mappings.push({ dsId: ds.id, name: ds.name, x: document.getElementById(`ax_${ds.id}`).value, y: document.getElementById(`ay_${ds.id}`).value, targets: targets });
                     }
                 });
-
                 if(mappings.length === 0) return alert("Selecciona fuentes.");
                 config = { title: document.getElementById('auditTitle').value || 'Unificado', mode: mode, agg: agg, type: document.getElementById('auditChartType').value, mappings: mappings };
                 savedAuditWidgetsConfig.push(config);
             }
-
             const wid = 'aw_'+Date.now()+Math.random();
             const grid = document.getElementById('auditWidgetsGrid');
             const card = document.createElement('div');
             card.className = "flip-container h-96 w-full perspective-1000";
-            
-            card.innerHTML = `
-                <div class="flipper" id="f_${wid}">
-                    <div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200">
-                        <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm text-slate-800">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="w-8 h-8 rounded-full bg-slate-100 hover:text-blue-600 flex items-center justify-center"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600 flex items-center justify-center"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div></div>
-                    <div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-emerald-200 overflow-hidden"><div class="p-4 border-b border-emerald-100 bg-emerald-50 flex justify-between items-center"><h3 class="font-bold text-emerald-800">Datos</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-emerald-600 bg-white px-3 py-1 rounded-full shadow-sm">Volver</button></div><div class="flex-1 overflow-auto bg-white border rounded-lg p-2" id="tb_${wid}"></div></div>
-                </div>
-            `;
+            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm text-slate-800">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="w-8 h-8 rounded-full bg-slate-100 hover:text-blue-600 flex items-center justify-center"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600 flex items-center justify-center"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-emerald-200 overflow-hidden"><div class="p-4 border-b border-emerald-100 bg-emerald-50 flex justify-between items-center"><h3 class="font-bold text-emerald-800">Datos</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-emerald-600 bg-white px-3 py-1 rounded-full shadow-sm">Volver</button></div><div class="flex-1 overflow-auto bg-white border rounded-lg p-2" id="tb_${wid}"></div></div></div>`;
             grid.prepend(card); 
             setTimeout(() => renderUnifiedChart(config, wid), 100);
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function renderUnifiedChart(cfg, id) {
             let globalLabels = new Set(); let tableData = {};
             
-            // 1. Recolectar etiquetas globales y calcular por fuente
             cfg.mappings.forEach(map => {
                 let data = processedDataSources[map.dsId].data;
                 let local = {};
-                
                 data.forEach(r => {
-                    let k = r[map.x] ? String(r[map.x]).trim() : map.name; 
-                    globalLabels.add(k);
-                    
+                    let k = r[map.x] ? String(r[map.x]).trim() : map.name; globalLabels.add(k);
                     if(!local[k]) local[k] = {sum:0, count:0, hits:0, valid:0};
                     local[k].count++;
-                    
-                    let v = parseFloat(r[map.y]) || 0; 
-                    let raw = r[map.y] ? String(r[map.y]).trim() : "";
-                    
+                    let v = parseFloat(r[map.y]) || 0; let raw = r[map.y] ? String(r[map.y]).trim() : "";
                     if(cfg.agg === 'percent' || cfg.agg === 'count') { 
-                        if(map.targets && map.targets.some(t => t.toLowerCase() === raw.toLowerCase())) {
-                            local[k].hits++; local[k].valid++;
-                        }
+                        if(map.targets && map.targets.some(t => t.toLowerCase() === raw.toLowerCase())) { local[k].hits++; local[k].valid++; }
                     } else local[k].sum += v;
                 });
-
                 Object.keys(local).forEach(k => {
                     let res = 0;
                     if(cfg.agg === 'percent') res = local[k].count > 0 ? (local[k].hits/local[k].count)*100 : 0;
@@ -683,13 +475,15 @@
                     else res = local[k].sum;
                     if(!tableData[k]) tableData[k] = {};
                     tableData[k][map.name] = res;
-                    
-                    // Guardar crudos para unificación real de porcentajes
+                    // Guardar crudos para unificación total real
                     if(cfg.agg === 'percent') {
-                        if(!tableData[k].rawHits) tableData[k].rawHits = 0;
-                        if(!tableData[k].rawCount) tableData[k].rawCount = 0;
-                        tableData[k].rawHits += local[k].hits;
-                        tableData[k].rawCount += local[k].count;
+                         if(!tableData[k].rawHits) tableData[k].rawHits = 0;
+                         if(!tableData[k].rawCount) tableData[k].rawCount = 0;
+                         tableData[k].rawHits += local[k].hits;
+                         tableData[k].rawCount += local[k].count;
+                    } else {
+                         if(!tableData[k].rawSum) tableData[k].rawSum = 0;
+                         tableData[k].rawSum += res;
                     }
                 });
             });
@@ -706,24 +500,15 @@
             } else {
                 let d = labels.map(l => {
                     if(cfg.agg === 'percent') {
-                        // Cálculo correcto de porcentaje unificado
-                        let h = tableData[l]?.rawHits || 0;
-                        let c = tableData[l]?.rawCount || 0;
-                        return c > 0 ? (h/c)*100 : 0;
-                    } else {
-                        // Suma simple
-                        let t = 0;
-                        Object.entries(tableData[l]||{}).forEach(([k,v]) => { if(!k.startsWith('raw')) t+=v; });
-                        return t;
-                    }
+                         let h = tableData[l]?.rawHits || 0; let c = tableData[l]?.rawCount || 0;
+                         return c > 0 ? (h/c)*100 : 0;
+                    } else { return tableData[l]?.rawSum || 0; }
                 });
                 datasets.push({ label: 'Total Unificado', data: d, backgroundColor: '#10b981', maxBarThickness: 50, borderRadius: 4 });
             }
             
-            let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100"><tr><th>Categoría</th>${cfg.mappings.map(m=>`<th class="text-right">${m.name.substring(0,10)}...</th>`).join('')}</tr></thead><tbody>`;
-            labels.forEach(l => { 
-                th += `<tr class="border-b"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${((tableData[l]&&tableData[l][m.name])||0).toFixed(1)}</td>`).join('')}</tr>`; 
-            });
+            let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100 text-slate-600"><tr><th>Categoría</th>${cfg.mappings.map(m=>`<th class="text-right">${m.name.substring(0,10)}...</th>`).join('')}</tr></thead><tbody>`;
+            labels.forEach(l => { th += `<tr class="border-b"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${((tableData[l]&&tableData[l][m.name])||0).toFixed(1)}</td>`).join('')}</tr>`; });
             th += '</tbody></table>'; document.getElementById('tb_' + id).innerHTML = th;
 
             new Chart(document.getElementById(id), {
@@ -731,26 +516,25 @@
                 options: { 
                     maintainAspectRatio: false, 
                     scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } },
-                    onClick: (e) => {
-                        const card = document.getElementById('f_' + id);
-                        if(card) card.classList.toggle('flipped');
-                    }
+                    onClick: (e) => { const card = document.getElementById('f_' + id); if(card) card.classList.toggle('flipped'); }
                 }
             });
         }
 
         window.saveToFirebase = async function() {
-            const btn = document.getElementById(arguments[0]?.target?.id || 'btnSave4'); // Auto detect button
+            const btn = document.getElementById(arguments[0]?.target?.id || 'btnSave3');
+            btn.innerText = 'Guardando...';
             try {
                 await addDoc(collection(db, "reportes_v17"), {
-                    nombre: document.getElementById('projectName4').value || document.getElementById('projectName3').value || 'Reporte V23', 
+                    nombre: document.getElementById('projectName3').value || document.getElementById('projectName4').value || 'Reporte V24', 
                     date: serverTimestamp(),
                     sources: JSON.stringify(processedDataSources), 
                     widgetsLocal: savedWidgetsConfig, 
                     widgetsGlobal: savedAuditWidgetsConfig
                 });
                 alert("Guardado Exitosamente"); loadProjs();
-            } catch(e) { console.error(e); alert("Guardado Localmente (Offline)"); }
+            } catch(e) { console.error(e); alert("Error al guardar (Ver consola)"); }
+            btn.innerText = 'Guardar';
         }
 
         async function loadProjs() {
@@ -763,20 +547,16 @@
                     b.innerHTML = `<div class="font-bold text-slate-700">${d.nombre}</div><div class="text-[10px] text-slate-400">${new Date(d.date.seconds*1000).toLocaleDateString()}</div>`;
                     b.onclick = () => {
                         processedDataSources = JSON.parse(d.sources); savedWidgetsConfig = d.widgetsLocal||[]; savedAuditWidgetsConfig = d.widgetsGlobal||[];
-                        // Restaurar UI
                         const dsSel = document.getElementById('dsSelector'); dsSel.innerHTML = '';
                         Object.values(processedDataSources).forEach(dx => dsSel.innerHTML += `<option value="${dx.id}">${dx.name}</option>`);
                         document.getElementById('widgetsGrid').innerHTML = ''; savedWidgetsConfig.forEach(c => window.buildWidget(c));
                         document.getElementById('auditWidgetsGrid').innerHTML = ''; savedAuditWidgetsConfig.forEach(c => window.generateMergedAudit(c));
-                        ['btnGoPlayground','btnGoAudit','tab2','tab3','tab4'].forEach(id => {
-                             document.getElementById(id).disabled=false;
-                             document.getElementById(id).classList.remove('opacity-50', 'cursor-not-allowed');
-                        });
-                        switchView(4);
+                        ['btnGoPlayground','btnGoAudit','tab2','tab3','tab4'].forEach(id => { document.getElementById(id).disabled=false; document.getElementById(id).classList.remove('opacity-50', 'cursor-not-allowed'); });
+                        switchView(3);
                     };
                     list.appendChild(b);
                 });
-            } catch(e) { console.log("Sin conexión a nube"); }
+            } catch(e) { console.log("Carga diferida"); }
         }
     </script>
 </body>
