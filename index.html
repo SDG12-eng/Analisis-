@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Data Workspace v12 - Cross Audit</title>
+    <title>Cloud Data Workspace v13 - Flujo & Unificación</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,12 +24,12 @@
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden">
 
     <header class="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center z-20">
-        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-database text-blue-400 mr-2"></i> MULTI<span class="font-light">WORKSPACE</span></h1>
+        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-layer-group text-blue-400 mr-2"></i> MULTI<span class="font-light">WORKSPACE</span></h1>
         <div class="flex gap-2 text-sm">
             <button id="tab1" class="px-4 py-2 rounded-t-lg tab-active transition" onclick="switchView(1)">1. Subir</button>
             <button id="tab2" class="px-4 py-2 rounded-t-lg text-slate-400 hover:text-white transition" onclick="switchView(2)" disabled>2. Fuentes</button>
-            <button id="tab3" class="px-4 py-2 rounded-t-lg text-slate-400 hover:text-white transition" onclick="switchView(3)" disabled>3. Dashboard KPI</button>
-            <button id="tab4" class="px-4 py-2 rounded-t-lg text-emerald-400 font-bold hover:text-emerald-300 transition" onclick="switchView(4)" disabled><i class="fas fa-balance-scale mr-1"></i> 4. Auditoría Cruzada</button>
+            <button id="tab3" class="px-4 py-2 rounded-t-lg text-slate-400 hover:text-white transition" onclick="switchView(3)" disabled>3. Dashboards</button>
+            <button id="tab4" class="px-4 py-2 rounded-t-lg text-emerald-400 hover:text-emerald-300 transition" onclick="switchView(4)" disabled>4. Unir Datos y %</button>
         </div>
     </header>
 
@@ -40,17 +40,21 @@
                 <div class="bg-white p-10 rounded-2xl shadow border border-slate-200 text-center flex flex-col justify-center">
                     <i class="fas fa-file-excel text-6xl text-blue-500 mb-6"></i>
                     <h2 class="text-2xl font-bold text-slate-800 mb-2">Subir Excels</h2>
-                    <p class="text-xs text-slate-500 mb-4">Sube uno o varios archivos para analizarlos o compararlos.</p>
+                    <p class="text-xs text-slate-500 mb-4">Sube los archivos que deseas analizar y comparar.</p>
                     <label class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-8 block hover:bg-blue-100 transition">
                         <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" multiple class="hidden"/>
                         <span class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition"><i class="fas fa-upload mr-2"></i> Seleccionar Archivo(s)</span>
                     </label>
                     <div id="uploadStatus" class="mt-4 text-sm font-bold text-blue-600"></div>
+                    
+                    <button id="btnNext1" onclick="switchView(2)" class="hidden mt-6 bg-slate-800 text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-slate-700 transition mx-auto">
+                        Continuar a Preparar Fuentes <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
                 </div>
                 <div class="bg-white p-8 rounded-2xl shadow border border-slate-200 flex flex-col">
-                    <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-cloud-download-alt text-blue-500 mr-2"></i> Nube Firebase</h2>
+                    <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-cloud-download-alt text-blue-500 mr-2"></i> Proyectos Guardados</h2>
                     <div id="cloudProjectsList" class="flex-1 overflow-y-auto space-y-3 bg-slate-50 p-4 rounded border mt-2 custom-scroll">
-                        <div class="text-center text-slate-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Cargando...</div>
+                        <div class="text-center text-slate-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Cargando Firebase...</div>
                     </div>
                 </div>
             </div>
@@ -58,25 +62,32 @@
 
         <div id="view-range" class="absolute inset-0 hidden flex bg-slate-50 overflow-hidden">
             <div class="w-80 bg-white border-r border-slate-200 flex flex-col p-4 z-10 shadow-lg">
-                <h3 class="font-bold text-slate-800 mb-4"><i class="fas fa-file-import text-blue-500 mr-2"></i> Archivos Subidos</h3>
-                <label class="text-xs font-bold text-slate-500 uppercase mb-1">1. Selecciona el archivo</label>
+                <h3 class="font-bold text-slate-800 mb-4"><i class="fas fa-database text-blue-500 mr-2"></i> Crear Fuentes</h3>
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1">1. Archivo Subido</label>
                 <select id="fileSelector" class="w-full p-2 border rounded bg-slate-50 mb-4 outline-none font-semibold text-sm" onchange="changeActiveFile()"></select>
-                <label class="text-xs font-bold text-slate-500 uppercase mb-1">2. Selecciona la Hoja</label>
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1">2. Hoja</label>
                 <select id="sheetSelector" class="w-full p-2 border rounded bg-slate-50 mb-4 outline-none font-semibold text-sm" onchange="renderRawPreview()"></select>
                 <label class="text-xs font-bold text-slate-500 uppercase mb-1">3. Fila de Encabezados</label>
                 <input type="number" id="headerRow" value="1" min="1" class="w-full p-2 border rounded text-center font-bold outline-none mb-4">
                 <button onclick="saveAsDataSource()" class="w-full bg-blue-600 text-white px-4 py-3 rounded font-bold shadow hover:bg-blue-700 transition flex justify-center items-center">
-                    <i class="fas fa-plus-circle mr-2"></i> Crear Fuente de Datos
+                    <i class="fas fa-plus mr-2"></i> Guardar como Fuente
                 </button>
-                <div class="mt-6 border-t pt-4 flex-1 overflow-y-auto">
-                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Fuentes Listas para Analizar</h4>
-                    <div id="processedSourcesList" class="space-y-2 text-sm">
-                        <p class="text-xs text-slate-400 italic">No has creado fuentes aún.</p>
-                    </div>
+                <div class="mt-4 border-t pt-2 flex-1 overflow-y-auto">
+                    <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2">Fuentes Listas:</h4>
+                    <div id="processedSourcesList" class="space-y-1 text-sm custom-scroll"></div>
+                </div>
+                
+                <div class="flex flex-col gap-2 mt-4">
+                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="w-full bg-slate-800 text-white px-4 py-2 rounded font-bold shadow transition opacity-50 cursor-not-allowed text-sm">
+                        Ir a Dashboards <i class="fas fa-chart-pie ml-1"></i>
+                    </button>
+                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="w-full bg-emerald-600 text-white px-4 py-2 rounded font-bold shadow transition opacity-50 cursor-not-allowed text-sm">
+                        Unir Datos y % <i class="fas fa-balance-scale ml-1"></i>
+                    </button>
                 </div>
             </div>
             <div class="flex-1 p-6 flex flex-col bg-slate-100 relative">
-                <h2 class="text-lg font-bold text-slate-800 mb-2">Vista Previa del Documento</h2>
+                <h2 class="text-lg font-bold text-slate-800 mb-2">Previsualización Cruda</h2>
                 <div class="flex-1 overflow-auto border rounded relative bg-white shadow">
                     <table class="min-w-full text-xs text-left" id="rawTablePreview"></table>
                 </div>
@@ -85,75 +96,108 @@
 
         <div id="view-playground" class="absolute inset-0 hidden flex bg-slate-200">
             <aside class="w-[420px] bg-white shadow-xl z-10 flex flex-col border-r border-slate-300">
-                <div class="p-4 bg-slate-800 text-white flex justify-between items-center"><h3 class="font-bold"><i class="fas fa-sliders-h mr-2"></i> KPI Individual</h3></div>
+                <div class="p-4 bg-slate-800 text-white flex justify-between items-center"><h3 class="font-bold"><i class="fas fa-sliders-h mr-2"></i> Creador de Métricas</h3></div>
                 <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
-                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-lg"><label class="block text-[11px] font-bold text-indigo-900 uppercase mb-1">Fuente de Datos</label><select id="dsSelector" class="w-full p-2 border rounded outline-none text-sm font-bold bg-white shadow-sm" onchange="onDataSourceChange()"></select></div>
+                    
+                    <div class="bg-indigo-50 border border-indigo-200 p-2 rounded-lg"><label class="block text-[11px] font-bold text-indigo-900 uppercase mb-1">1. Fuente de Datos</label><select id="dsSelector" class="w-full p-1.5 border rounded outline-none text-sm font-bold bg-white" onchange="onDataSourceChange()"></select></div>
+                    
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col gap-2 shadow-inner">
+                        <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Nombre del Gráfico</label><input type="text" id="widgetTitle" class="w-full p-1.5 border rounded"></div>
+                        <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Agrupar Por (Eje X)</label><select id="axisX" class="w-full p-1.5 border rounded column-selector"></select></div>
+                        <div class="grid grid-cols-2 gap-2 border-t pt-2">
+                            <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Cálculo</label><select id="aggType" class="w-full p-1.5 border rounded" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="avg">Promedio</option><option value="percent" class="bg-yellow-100">Porcentaje (%)</option></select></div>
+                            <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Eje Y</label><select id="axisY" class="w-full p-1.5 border rounded column-selector" onchange="updatePercentTargets()"></select></div>
+                        </div>
+                        <div id="percentTargetUI" class="hidden bg-yellow-50 border p-2 rounded"><label class="block text-[10px] font-bold text-yellow-800 uppercase">¿Qué es el Éxito?</label><select id="percentTargetValue" class="w-full p-1.5 border rounded"></select></div>
+                    </div>
+
+                    <div class="border border-slate-300 rounded-lg bg-white flex flex-col shadow-sm">
+                        <div class="bg-slate-100 p-2 border-b rounded-t-lg flex justify-between items-center">
+                            <h4 class="text-[11px] font-bold text-slate-700 uppercase"><i class="fas fa-filter mr-1"></i> Filtros (Acumulables)</h4>
+                            <button onclick="addGlobalFilter()" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200">+ Añadir Filtro</button>
+                        </div>
+                        <div id="globalFiltersArea" class="p-2 flex flex-col gap-2 max-h-40 overflow-y-auto custom-scroll bg-slate-50">
+                            <p class="text-[10px] text-slate-400 italic text-center">Añade varios filtros para cruzar datos.</p>
+                        </div>
+                    </div>
+
                     <div>
                         <div class="grid grid-cols-4 gap-1 text-center text-[10px] font-bold">
-                            <button onclick="selectChartType('column')" class="chart-btn p-2 border rounded bg-blue-100" data-type="column"><i class="fas fa-chart-bar text-lg text-blue-600 block mb-1"></i>Columna</button>
-                            <button onclick="selectChartType('bar')" class="chart-btn p-2 border rounded hover:bg-slate-100" data-type="bar"><i class="fas fa-align-left text-lg text-blue-600 block mb-1"></i>Barra</button>
-                            <button onclick="selectChartType('line')" class="chart-btn p-2 border rounded hover:bg-slate-100" data-type="line"><i class="fas fa-chart-line text-lg text-green-600 block mb-1"></i>Línea</button>
-                            <button onclick="selectChartType('doughnut')" class="chart-btn p-2 border rounded hover:bg-slate-100" data-type="doughnut"><i class="fas fa-circle-notch text-lg text-orange-500 block mb-1"></i>Dona</button>
+                            <button onclick="selectChartType('column')" class="chart-btn p-2 border rounded bg-blue-100" data-type="column"><i class="fas fa-chart-bar text-lg text-blue-600 block"></i>Columna</button>
+                            <button onclick="selectChartType('bar')" class="chart-btn p-2 border rounded hover:bg-slate-100" data-type="bar"><i class="fas fa-align-left text-lg text-blue-600 block"></i>Barra</button>
+                            <button onclick="selectChartType('line')" class="chart-btn p-2 border rounded hover:bg-slate-100" data-type="line"><i class="fas fa-chart-line text-lg text-green-600 block"></i>Línea</button>
+                            <button onclick="selectChartType('doughnut')" class="chart-btn p-2 border rounded hover:bg-slate-100" data-type="doughnut"><i class="fas fa-circle-notch text-lg text-orange-500 block"></i>Dona</button>
                         </div><input type="hidden" id="selectedChartType" value="column">
                     </div>
-                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col gap-3 shadow-inner">
-                        <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Nombre</label><input type="text" id="widgetTitle" class="w-full p-1.5 border rounded"></div>
-                        <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Eje X</label><select id="axisX" class="w-full p-1.5 border rounded column-selector"></select></div>
-                        <div class="grid grid-cols-2 gap-2 border-t pt-2">
-                            <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Cálculo</label><select id="aggType" class="w-full p-1.5 border rounded" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="percent">Porcentaje (%)</option></select></div>
-                            <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Columna (Eje Y)</label><select id="axisY" class="w-full p-1.5 border rounded column-selector" onchange="updatePercentTargets()"></select></div>
-                        </div>
-                        <div id="percentTargetUI" class="hidden bg-yellow-50 border p-2 rounded"><label class="block text-[10px] font-bold text-yellow-800 uppercase">Valor de Éxito</label><select id="percentTargetValue" class="w-full p-1.5 border rounded"></select></div>
-                    </div>
-                    <button onclick="buildWidget()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-green-700 mt-auto"><i class="fas fa-play mr-2"></i> Generar Gráfico</button>
+
+                    <button onclick="buildWidget()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-green-700 mt-2 border-b-4 border-green-800"><i class="fas fa-play mr-2"></i> Generar Métrica</button>
                 </div>
             </aside>
-            <main class="flex-1 p-8 overflow-y-auto bg-slate-200" id="dashboardCanvas">
-                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10"></div>
+            <main class="flex-1 p-8 overflow-y-auto bg-slate-200 relative" id="dashboardCanvas">
+                <button onclick="switchView(4)" class="absolute top-4 right-8 bg-emerald-600 text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-emerald-700 transition z-50">
+                    Ir a Unir Datos <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10 mt-10"></div>
             </main>
         </div>
 
         <div id="view-compare" class="absolute inset-0 hidden flex bg-slate-200">
             <aside class="w-[450px] bg-white shadow-xl z-10 flex flex-col border-r border-slate-300">
-                <div class="p-4 bg-emerald-700 text-white flex justify-between items-center">
-                    <h3 class="font-bold"><i class="fas fa-balance-scale mr-2"></i> Mapeo Comparativo</h3>
+                <div class="p-4 bg-emerald-800 text-white flex justify-between items-center">
+                    <h3 class="font-bold"><i class="fas fa-link mr-2"></i> Unificación de Datos</h3>
+                </div>
+                <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
+                    <p class="text-[11px] text-slate-500 border-b pb-2">Configura cada fuente para que el sistema sepa cómo unirlas matemáticamente.</p>
+                    
+                    <div id="auditMappingContainer" class="flex flex-col gap-3"></div>
+
+                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black shadow-lg hover:bg-emerald-500 transition mt-4 border-b-4 border-emerald-900 text-lg flex justify-center items-center">
+                        <i class="fas fa-object-group mr-2 text-2xl"></i> UNIR DATOS Y CALCULAR %
+                    </button>
                 </div>
                 
-                <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
-                    <p class="text-[11px] text-slate-500 border-b pb-2">Configura cada fuente manualmente para compararlas, incluso si las columnas tienen nombres distintos.</p>
-                    
-                    <div id="auditMappingContainer" class="flex flex-col gap-4">
-                        </div>
-
-                    <button onclick="generateCrossAudit()" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-emerald-700 transition mt-4 border-b-4 border-emerald-800">
-                        <i class="fas fa-chart-line mr-2"></i> Generar Comparativa Global
+                <div class="p-4 bg-slate-900 border-t border-slate-900">
+                    <input type="text" id="projectName" placeholder="Nombre Final del Proyecto..." class="w-full p-2 text-sm border-none rounded mb-2 bg-slate-700 text-white outline-none">
+                    <button onclick="saveToFirebase()" id="btnSave" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold transition flex justify-center items-center">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Guardar Todo en Nube
                     </button>
                 </div>
             </aside>
 
             <main class="flex-1 p-8 overflow-y-auto relative bg-slate-100 flex flex-col">
-                <h2 class="text-2xl font-bold text-slate-800 mb-6"><i class="fas fa-chart-area text-emerald-600 mr-2"></i> Resultados de Auditoría</h2>
                 
-                <div class="bg-white p-6 rounded-2xl shadow border border-slate-200 h-[400px] mb-8 relative">
+                <div class="grid grid-cols-3 gap-4 mb-6 hidden" id="globalKpiCards">
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-slate-500">
+                        <p class="text-xs text-slate-500 font-bold uppercase">Total Documentos (Unidos)</p>
+                        <p class="text-3xl font-black text-slate-800" id="gkpi_total">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-emerald-500">
+                        <p class="text-xs text-emerald-600 font-bold uppercase">Total Digitalizados (Éxitos)</p>
+                        <p class="text-3xl font-black text-emerald-600" id="gkpi_dig">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow border-l-4 border-blue-500">
+                        <p class="text-xs text-blue-600 font-bold uppercase">% Avance Global (Fusionado)</p>
+                        <p class="text-4xl font-black text-blue-600" id="gkpi_pct">0%</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow border border-slate-200 h-[350px] mb-6 relative">
                     <div id="emptyAudit" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-                        <i class="fas fa-cogs text-5xl mb-3"></i><p>Configura las fuentes a la izquierda y presiona Generar.</p>
+                        <i class="fas fa-link text-6xl mb-3 opacity-50"></i><p class="font-bold">Presiona "Unir Datos" para consolidar la información.</p>
                     </div>
                     <canvas id="auditChart"></canvas>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow border border-slate-200 overflow-hidden hidden" id="auditTableContainer">
-                    <div class="bg-emerald-50 border-b border-emerald-100 p-4">
-                        <h3 class="font-bold text-emerald-800"><i class="fas fa-table mr-2"></i> Resumen de Datos Analizados</h3>
-                    </div>
-                    <table class="min-w-full text-sm text-left">
+                    <div class="bg-emerald-50 border-b border-emerald-100 p-3"><h3 class="font-bold text-emerald-800 text-sm"><i class="fas fa-list mr-2"></i> Desglose por Fuente</h3></div>
+                    <table class="min-w-full text-xs text-left">
                         <thead class="bg-slate-50 text-slate-600">
                             <tr>
-                                <th class="px-6 py-3 border-b border-r">Fuente (Archivo)</th>
-                                <th class="px-6 py-3 border-b border-r">Filtro Aplicado</th>
-                                <th class="px-6 py-3 border-b border-r text-center">Total Documentos</th>
-                                <th class="px-6 py-3 border-b border-r text-center text-emerald-600">Digitalizados</th>
-                                <th class="px-6 py-3 border-b border-r text-center text-red-500">No Digitalizados</th>
-                                <th class="px-6 py-3 border-b text-center font-bold">% Avance</th>
+                                <th class="px-4 py-2 border-b border-r">Fuente / Hoja</th>
+                                <th class="px-4 py-2 border-b border-r text-center">Total Docs</th>
+                                <th class="px-4 py-2 border-b border-r text-center text-emerald-600">Digitalizados</th>
+                                <th class="px-4 py-2 border-b border-r text-center text-red-500">No Digitalizados</th>
+                                <th class="px-4 py-2 border-b text-center font-bold">% Local</th>
                             </tr>
                         </thead>
                         <tbody id="auditTableBody" class="divide-y divide-slate-100"></tbody>
@@ -167,22 +211,12 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCZXwXN15MYVpFP0-QbgR-H4bHqMH4_EFA",
-            authDomain: "reporte-d37d1.firebaseapp.com",
-            projectId: "reporte-d37d1",
-            storageBucket: "reporte-d37d1.firebasestorage.app",
-            messagingSenderId: "995600823465",
-            appId: "1:995600823465:web:3ae9ede621cf0631ad65b8"
-        };
+        const firebaseConfig = { apiKey: "AIzaSyCZXwXN15MYVpFP0-QbgR-H4bHqMH4_EFA", authDomain: "reporte-d37d1.firebaseapp.com", projectId: "reporte-d37d1", storageBucket: "reporte-d37d1.firebasestorage.app", messagingSenderId: "995600823465", appId: "1:995600823465:web:3ae9ede621cf0631ad65b8" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let rawWorkbooks = {}; 
-        let processedDataSources = {}; 
-        let currentFileId = null;
-        let savedWidgetsConfig = []; 
-        let auditChartInstance = null; // Para el nuevo gráfico de la V12
+        let rawWorkbooks = {}; let processedDataSources = {}; let currentFileId = null;
+        let savedWidgetsConfig = []; let auditChartInstance = null;
 
         window.switchView = function(step) {
             document.getElementById('view-upload').classList.add('hidden');
@@ -196,63 +230,54 @@
             if(step === 4) {
                 document.getElementById('view-compare').classList.remove('hidden', 'flex');
                 document.getElementById('view-compare').style.display = 'flex';
-                buildAuditSidebar(); // Construye el UI mágico al entrar al Paso 4
+                buildAuditSidebar(); 
             }
             
             [1,2,3,4].forEach(n => {
                 const btn = document.getElementById('tab'+n);
-                if(n === step) {
-                    btn.classList.add('tab-active', 'text-slate-900');
-                    btn.classList.remove('text-slate-400', 'text-emerald-400');
-                } else {
+                if(n === step) { btn.classList.add('tab-active', 'text-slate-900'); btn.classList.remove('text-slate-400', 'text-emerald-400'); } 
+                else {
                     btn.classList.remove('tab-active', 'text-slate-900');
-                    if(n === 4 && !btn.disabled) btn.classList.add('text-emerald-400');
-                    else btn.classList.add('text-slate-400');
+                    if(n === 4 && !btn.disabled) btn.classList.add('text-emerald-400'); else btn.classList.add('text-slate-400');
                 }
             });
         }
 
-        // --- CARGA Y FUENTES (Simplificado para el código, igual a V11) ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
-            document.getElementById('uploadStatus').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Leyendo archivos...`;
+            document.getElementById('uploadStatus').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Leyendo...`;
             rawWorkbooks = {}; processedDataSources = {};
-            
             for(let i=0; i<files.length; i++) {
                 const data = await files[i].arrayBuffer();
                 rawWorkbooks['file_'+i] = { name: files[i].name, workbook: XLSX.read(data) };
             }
-
-            const fileSel = document.getElementById('fileSelector');
-            fileSel.innerHTML = '';
+            const fileSel = document.getElementById('fileSelector'); fileSel.innerHTML = '';
             Object.keys(rawWorkbooks).forEach(id => fileSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
-
+            
+            // Boton flujo Paso 1
+            document.getElementById('btnNext1').classList.remove('hidden');
+            
             window.changeActiveFile();
-            window.switchView(2);
             document.getElementById('tab2').disabled = false;
         });
 
         window.changeActiveFile = function() {
             currentFileId = document.getElementById('fileSelector').value;
             const wb = rawWorkbooks[currentFileId].workbook;
-            const sheetSel = document.getElementById('sheetSelector');
-            sheetSel.innerHTML = '';
+            const sheetSel = document.getElementById('sheetSelector'); sheetSel.innerHTML = '';
             wb.SheetNames.forEach(s => sheetSel.innerHTML += `<option value="${s}">${s}</option>`);
-            document.getElementById('headerRow').value = 1;
             window.renderRawPreview();
         }
 
         window.renderRawPreview = function() {
             const wb = rawWorkbooks[currentFileId].workbook;
-            const sheetName = document.getElementById('sheetSelector').value;
-            const rawArray = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: "" });
-            const tbody = document.getElementById('rawTablePreview');
-            tbody.innerHTML = '';
-            for(let i = 0; i < Math.min(rawArray.length, 30); i++) {
+            const rawArray = XLSX.utils.sheet_to_json(wb.Sheets[document.getElementById('sheetSelector').value], { header: 1, defval: "" });
+            const tbody = document.getElementById('rawTablePreview'); tbody.innerHTML = '';
+            for(let i = 0; i < Math.min(rawArray.length, 20); i++) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="p-2 bg-slate-200 text-slate-500 font-bold border-r w-10 text-center border-b">${i + 1}</td>`;
-                rawArray[i].forEach(cell => tr.innerHTML += `<td class="p-2 border-r truncate max-w-xs text-slate-700 border-b">${cell}</td>`);
+                tr.innerHTML = `<td class="p-1 bg-slate-200 text-slate-500 border-r w-8 text-center">${i + 1}</td>`;
+                rawArray[i].forEach(cell => tr.innerHTML += `<td class="p-1 border-r truncate max-w-[150px]">${cell}</td>`);
                 tbody.appendChild(tr);
             }
         }
@@ -262,236 +287,315 @@
             const sheetName = document.getElementById('sheetSelector').value;
             const headerRowNum = parseInt(document.getElementById('headerRow').value) - 1;
             const sheet = wb.Sheets[sheetName];
-            let range = XLSX.utils.decode_range(sheet['!ref']);
-            range.s.r = Math.max(0, headerRowNum);
+            let range = XLSX.utils.decode_range(sheet['!ref']); range.s.r = Math.max(0, headerRowNum);
             
             let rawData = XLSX.utils.sheet_to_json(sheet, { range: XLSX.utils.encode_range(range), defval: null });
-            let cleanData = rawData.map(row => { 
-                let clean = {}; 
-                for(let key in row) if(!key.includes("__EMPTY")) clean[key.trim()] = row[key]; 
-                return clean; 
-            }).filter(row => Object.keys(row).length > 0);
+            let cleanData = rawData.map(r => { let c = {}; for(let k in r) if(!k.includes("__EMPTY")) c[k.trim()] = r[k]; return c; }).filter(r => Object.keys(r).length > 0);
             
             if(cleanData.length === 0) return alert("Sin datos.");
 
             let dsId = 'ds_' + Date.now();
             processedDataSources[dsId] = { id: dsId, name: `${rawWorkbooks[currentFileId].name} (${sheetName})`, columns: Object.keys(cleanData[0]), data: cleanData };
 
-            document.getElementById('processedSourcesList').innerHTML = Object.values(processedDataSources).map(ds => `<div class="p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 font-medium text-xs mb-1"><i class="fas fa-database mr-2"></i>${ds.name}</div>`).join('');
+            document.getElementById('processedSourcesList').innerHTML = Object.values(processedDataSources).map(ds => `<div class="p-1 bg-blue-50 border border-blue-200 rounded text-blue-800 text-[10px] mb-1"><i class="fas fa-check-circle text-green-500 mr-1"></i>${ds.name}</div>`).join('');
             
-            document.getElementById('tab3').disabled = false;
-            document.getElementById('tab4').disabled = false; // Habilitar Paso 4
+            // Habilitar Flujo
+            document.getElementById('btnGoPlayground').disabled = false; document.getElementById('btnGoPlayground').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('btnGoAudit').disabled = false; document.getElementById('btnGoAudit').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('tab3').disabled = false; document.getElementById('tab4').disabled = false;
             
-            // Llenar selector de Dashboard
-            const dsSel = document.getElementById('dsSelector');
-            dsSel.innerHTML = '';
+            const dsSel = document.getElementById('dsSelector'); dsSel.innerHTML = '';
             Object.values(processedDataSources).forEach(ds => dsSel.innerHTML += `<option value="${ds.id}">${ds.name}</option>`);
             window.onDataSourceChange();
         }
 
-        // --- LÓGICA PASO 3 (Mantenida) ---
+        // --- DASHBOARD (PASO 3) - FILTROS MÚLTIPLES ---
         window.onDataSourceChange = function() {
             const dsId = document.getElementById('dsSelector').value;
-            if(!dsId || !processedDataSources[dsId]) return;
+            if(!dsId) return;
             const cols = processedDataSources[dsId].columns;
-            document.querySelectorAll('.column-selector').forEach(sel => {
-                sel.innerHTML = '';
-                cols.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
+            document.querySelectorAll('.column-selector').forEach(sel => { sel.innerHTML = ''; cols.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`); });
+            document.getElementById('globalFiltersArea').innerHTML = ''; // Reset filtros al cambiar fuente
+        }
+        
+        window.selectChartType = function(type) { document.getElementById('selectedChartType').value = type; }
+        
+        window.togglePercentUI = function() {
+            if(document.getElementById('aggType').value === 'percent') { document.getElementById('percentTargetUI').classList.remove('hidden'); window.updatePercentTargets(); } 
+            else document.getElementById('percentTargetUI').classList.add('hidden');
+        }
+        
+        window.updatePercentTargets = function() {
+            const yCol = document.getElementById('axisY').value; const dsId = document.getElementById('dsSelector').value;
+            let uniqueVals = new Set(); processedDataSources[dsId].data.forEach(r => { if(r[yCol]) uniqueVals.add(r[yCol].toString().trim()); });
+            const sel = document.getElementById('percentTargetValue'); sel.innerHTML = '';
+            Array.from(uniqueVals).sort().forEach(v => sel.innerHTML += `<option value="${v}">${v}</option>`);
+        }
+
+        // AÑADIR VARIOS FILTROS
+        window.addGlobalFilter = function() {
+            const dsId = document.getElementById('dsSelector').value;
+            const cols = processedDataSources[dsId].columns;
+            const filterId = 'gf_' + Date.now() + Math.floor(Math.random()*1000);
+            
+            const filterBox = document.createElement('div');
+            filterBox.className = "bg-white border border-slate-200 rounded p-1.5 text-xs relative shadow-sm";
+            filterBox.innerHTML = `
+                <button onclick="this.parentElement.remove()" class="absolute top-1 right-1 text-red-400"><i class="fas fa-times"></i></button>
+                <select id="col_${filterId}" class="w-full p-1 border rounded mb-1 font-bold outline-none text-[10px]" onchange="renderCheckboxes('${filterId}', '${dsId}')">
+                    <option value="">Elegir Columna...</option>
+                    ${cols.map(c => `<option value="${c}">${c}</option>`).join('')}
+                </select>
+                <div id="chk_${filterId}" class="max-h-20 overflow-y-auto space-y-0.5"></div>
+            `;
+            document.getElementById('globalFiltersArea').prepend(filterBox);
+        }
+
+        window.renderCheckboxes = function(filterId, dsId) {
+            const col = document.getElementById(`col_${filterId}`).value;
+            const chkContainer = document.getElementById(`chk_${filterId}`);
+            chkContainer.innerHTML = ''; if(!col) return;
+
+            let uSet = new Set(); processedDataSources[dsId].data.forEach(r => { if(r[col]) uSet.add(r[col].toString().trim()); });
+            Array.from(uSet).sort().forEach(val => {
+                chkContainer.innerHTML += `
+                    <label class="flex items-center gap-1 hover:bg-slate-100 p-0.5 rounded cursor-pointer">
+                        <input type="checkbox" value="${val}" checked class="w-3 h-3 text-blue-600 chk-input-${filterId}">
+                        <span class="truncate text-[10px]" title="${val}">${val}</span>
+                    </label>
+                `;
             });
         }
-        window.selectChartType = function(type) { document.getElementById('selectedChartType').value = type; }
-        window.togglePercentUI = function() {
-            if(document.getElementById('aggType').value === 'percent') {
-                document.getElementById('percentTargetUI').classList.remove('hidden'); window.updatePercentTargets();
-            } else document.getElementById('percentTargetUI').classList.add('hidden');
+
+        window.buildWidget = function(existingConfig = null) {
+            let config = existingConfig;
+            if (!config) {
+                // Capturar multiples filtros
+                let activeFilters = [];
+                document.querySelectorAll('[id^="col_gf_"]').forEach(sel => {
+                    if(sel.value) {
+                        let fId = sel.id.split('_')[1] + '_' + sel.id.split('_')[2];
+                        let checked = Array.from(document.querySelectorAll(`.chk-input-${fId}:checked`)).map(cb => cb.value);
+                        activeFilters.push({ column: sel.value, allowed: checked });
+                    }
+                });
+
+                let dsId = document.getElementById('dsSelector').value;
+                config = {
+                    title: document.getElementById('widgetTitle').value || `Métrica de ${document.getElementById('axisY').value}`,
+                    type: document.getElementById('selectedChartType').value,
+                    datasetId: dsId, datasetName: processedDataSources[dsId].name,
+                    axisX: document.getElementById('axisX').value, axisY: document.getElementById('axisY').value,
+                    agg: document.getElementById('aggType').value, percentTarget: document.getElementById('percentTargetValue').value,
+                    filters: activeFilters 
+                };
+                savedWidgetsConfig.push(config);
+            }
+
+            const wId = 'w_' + Date.now() + Math.floor(Math.random()*1000);
+            const grid = document.getElementById('widgetsGrid');
+            const card = document.createElement('div');
+            card.className = "flip-container h-[350px] w-full bg-transparent perspective-1000";
+            card.innerHTML = `
+                <div class="flipper rounded-2xl shadow border bg-white" id="flipper_${wId}">
+                    <div class="front p-4 flex flex-col bg-white rounded-2xl">
+                        <div class="flex justify-between items-start mb-2 border-b pb-1">
+                            <div class="flex-1"><h3 class="font-bold text-sm truncate">${config.title}</h3><p class="text-[9px] text-slate-400">Fuente: ${config.datasetName}</p></div>
+                            <div class="flex gap-1">
+                                <button onclick="document.getElementById('flipper_${wId}').parentNode.classList.toggle('flipped')" class="text-slate-400 hover:text-blue-600 p-1"><i class="fas fa-table"></i></button>
+                                <button onclick="this.closest('.flip-container').remove()" class="text-slate-400 hover:text-red-500 p-1"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="flex-1 relative"><canvas id="${wId}"></canvas></div>
+                    </div>
+                    <div class="back p-4 flex flex-col bg-slate-50 rounded-2xl border-2 border-blue-400">
+                        <div class="flex justify-between mb-2"><h3 class="font-bold text-blue-800 text-xs"><i class="fas fa-table"></i> Datos</h3><button onclick="document.getElementById('flipper_${wId}').parentNode.classList.toggle('flipped')" class="text-blue-600 text-xs font-bold"><i class="fas fa-undo"></i></button></div>
+                        <div class="flex-1 overflow-auto bg-white border"><table class="min-w-full text-[10px] text-left"><thead class="bg-blue-50"><tr><th class="p-1 border-b">${config.axisX}</th><th class="p-1 border-b text-right">Valor</th></tr></thead><tbody id="tbody_${wId}"></tbody></table></div>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(card);
+            setTimeout(() => renderAdvancedChart(config, wId), 50);
         }
-        window.updatePercentTargets = function() {
-            const yCol = document.getElementById('axisY').value;
-            const dsId = document.getElementById('dsSelector').value;
-            let uniqueVals = new Set();
-            processedDataSources[dsId].data.forEach(r => { if(r[yCol]) uniqueVals.add(r[yCol].toString().trim()); });
-            const select = document.getElementById('percentTargetValue');
-            select.innerHTML = '';
-            Array.from(uniqueVals).sort().forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
+
+        function renderAdvancedChart(config, canvasId) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            let filteredData = processedDataSources[config.datasetId].data;
+            
+            // Aplicar TODOS los filtros apilados
+            if (config.filters) {
+                config.filters.forEach(f => {
+                    filteredData = filteredData.filter(row => {
+                        let val = row[f.column] ? row[f.column].toString().trim() : "";
+                        return f.allowed.includes(val);
+                    });
+                });
+            }
+
+            let grouped = {};
+            filteredData.forEach(row => {
+                let key = row[config.axisX] || '(Vacío)';
+                let yVal = parseFloat(row[config.axisY]) || 0;
+                let rawY = row[config.axisY];
+
+                if (!grouped[key]) grouped[key] = { sum: 0, count: 0, valid: 0, hits: 0 };
+                grouped[key].count += 1; 
+
+                if (config.agg === 'percent') { if (rawY && rawY.toString().trim() === config.percentTarget) grouped[key].hits += 1; } 
+                else if (config.agg === 'count') { if (rawY !== null && rawY !== undefined && rawY !== '') grouped[key].valid += 1; } 
+                else { grouped[key].sum += yVal; }
+            });
+
+            let fLabels = [], fValues = [], tbody = '';
+            let sKeys = Object.keys(grouped).sort((a, b) => {
+                let vA = config.agg==='count'?grouped[a].valid : (config.agg==='percent'?(grouped[a].hits/grouped[a].count):grouped[a].sum);
+                let vB = config.agg==='count'?grouped[b].valid : (config.agg==='percent'?(grouped[b].hits/grouped[b].count):grouped[b].sum);
+                return vB - vA; 
+            });
+
+            sKeys.forEach(k => {
+                let val = 0; let disp = "";
+                if(config.agg === 'percent') { val = (grouped[k].hits / grouped[k].count) * 100; if(val>100)val=100; disp = val.toFixed(1) + "%"; }
+                else if(config.agg === 'count') { val = grouped[k].valid; disp = val.toLocaleString(); }
+                else { val = config.agg==='sum'?grouped[k].sum : grouped[k].sum/grouped[k].count; disp = val.toLocaleString(); }
+                
+                fLabels.push(k); fValues.push(val);
+                tbody += `<tr><td class="p-1 border-b">${k}</td><td class="p-1 border-b text-right font-bold">${disp}</td></tr>`;
+            });
+            document.getElementById(`tbody_${canvasId}`).innerHTML = tbody;
+
+            let cType = 'bar'; let cOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+            if(config.agg==='percent' && config.type!=='doughnut' && config.type!=='pie') cOptions.scales = {y:{min:0,max:100}};
+            let cDataset = { label: 'Métrica', data: fValues, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] };
+
+            if(config.type==='bar'){ cOptions.indexAxis='y'; if(config.agg==='percent')cOptions.scales={x:{min:0,max:100}}; }
+            else if(config.type==='line'){ cType='line'; cDataset.borderColor='#4f46e5'; cDataset.fill=false;}
+            else if(config.type==='doughnut'){ cType='doughnut'; cOptions.plugins.legend.display=true; }
+
+            new Chart(ctx, { type: cType, data: { labels: fLabels, datasets: [cDataset] }, options: cOptions });
         }
-        window.buildWidget = function() { alert("Para probar la V12, ve a la pestaña 4. Auditoría Cruzada."); }
 
 
         // ==============================================================
-        // 🔥 PASO 4: MÓDULO DE AUDITORÍA CRUZADA (NUEVO) 🔥
+        // 🔥 PASO 4: UNIR DATOS Y SACAR PORCENTAJES (LA MAGIA FINAL) 🔥
         // ==============================================================
 
-        // 1. Construir las tarjetas de configuración en el Sidebar
         window.buildAuditSidebar = function() {
             const container = document.getElementById('auditMappingContainer');
             container.innerHTML = '';
             
             Object.values(processedDataSources).forEach(ds => {
-                let colOptions = `<option value="">-- Seleccionar Columna --</option>` + ds.columns.map(c => `<option value="${c}">${c}</option>`).join('');
-
+                let opts = `<option value="">-- Columna --</option>` + ds.columns.map(c => `<option value="${c}">${c}</option>`).join('');
                 const card = document.createElement('div');
-                card.className = "bg-slate-50 border border-slate-200 rounded-lg p-3 shadow-sm";
+                card.className = "bg-emerald-50 border border-emerald-200 rounded p-2";
                 card.innerHTML = `
-                    <h4 class="font-bold text-slate-800 text-[11px] mb-2 border-b pb-1 truncate" title="${ds.name}"><i class="fas fa-file-excel text-emerald-600 mr-1"></i> ${ds.name}</h4>
-                    
-                    <div class="mb-2">
-                        <label class="block text-[9px] font-bold text-slate-600 uppercase">Filtro/Tipo (Opcional)</label>
-                        <select id="auditFilterCol_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none" onchange="populateAuditValues('${ds.id}', 'filter')">${colOptions}</select>
-                        <select id="auditFilterVal_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none mt-1 hidden"></select>
-                    </div>
-
-                    <div class="bg-white p-2 rounded border border-slate-200">
-                        <label class="block text-[9px] font-bold text-emerald-800 uppercase">Columna de Estado *</label>
-                        <select id="auditStatusCol_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none mb-2 bg-emerald-50" onchange="populateAuditValues('${ds.id}', 'status')">${colOptions}</select>
-                        
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <label class="block text-[9px] font-bold text-emerald-600 uppercase">Es Digitalizado</label>
-                                <select id="auditDigVal_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none disabled:bg-slate-100" disabled></select>
-                            </div>
-                            <div>
-                                <label class="block text-[9px] font-bold text-red-500 uppercase">No Digitalizado</label>
-                                <select id="auditNoDigVal_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none disabled:bg-slate-100" disabled></select>
-                            </div>
-                        </div>
+                    <h4 class="font-bold text-emerald-900 text-[10px] mb-2 truncate"><i class="fas fa-file-excel mr-1"></i> ${ds.name}</h4>
+                    <label class="block text-[9px] font-bold text-emerald-800 uppercase">Columna a Evaluar *</label>
+                    <select id="auditStatusCol_${ds.id}" class="w-full p-1 border rounded text-[10px] mb-2" onchange="populateAuditValues('${ds.id}')">${opts}</select>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div><label class="block text-[9px] font-bold text-emerald-600 uppercase">Éxito (Digitalizado)</label><select id="auditDigVal_${ds.id}" class="w-full p-1 border rounded text-[10px]" disabled></select></div>
+                        <div><label class="block text-[9px] font-bold text-red-500 uppercase">Fracaso (No Dig.)</label><select id="auditNoDigVal_${ds.id}" class="w-full p-1 border rounded text-[10px]" disabled></select></div>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        // 2. Poblar los dropdowns secundarios cuando seleccionan una columna
-        window.populateAuditValues = function(dsId, type) {
-            const ds = processedDataSources[dsId];
+        window.populateAuditValues = function(dsId) {
+            const col = document.getElementById(`auditStatusCol_${dsId}`).value;
+            const dig = document.getElementById(`auditDigVal_${dsId}`);
+            const noDig = document.getElementById(`auditNoDigVal_${dsId}`);
+            if(!col) { dig.disabled = true; noDig.disabled = true; return; }
+
+            let uVals = new Set(); processedDataSources[dsId].data.forEach(r => { if(r[col]) uVals.add(r[col].toString().trim()); });
+            let html = `<option value="">-- Valor --</option>` + Array.from(uVals).sort().map(v => `<option value="${v}">${v}</option>`).join('');
             
-            if(type === 'filter') {
-                const col = document.getElementById(`auditFilterCol_${dsId}`).value;
-                const valSelect = document.getElementById(`auditFilterVal_${dsId}`);
-                if(!col) { valSelect.classList.add('hidden'); return; }
-                
-                let uniqueVals = new Set();
-                ds.data.forEach(r => { if(r[col]) uniqueVals.add(r[col].toString().trim()); });
-                
-                valSelect.innerHTML = `<option value="">-- Todos --</option>` + Array.from(uniqueVals).sort().map(v => `<option value="${v}">${v}</option>`).join('');
-                valSelect.classList.remove('hidden');
-            }
-
-            if(type === 'status') {
-                const col = document.getElementById(`auditStatusCol_${dsId}`).value;
-                const digSelect = document.getElementById(`auditDigVal_${dsId}`);
-                const noDigSelect = document.getElementById(`auditNoDigVal_${dsId}`);
-                
-                if(!col) { 
-                    digSelect.disabled = true; noDigSelect.disabled = true; 
-                    digSelect.innerHTML = ''; noDigSelect.innerHTML = ''; return; 
-                }
-
-                let uniqueVals = new Set();
-                ds.data.forEach(r => { if(r[col]) uniqueVals.add(r[col].toString().trim()); });
-                
-                let optionsHtml = `<option value="">-- Seleccionar --</option>` + Array.from(uniqueVals).sort().map(v => `<option value="${v}">${v}</option>`).join('');
-                
-                digSelect.innerHTML = optionsHtml;
-                noDigSelect.innerHTML = optionsHtml;
-                digSelect.disabled = false;
-                noDigSelect.disabled = false;
-            }
+            dig.innerHTML = html; noDig.innerHTML = html;
+            dig.disabled = false; noDig.disabled = false;
         }
 
-        // 3. GENERAR LA COMPARATIVA (Extrayendo datos de cada fuente)
-        window.generateCrossAudit = function() {
+        // EL BOTÓN DE UNIR DATOS
+        window.generateMergedAudit = function() {
             document.getElementById('emptyAudit').style.display = 'none';
             document.getElementById('auditTableContainer').classList.remove('hidden');
+            document.getElementById('globalKpiCards').classList.remove('hidden');
 
             let chartLabels = [];
-            let chartDataDigPct = [];
-            let chartDataNoDigPct = [];
+            let chartDataDig = []; // Valores absolutos o %
             let tbodyHtml = '';
 
-            // Recorrer cada fuente configurada
+            let grandTotalDocs = 0;
+            let grandTotalDig = 0;
+            let grandTotalNoDig = 0;
+
             Object.values(processedDataSources).forEach(ds => {
-                const statusCol = document.getElementById(`auditStatusCol_${ds.id}`).value;
-                const digVal = document.getElementById(`auditDigVal_${ds.id}`).value;
-                const noDigVal = document.getElementById(`auditNoDigVal_${ds.id}`).value;
-                const filterCol = document.getElementById(`auditFilterCol_${ds.id}`).value;
-                const filterVal = document.getElementById(`auditFilterVal_${ds.id}`) ? document.getElementById(`auditFilterVal_${ds.id}`).value : "";
+                const sCol = document.getElementById(`auditStatusCol_${ds.id}`).value;
+                const dVal = document.getElementById(`auditDigVal_${ds.id}`).value;
+                const ndVal = document.getElementById(`auditNoDigVal_${ds.id}`).value;
 
-                // Validación simple
-                if(!statusCol) {
-                    tbodyHtml += `<tr><td colspan="6" class="px-6 py-2 text-red-500 text-xs italic">Falta configurar la Columna de Estado en: ${ds.name}</td></tr>`;
-                    return; // Saltamos este si no está configurado
-                }
+                if(!sCol) return; 
 
-                // Filtrar datos si aplica
-                let workingData = ds.data;
-                let filterLabel = "Todos";
-                if(filterCol && filterVal) {
-                    workingData = workingData.filter(r => r[filterCol] && r[filterCol].toString().trim() === filterVal);
-                    filterLabel = `${filterCol}: ${filterVal}`;
-                }
+                let tDocs = ds.data.length;
+                let cDig = 0; let cNoDig = 0;
 
-                // Contar
-                let totalDocs = workingData.length;
-                let countDig = 0;
-                let countNoDig = 0;
-
-                workingData.forEach(row => {
-                    let val = row[statusCol] ? row[statusCol].toString().trim() : "";
-                    if(val === digVal) countDig++;
-                    if(val === noDigVal) countNoDig++;
+                ds.data.forEach(r => {
+                    let v = r[sCol] ? r[sCol].toString().trim() : "";
+                    if(v === dVal) cDig++;
+                    if(v === ndVal) cNoDig++;
                 });
 
-                // Porcentajes
-                let pctDig = totalDocs > 0 ? (countDig / totalDocs) * 100 : 0;
-                let pctNoDig = totalDocs > 0 ? (countNoDig / totalDocs) * 100 : 0;
+                // Sumatoria Global (UNIR DATOS)
+                grandTotalDocs += tDocs;
+                grandTotalDig += cDig;
+                grandTotalNoDig += cNoDig;
 
-                // Guardar para el gráfico
+                let pctDig = tDocs > 0 ? (cDig / tDocs) * 100 : 0;
                 chartLabels.push(ds.name);
-                chartDataDigPct.push(pctDig);
-                chartDataNoDigPct.push(pctNoDig);
+                chartDataDig.push(pctDig);
 
-                // Armar Fila de Tabla
                 tbodyHtml += `
-                    <tr class="hover:bg-slate-50 transition">
-                        <td class="px-6 py-3 border-r border-b text-slate-800 font-bold">${ds.name}</td>
-                        <td class="px-6 py-3 border-r border-b text-slate-500 text-xs">${filterLabel}</td>
-                        <td class="px-6 py-3 border-r border-b text-center font-bold">${totalDocs}</td>
-                        <td class="px-6 py-3 border-r border-b text-center text-emerald-600 font-bold">${countDig}</td>
-                        <td class="px-6 py-3 border-r border-b text-center text-red-500 font-bold">${countNoDig}</td>
-                        <td class="px-6 py-3 border-b text-center text-blue-600 font-black">${pctDig.toFixed(1)}%</td>
+                    <tr>
+                        <td class="px-4 py-2 border-b border-r text-xs font-bold text-slate-700">${ds.name}</td>
+                        <td class="px-4 py-2 border-b border-r text-center">${tDocs}</td>
+                        <td class="px-4 py-2 border-b border-r text-center text-emerald-600 font-bold">${cDig}</td>
+                        <td class="px-4 py-2 border-b border-r text-center text-red-500 font-bold">${cNoDig}</td>
+                        <td class="px-4 py-2 border-b text-center font-black text-blue-600">${pctDig.toFixed(1)}%</td>
                     </tr>
                 `;
             });
 
+            // Actualizar KPIs Globales Fusionados
+            document.getElementById('gkpi_total').innerText = grandTotalDocs.toLocaleString();
+            document.getElementById('gkpi_dig').innerText = grandTotalDig.toLocaleString();
+            
+            let globalPct = grandTotalDocs > 0 ? (grandTotalDig / grandTotalDocs) * 100 : 0;
+            document.getElementById('gkpi_pct').innerText = globalPct.toFixed(1) + "%";
+
             document.getElementById('auditTableBody').innerHTML = tbodyHtml;
 
-            // DIBUJAR EL GRÁFICO (Barras Apiladas hasta 100%)
+            // Dibujar Gráfico Global (Doughnut gigante y barras)
             if(auditChartInstance) auditChartInstance.destroy();
-
             const ctx = document.getElementById('auditChart').getContext('2d');
             auditChartInstance = new Chart(ctx, {
                 type: 'bar',
-                data: {
-                    labels: chartLabels,
-                    datasets: [
-                        { label: '% Digitalizado', data: chartDataDigPct, backgroundColor: '#10b981', barThickness: 40 },
-                        { label: '% No Digitalizado', data: chartDataNoDigPct, backgroundColor: '#ef4444', barThickness: 40 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { position: 'top' },
-                        tooltip: { callbacks: { label: function(context) { return ` ${context.dataset.label}: ${context.raw.toFixed(1)}%`; } } }
-                    },
-                    scales: {
-                        x: { stacked: true },
-                        y: { stacked: true, min: 0, max: 100, ticks: { callback: function(value) { return value + "%" } } }
-                    }
-                }
+                data: { labels: chartLabels, datasets: [{ label: '% Rendimiento', data: chartDataDig, backgroundColor: '#10b981' }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } }, plugins: { legend: {display: false} } }
             });
         }
 
+        // FIREBASE GUARDAR
+        window.saveToFirebase = async function() {
+            const btn = document.getElementById('btnSave'); btn.innerHTML = 'Guardando...'; btn.disabled = true;
+            try {
+                await addDoc(collection(db, "reportes"), {
+                    nombre: document.getElementById('projectName').value || "Proyecto Consolidado",
+                    fecha: serverTimestamp(),
+                    datasetsJSON: JSON.stringify(processedDataSources),
+                    configuracionGraficos: savedWidgetsConfig
+                });
+                alert("Guardado!");
+            } catch (error) { alert("Error."); } finally { btn.innerHTML = 'Guardar Todo en Nube'; btn.disabled = false; }
+        }
     </script>
 </body>
 </html>
