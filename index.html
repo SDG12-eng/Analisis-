@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Data Workspace v10 - Ultimate Edition</title>
+    <title>Cloud Data Workspace v11 - Multi-Source Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,10 +24,10 @@
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden">
 
     <header class="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center z-20">
-        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-layer-group text-blue-400 mr-2"></i> MULTI<span class="font-light">WORKSPACE</span></h1>
+        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-database text-blue-400 mr-2"></i> MULTI<span class="font-light">SOURCE</span></h1>
         <div class="flex gap-4">
-            <button id="tab1" class="px-4 py-2 tab-active transition" onclick="switchView(1)">1. Cargar Datos</button>
-            <button id="tab2" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>2. Preparar</button>
+            <button id="tab1" class="px-4 py-2 tab-active transition" onclick="switchView(1)">1. Cargar Archivos</button>
+            <button id="tab2" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>2. Preparar Fuentes</button>
             <button id="tab3" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>3. Dashboard KPI</button>
         </div>
     </header>
@@ -38,8 +38,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
                 <div class="bg-white p-10 rounded-2xl shadow border border-slate-200 text-center flex flex-col justify-center">
                     <i class="fas fa-file-excel text-6xl text-green-500 mb-6"></i>
-                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Fusión de Excels</h2>
-                    <p class="text-xs text-slate-500 mb-4">Puedes seleccionar múltiples archivos a la vez para unirlos.</p>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Subir Excels</h2>
+                    <p class="text-xs text-slate-500 mb-4">Sube uno o varios archivos para usarlos de manera independiente.</p>
                     <label class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-8 block hover:bg-blue-100 transition">
                         <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" multiple class="hidden"/>
                         <span class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition"><i class="fas fa-upload mr-2"></i> Seleccionar Archivo(s)</span>
@@ -55,23 +55,39 @@
             </div>
         </div>
 
-        <div id="view-range" class="absolute inset-0 hidden flex-col bg-slate-50 p-6 overflow-hidden">
-            <div class="bg-white rounded-xl shadow-md p-6 flex flex-col h-full border border-slate-200">
-                <div class="mb-4 flex flex-wrap justify-between items-end pb-4 border-b gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-slate-800">Preparar Datos Fusionados</h2>
-                        <p class="text-sm text-slate-500" id="mergedStatus">Total registros listos para analizar.</p>
-                    </div>
-                    <div class="flex gap-4 items-end flex-wrap">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Fila Encabezados</label>
-                            <input type="number" id="headerRow" value="1" min="1" class="w-24 p-2 border rounded text-center font-bold outline-none">
-                        </div>
-                        <button onclick="extractData()" class="bg-green-600 text-white px-6 py-2 rounded font-bold shadow hover:bg-green-700 transition">Confirmar Datos <i class="fas fa-arrow-right ml-1"></i></button>
+        <div id="view-range" class="absolute inset-0 hidden flex bg-slate-50 overflow-hidden">
+            <div class="w-80 bg-white border-r border-slate-200 flex flex-col p-4 z-10 shadow-lg">
+                <h3 class="font-bold text-slate-800 mb-4"><i class="fas fa-file-import text-blue-500 mr-2"></i> Archivos Subidos</h3>
+                
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1">1. Selecciona el archivo</label>
+                <select id="fileSelector" class="w-full p-2 border rounded bg-slate-50 mb-4 outline-none font-semibold text-sm" onchange="changeActiveFile()"></select>
+
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1">2. Selecciona la Hoja</label>
+                <select id="sheetSelector" class="w-full p-2 border rounded bg-slate-50 mb-4 outline-none font-semibold text-sm" onchange="renderRawPreview()"></select>
+
+                <label class="text-xs font-bold text-slate-500 uppercase mb-1">3. Fila de Encabezados</label>
+                <input type="number" id="headerRow" value="1" min="1" class="w-full p-2 border rounded text-center font-bold outline-none mb-4">
+
+                <button onclick="saveAsDataSource()" class="w-full bg-green-600 text-white px-4 py-3 rounded font-bold shadow hover:bg-green-700 transition flex justify-center items-center">
+                    <i class="fas fa-plus-circle mr-2"></i> Crear Fuente de Datos
+                </button>
+
+                <div class="mt-6 border-t pt-4 flex-1 overflow-y-auto">
+                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Fuentes Listas para Analizar</h4>
+                    <div id="processedSourcesList" class="space-y-2 text-sm">
+                        <p class="text-xs text-slate-400 italic">No has creado fuentes aún.</p>
                     </div>
                 </div>
-                <div class="flex-1 overflow-auto border rounded relative">
-                    <table class="min-w-full text-xs text-left bg-white" id="rawTablePreview"></table>
+                
+                <button onclick="goToPlayground()" id="btnGoPlayground" disabled class="w-full mt-4 bg-blue-600 text-white px-4 py-3 rounded font-bold shadow transition opacity-50 cursor-not-allowed">
+                    Ir al Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+
+            <div class="flex-1 p-6 flex flex-col bg-slate-100 relative">
+                <h2 class="text-lg font-bold text-slate-800 mb-2">Vista Previa del Documento</h2>
+                <div class="flex-1 overflow-auto border rounded relative bg-white shadow">
+                    <table class="min-w-full text-xs text-left" id="rawTablePreview"></table>
                 </div>
             </div>
         </div>
@@ -84,6 +100,11 @@
                 
                 <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
                     
+                    <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-lg shadow-sm">
+                        <label class="block text-[11px] font-bold text-indigo-900 uppercase mb-1"><i class="fas fa-database mr-1"></i> Fuente de Datos a usar</label>
+                        <select id="dsSelector" class="w-full p-2 border rounded border-indigo-300 outline-none text-sm font-bold bg-white text-indigo-800 shadow-sm" onchange="onDataSourceChange()"></select>
+                    </div>
+
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Visualización</label>
                         <div class="grid grid-cols-4 gap-1 text-center text-[10px] font-bold">
@@ -97,14 +118,13 @@
 
                     <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col gap-3 shadow-inner">
                         <div>
-                            <label class="block text-[10px] font-bold text-blue-900 uppercase mb-1">Nombre (Opcional)</label>
+                            <label class="block text-[10px] font-bold text-blue-900 uppercase mb-1">Nombre del Gráfico</label>
                             <input type="text" id="widgetTitle" placeholder="Ej: % de Avance por Usuario..." class="w-full p-1.5 border rounded border-blue-300 text-xs font-semibold outline-none">
                         </div>
 
                         <div>
                             <label class="block text-[10px] font-bold text-blue-900 uppercase mb-1">Agrupar Por (Eje X / Filas)</label>
                             <select id="axisX" class="w-full p-1.5 border rounded border-blue-300 column-selector outline-none text-xs font-bold" onchange="generateGlobalFilters()"></select>
-                            <p class="text-[9px] text-blue-600 mt-1">Ej: Usuario, Departamento, Mes.</p>
                         </div>
                         
                         <div class="grid grid-cols-2 gap-2 border-t border-blue-200 pt-2">
@@ -114,7 +134,7 @@
                                     <option value="count">Contar Todo</option>
                                     <option value="sum">Sumar Valores</option>
                                     <option value="avg">Promedio</option>
-                                    <option value="percent" class="bg-yellow-100 text-yellow-800">Porcentaje (%) Rendimiento</option>
+                                    <option value="percent" class="bg-yellow-100 text-yellow-800">Porcentaje (%)</option>
                                 </select>
                             </div>
                             <div>
@@ -124,30 +144,29 @@
                         </div>
 
                         <div id="percentTargetUI" class="hidden bg-yellow-50 border border-yellow-300 p-2 rounded mt-2">
-                            <label class="block text-[10px] font-bold text-yellow-800 uppercase mb-1"><i class="fas fa-bullseye mr-1"></i> ¿Qué valor representa el "Éxito"?</label>
+                            <label class="block text-[10px] font-bold text-yellow-800 uppercase mb-1"><i class="fas fa-bullseye mr-1"></i> Meta/Éxito para el %</label>
                             <select id="percentTargetValue" class="w-full p-1.5 border rounded border-yellow-400 outline-none text-xs font-bold text-slate-800"></select>
-                            <p class="text-[9px] text-yellow-700 mt-1">Calcularemos: (Éxito / Total) * 100.</p>
                         </div>
                     </div>
 
                     <div class="border border-slate-300 rounded-lg bg-white flex flex-col shadow-sm">
                         <div class="bg-slate-100 p-2 border-b border-slate-300 rounded-t-lg flex justify-between items-center">
-                            <h4 class="text-[11px] font-bold text-slate-700 uppercase"><i class="fas fa-filter mr-1"></i> Filtros de Datos</h4>
+                            <h4 class="text-[11px] font-bold text-slate-700 uppercase"><i class="fas fa-filter mr-1"></i> Filtros (Para este gráfico)</h4>
                             <button onclick="addGlobalFilter()" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200 transition">+ Añadir</button>
                         </div>
                         <div id="globalFiltersArea" class="p-2 flex flex-col gap-2 max-h-48 overflow-y-auto custom-scroll bg-slate-50">
-                            <p class="text-[10px] text-slate-400 italic text-center p-2">Añade filtros aquí (Ej: Filtrar solo Departamento "Ventas").</p>
+                            <p class="text-[10px] text-slate-400 italic text-center p-2">Filtra datos antes de graficar.</p>
                         </div>
                     </div>
 
                     <button onclick="buildWidget()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-green-700 transition mt-auto border-b-4 border-green-800">
-                        <i class="fas fa-play mr-2"></i> Generar Medición KPI
+                        <i class="fas fa-play mr-2"></i> Generar Gráfico
                     </button>
 
                 </div>
 
                 <div class="p-3 bg-slate-800 border-t border-slate-900">
-                    <input type="text" id="projectName" placeholder="Nombre del Dashboard..." class="w-full p-2 text-sm border-none rounded mb-2 bg-slate-700 text-white outline-none">
+                    <input type="text" id="projectName" placeholder="Nombre del Workspace..." class="w-full p-2 text-sm border-none rounded mb-2 bg-slate-700 text-white outline-none">
                     <button onclick="saveToFirebase()" id="btnSave" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded font-bold transition flex justify-center items-center">
                         <i class="fas fa-cloud-upload-alt mr-2"></i> Guardar Proyecto
                     </button>
@@ -175,13 +194,13 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Variables Globales
-        let finalData = []; // Aquí se fusionarán todos los Excels
-        let columns = [];
+        // --- SISTEMA MULTI-FUENTE ---
+        let rawWorkbooks = {}; // Almacena archivos originales { id: {name, workbook} }
+        let processedDataSources = {}; // Almacena fuentes listas { id: {name, sheet, data, columns} }
+        let currentFileId = null;
         let savedWidgetsConfig = []; 
-        let globalFilterConfigs = []; // Guarda las configuraciones de filtros globales añadidos
+        let globalFilterConfigs = []; 
 
-        // --- NAVEGACIÓN ---
         window.switchView = function(step) {
             document.getElementById('view-upload').classList.add('hidden');
             document.getElementById('view-range').classList.add('hidden');
@@ -195,91 +214,154 @@
             document.getElementById('tab3').className = step === 3 ? "px-4 py-2 tab-active" : "px-4 py-2 text-slate-600";
         }
 
-        // --- MULTI-UPLOAD Y FUSIÓN ---
+        // 1. CARGA DE ARCHIVOS MULTIPLES
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
             
-            document.getElementById('uploadStatus').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Fusionando ${files.length} archivo(s)...`;
+            document.getElementById('uploadStatus').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Leyendo ${files.length} archivo(s)...`;
+            rawWorkbooks = {}; // Limpiar si suben nuevos
+            processedDataSources = {};
+            document.getElementById('processedSourcesList').innerHTML = '';
             
-            let mergedRawData = [];
-            
-            // Leer todos los archivos
             for(let i=0; i<files.length; i++) {
                 const data = await files[i].arrayBuffer();
                 const workbook = XLSX.read(data);
-                // Por defecto, tomamos la primera hoja de cada archivo
-                const sheet = workbook.Sheets[workbook.SheetNames[0]];
-                let rawArray = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-                
-                // Si es el primer archivo, lo guardamos entero.
-                // Si son los siguientes, quitamos la primera fila (asumiendo que es la cabecera) para no duplicarla
-                if(i === 0) {
-                    mergedRawData = mergedRawData.concat(rawArray);
-                } else {
-                    mergedRawData = mergedRawData.concat(rawArray.slice(1));
-                }
+                let id = 'file_' + Date.now() + i;
+                rawWorkbooks[id] = { name: files[i].name, workbook: workbook };
             }
 
-            finalData = mergedRawData; // Guardamos temporalmente el array 2D
-            document.getElementById('mergedStatus').innerText = `Se fusionaron ${files.length} archivos. Define dónde empiezan los encabezados.`;
-            document.getElementById('headerRow').value = 1;
-            
-            window.renderRawPreview();
+            // Llenar selector de archivos
+            const fileSel = document.getElementById('fileSelector');
+            fileSel.innerHTML = '';
+            Object.keys(rawWorkbooks).forEach(id => {
+                fileSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`;
+            });
+
+            window.changeActiveFile();
             window.switchView(2);
         });
 
+        // 2. CAMBIO DE ARCHIVO ACTIVO (Vista 2)
+        window.changeActiveFile = function() {
+            currentFileId = document.getElementById('fileSelector').value;
+            const wb = rawWorkbooks[currentFileId].workbook;
+            
+            const sheetSel = document.getElementById('sheetSelector');
+            sheetSel.innerHTML = '';
+            wb.SheetNames.forEach(s => sheetSel.innerHTML += `<option value="${s}">${s}</option>`);
+            
+            document.getElementById('headerRow').value = 1;
+            window.renderRawPreview();
+        }
+
         window.renderRawPreview = function() {
+            const wb = rawWorkbooks[currentFileId].workbook;
+            const sheetName = document.getElementById('sheetSelector').value;
+            const rawArray = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { header: 1, defval: "" });
+            
             const tbody = document.getElementById('rawTablePreview');
             tbody.innerHTML = '';
-            for(let i = 0; i < Math.min(finalData.length, 30); i++) {
+            for(let i = 0; i < Math.min(rawArray.length, 30); i++) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `<td class="p-2 bg-slate-200 text-slate-500 font-bold border-r w-10 text-center border-b">${i + 1}</td>`;
-                finalData[i].forEach(cell => tr.innerHTML += `<td class="p-2 border-r truncate max-w-xs text-slate-700 border-b">${cell}</td>`);
+                rawArray[i].forEach(cell => tr.innerHTML += `<td class="p-2 border-r truncate max-w-xs text-slate-700 border-b">${cell}</td>`);
                 tbody.appendChild(tr);
             }
         }
 
-        window.extractData = function() {
+        // 3. GUARDAR COMO FUENTE DE DATOS
+        window.saveAsDataSource = function() {
+            const wb = rawWorkbooks[currentFileId].workbook;
+            const sheetName = document.getElementById('sheetSelector').value;
+            const fileName = rawWorkbooks[currentFileId].name;
             const headerRowNum = parseInt(document.getElementById('headerRow').value) - 1;
-            if(headerRowNum < 0 || headerRowNum >= finalData.length) return alert("Fila inválida.");
-
-            const headers = finalData[headerRowNum];
-            let cleanData = [];
-
-            // Convertir array 2D a array de Objetos JSON usando la fila de cabecera elegida
-            for(let i = headerRowNum + 1; i < finalData.length; i++) {
-                let rowObj = {};
-                let hasData = false;
-                headers.forEach((head, index) => {
-                    if(head !== undefined && head !== "") {
-                        let val = finalData[i][index];
-                        rowObj[head.toString().trim()] = val;
-                        if(val !== "" && val !== null && val !== undefined) hasData = true;
-                    }
-                });
-                if(hasData) cleanData.push(rowObj);
-            }
             
-            if(cleanData.length === 0) return alert("No se encontraron datos.");
-
-            finalData = cleanData;
-            columns = Object.keys(finalData[0]);
+            const sheet = wb.Sheets[sheetName];
+            let range = XLSX.utils.decode_range(sheet['!ref']);
+            range.s.r = Math.max(0, headerRowNum);
             
-            document.querySelectorAll('.column-selector').forEach(sel => {
-                sel.innerHTML = '';
-                columns.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
+            let rawData = XLSX.utils.sheet_to_json(sheet, { range: XLSX.utils.encode_range(range), defval: null });
+            
+            // Limpiar datos
+            let cleanData = rawData.map(row => { 
+                let clean = {}; 
+                for(let key in row) if(!key.includes("__EMPTY")) clean[key.trim()] = row[key]; 
+                return clean; 
+            }).filter(row => Object.keys(row).length > 0);
+            
+            if(cleanData.length === 0) return alert("No se encontraron datos en esa configuración.");
+
+            // Crear ID y guardar en diccionario
+            let dsId = 'ds_' + Date.now();
+            let dsName = `${fileName.split('.')[0]} (${sheetName})`;
+            
+            processedDataSources[dsId] = {
+                id: dsId,
+                name: dsName,
+                columns: Object.keys(cleanData[0]),
+                data: cleanData
+            };
+
+            updateSourcesList();
+            
+            // Activar botón para ir al dashboard
+            const btn = document.getElementById('btnGoPlayground');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            // Notificación visual rápida
+            const btnSave = event.currentTarget;
+            let originalText = btnSave.innerHTML;
+            btnSave.innerHTML = '<i class="fas fa-check-circle mr-2"></i> ¡Fuente Guardada!';
+            btnSave.classList.replace('bg-green-600', 'bg-emerald-500');
+            setTimeout(() => {
+                btnSave.innerHTML = originalText;
+                btnSave.classList.replace('bg-emerald-500', 'bg-green-600');
+            }, 1500);
+        }
+
+        function updateSourcesList() {
+            const list = document.getElementById('processedSourcesList');
+            list.innerHTML = '';
+            Object.values(processedDataSources).forEach(ds => {
+                list.innerHTML += `<div class="p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 font-medium"><i class="fas fa-database mr-2"></i>${ds.name} <span class="text-xs text-blue-500 block">${ds.data.length} filas</span></div>`;
             });
-            
+        }
+
+        window.goToPlayground = function() {
             document.getElementById('widgetsGrid').innerHTML = '';
             savedWidgetsConfig = [];
-            globalFilterConfigs = [];
-            document.getElementById('globalFiltersArea').innerHTML = ''; // Limpiar filtros viejos
-
+            
+            // Llenar selector de fuentes en Dashboard
+            const dsSel = document.getElementById('dsSelector');
+            dsSel.innerHTML = '';
+            Object.values(processedDataSources).forEach(ds => {
+                dsSel.innerHTML += `<option value="${ds.id}">${ds.name}</option>`;
+            });
+            
+            window.onDataSourceChange(); // Popular columnas
             window.switchView(3);
         }
 
-        // --- CONSTRUCTOR & KPIs ---
+        // --- DASHBOARD (VISTA 3) ---
+
+        // Cuando cambias de fuente, se actualizan las columnas disponibles
+        window.onDataSourceChange = function() {
+            const dsId = document.getElementById('dsSelector').value;
+            if(!dsId || !processedDataSources[dsId]) return;
+            
+            const cols = processedDataSources[dsId].columns;
+            document.querySelectorAll('.column-selector').forEach(sel => {
+                sel.innerHTML = '';
+                cols.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
+            });
+
+            document.getElementById('globalFiltersArea').innerHTML = ''; // Limpiar filtros del UI
+            globalFilterConfigs = [];
+            window.togglePercentUI();
+        }
+
         window.selectChartType = function(type) {
             document.getElementById('selectedChartType').value = type;
             document.querySelectorAll('.chart-btn').forEach(b => {
@@ -288,7 +370,6 @@
             });
         }
 
-        // Lógica para revelar la configuración de Porcentajes
         window.togglePercentUI = function() {
             const agg = document.getElementById('aggType').value;
             const ui = document.getElementById('percentTargetUI');
@@ -300,56 +381,53 @@
             }
         }
 
-        // Llenar el combo de "¿Qué valor es Éxito?"
         window.updatePercentTargets = function() {
             const agg = document.getElementById('aggType').value;
             if(agg !== 'percent') return;
 
             const yCol = document.getElementById('axisY').value;
-            if(!yCol) return;
+            const dsId = document.getElementById('dsSelector').value;
+            if(!yCol || !dsId) return;
 
             let uniqueVals = new Set();
-            finalData.forEach(r => { if(r[yCol]) uniqueVals.add(r[yCol].toString().trim()); });
+            processedDataSources[dsId].data.forEach(r => { if(r[yCol]) uniqueVals.add(r[yCol].toString().trim()); });
             
             const select = document.getElementById('percentTargetValue');
             select.innerHTML = '';
-            Array.from(uniqueVals).sort().forEach(v => {
-                select.innerHTML += `<option value="${v}">${v}</option>`;
-            });
+            Array.from(uniqueVals).sort().forEach(v => select.innerHTML += `<option value="${v}">${v}</option>`);
         }
 
-        // --- SISTEMA DE FILTROS GLOBALES DINÁMICOS ---
         window.addGlobalFilter = function() {
-            // Crear un pequeño modal / bloque inline para elegir columna
+            const dsId = document.getElementById('dsSelector').value;
+            const cols = processedDataSources[dsId].columns;
+            
             const filterId = 'gf_' + Date.now();
             const area = document.getElementById('globalFiltersArea');
             
-            let optionsHtml = columns.map(c => `<option value="${c}">${c}</option>`).join('');
+            let optionsHtml = cols.map(c => `<option value="${c}">${c}</option>`).join('');
 
             const filterBox = document.createElement('div');
             filterBox.className = "bg-white border border-slate-200 rounded p-2 text-xs relative";
             filterBox.innerHTML = `
                 <button onclick="this.parentElement.remove()" class="absolute top-1 right-1 text-red-400 hover:text-red-600"><i class="fas fa-times"></i></button>
-                <select id="col_${filterId}" class="w-full p-1 border rounded mb-2 font-bold outline-none" onchange="renderCheckboxes('${filterId}')">
-                    <option value="">Selecciona Columna a Filtrar...</option>
+                <select id="col_${filterId}" class="w-full p-1 border rounded mb-2 font-bold outline-none" onchange="renderCheckboxes('${filterId}', '${dsId}')">
+                    <option value="">Columna a Filtrar...</option>
                     ${optionsHtml}
                 </select>
                 <div id="chk_${filterId}" class="max-h-24 overflow-y-auto space-y-1"></div>
             `;
             area.prepend(filterBox);
-            
-            // Registrarlo
             globalFilterConfigs.push(filterId);
         }
 
-        window.renderCheckboxes = function(filterId) {
+        window.renderCheckboxes = function(filterId, dsId) {
             const col = document.getElementById(`col_${filterId}`).value;
             const chkContainer = document.getElementById(`chk_${filterId}`);
             chkContainer.innerHTML = '';
             if(!col) return;
 
             let uniqueSet = new Set();
-            finalData.forEach(r => { if(r[col]) uniqueSet.add(r[col].toString().trim()); });
+            processedDataSources[dsId].data.forEach(r => { if(r[col]) uniqueSet.add(r[col].toString().trim()); });
             
             Array.from(uniqueSet).sort().forEach(val => {
                 chkContainer.innerHTML += `
@@ -361,12 +439,10 @@
             });
         }
 
-        // Construir el Gráfico
         window.buildWidget = function(existingConfig = null) {
             let config = existingConfig;
 
             if (!config) {
-                // Extraer estado actual de todos los filtros globales
                 let activeFilters = [];
                 document.querySelectorAll('[id^="col_gf_"]').forEach(selectEl => {
                     let colName = selectEl.value;
@@ -377,6 +453,7 @@
                     }
                 });
 
+                let dsId = document.getElementById('dsSelector').value;
                 let axisX = document.getElementById('axisX').value;
                 let axisY = document.getElementById('axisY').value;
                 let agg = document.getElementById('aggType').value;
@@ -388,11 +465,13 @@
                 config = {
                     title: userTitle,
                     type: document.getElementById('selectedChartType').value,
+                    datasetId: dsId, // IMPORTANTE: Guardamos qué fuente usa
+                    datasetName: processedDataSources[dsId].name,
                     axisX: axisX,
                     axisY: axisY,
                     agg: agg,
-                    percentTarget: pctTarget, // Exclusivo para porcentajes
-                    filters: activeFilters // Guardamos todos los filtros configurados
+                    percentTarget: pctTarget,
+                    filters: activeFilters 
                 };
                 savedWidgetsConfig.push(config);
             }
@@ -409,7 +488,7 @@
                             <div class="flex-1 pr-4">
                                 <h3 class="font-bold text-slate-800 text-lg truncate" title="${config.title}">${config.title}</h3>
                                 <p class="text-[10px] text-slate-400 uppercase tracking-wide mt-1">
-                                    Agrupado por: <span class="font-bold text-blue-500">${config.axisX}</span>
+                                    Fuente: <span class="font-bold text-indigo-500">${config.datasetName}</span>
                                 </p>
                             </div>
                             <div class="flex gap-2">
@@ -419,15 +498,14 @@
                         </div>
                         <div class="flex-1 relative w-full h-full min-h-0"><canvas id="${widgetId}"></canvas></div>
                     </div>
-
-                    <div class="back p-6 flex flex-col bg-slate-50 rounded-2xl border-2 border-blue-400">
+                    <div class="back p-6 flex flex-col bg-slate-50 rounded-2xl border-2 border-indigo-400">
                         <div class="flex justify-between items-center mb-4 border-b border-slate-300 pb-2">
-                            <h3 class="font-bold text-blue-800 text-base truncate pr-2"><i class="fas fa-table mr-2"></i>${config.title}</h3>
-                            <button onclick="document.getElementById('flipper_${widgetId}').parentNode.classList.toggle('flipped')" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded shadow text-sm font-bold"><i class="fas fa-undo mr-1"></i></button>
+                            <h3 class="font-bold text-indigo-800 text-base truncate pr-2"><i class="fas fa-table mr-2"></i>Datos Reales</h3>
+                            <button onclick="document.getElementById('flipper_${widgetId}').parentNode.classList.toggle('flipped')" class="text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1 rounded shadow text-sm font-bold"><i class="fas fa-undo mr-1"></i></button>
                         </div>
                         <div class="flex-1 overflow-auto custom-scroll border border-slate-200 rounded bg-white">
                             <table class="min-w-full text-sm text-left" id="table_${widgetId}">
-                                <thead class="bg-blue-100 text-blue-900 sticky top-0 z-10">
+                                <thead class="bg-indigo-100 text-indigo-900 sticky top-0 z-10">
                                     <tr>
                                         <th class="px-4 py-2 border-b border-r">${config.axisX}</th>
                                         <th class="px-4 py-2 border-b">Resultado ${config.agg === 'percent' ? '(%)' : ''}</th>
@@ -448,8 +526,10 @@
         function renderAdvancedChart(config, canvasId) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // 1. APLICAR TODOS LOS FILTROS GLOBALES
-            let filteredData = finalData;
+            // TOMAR LOS DATOS DE LA FUENTE ESPECIFICA DEL GRAFICO
+            let sourceData = processedDataSources[config.datasetId].data;
+
+            let filteredData = sourceData;
             if (config.filters && config.filters.length > 0) {
                 config.filters.forEach(f => {
                     filteredData = filteredData.filter(row => {
@@ -459,7 +539,6 @@
                 });
             }
 
-            // 2. LÓGICA DE AGRUPACIÓN Y KPIs
             let grouped = {};
             
             filteredData.forEach(row => {
@@ -469,10 +548,9 @@
 
                 if (!grouped[key]) grouped[key] = { sum: 0, count: 0, validElements: 0, targetHits: 0 };
 
-                grouped[key].count += 1; // Total de filas que existen en esta categoría (Usuario)
+                grouped[key].count += 1; 
 
                 if (config.agg === 'percent') {
-                    // Si el estado del documento es igual a la meta (Ej: DIGITALIZADO)
                     if (rawY && rawY.toString().trim() === config.percentTarget) {
                         grouped[key].targetHits += 1;
                     }
@@ -487,7 +565,6 @@
             let finalValues = [];
             let tbodyHtml = '';
             
-            // Variables para total general
             let totalGeneralCount = 0;
             let totalGeneralTargetHits = 0;
             let totalGeneralSum = 0;
@@ -503,12 +580,10 @@
                 let displayVal = "";
 
                 if(config.agg === 'percent') {
-                    // (Éxitos / Total Documentos del Usuario) * 100
                     val = (grouped[k].targetHits / grouped[k].count) * 100;
                     if(isNaN(val)) val = 0;
-                    if(val > 100) val = 100; // Por seguridad matemática
+                    if(val > 100) val = 100; 
                     displayVal = val.toFixed(2) + "%";
-                    
                     totalGeneralCount += grouped[k].count;
                     totalGeneralTargetHits += grouped[k].targetHits;
                 }
@@ -525,11 +600,10 @@
                 else if(config.agg === 'avg') {
                     val = grouped[k].sum / grouped[k].count;
                     displayVal = val.toFixed(2);
-                    totalGeneralSum += val; // Matemáticamente discutible para el total, pero lo mostraremos simple
+                    totalGeneralSum += val; 
                 }
 
                 val = Math.round(val * 100) / 100;
-
                 finalLabels.push(k);
                 finalValues.push(val);
 
@@ -541,7 +615,6 @@
                 `;
             });
 
-            // Fila de Total General (Manejado diferente para Porcentaje)
             let totalGeneralDisplay = "";
             if(config.agg === 'percent') {
                 let generalPct = totalGeneralCount > 0 ? (totalGeneralTargetHits / totalGeneralCount) * 100 : 0;
@@ -551,14 +624,14 @@
             }
 
             tbodyHtml += `
-                <tr class="bg-blue-100 font-black text-blue-900 border-t-2 border-blue-400">
+                <tr class="bg-indigo-100 font-black text-indigo-900 border-t-2 border-indigo-400">
                     <td class="px-4 py-3 border-r text-right">TOTAL GLOBAL:</td>
                     <td class="px-4 py-3">${totalGeneralDisplay}</td>
                 </tr>
             `;
             document.getElementById(`tbody_${canvasId}`).innerHTML = tbodyHtml;
 
-            // 3. RENDER CHART
+            // RENDER CHART
             let cType = 'bar'; 
             let cOptions = { 
                 responsive: true, maintainAspectRatio: false, 
@@ -568,7 +641,6 @@
                 } 
             };
             
-            // Si es porcentaje, fijar escala a 100 para que la barra se vea como una barra de progreso
             if (config.agg === 'percent' && config.type !== 'pie' && config.type !== 'doughnut') {
                 cOptions.scales = { y: { min: 0, max: 100 } };
             }
@@ -578,7 +650,7 @@
             switch(config.type) {
                 case 'column': cType = 'bar'; break;
                 case 'bar': cType = 'bar'; cOptions.indexAxis = 'y'; if(config.agg==='percent'){cOptions.scales={x:{min:0,max:100}}}; break;
-                case 'line': cType = 'line'; cDataset.borderColor = '#2563eb'; cDataset.tension = 0.3; cDataset.fill = false; break;
+                case 'line': cType = 'line'; cDataset.borderColor = '#4f46e5'; cDataset.tension = 0.3; cDataset.fill = false; break;
                 case 'doughnut': cType = 'doughnut'; cOptions.plugins.legend = { display: true, position: 'right' }; break;
             }
 
@@ -586,13 +658,13 @@
         }
 
         function getColors(count) {
-            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b', '#84cc16'];
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b', '#84cc16'];
             return Array(count).fill().map((_, i) => colors[i % colors.length]);
         }
 
         // --- FIREBASE NUBE ---
         window.saveToFirebase = async function() {
-            const name = document.getElementById('projectName').value || "Métricas KPI";
+            const name = document.getElementById('projectName').value || "Multi-Source Workspace";
             const btn = document.getElementById('btnSave');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
             btn.disabled = true;
@@ -601,8 +673,7 @@
                 await addDoc(collection(db, "reportes"), {
                     nombre: name,
                     fecha: serverTimestamp(),
-                    columnas: columns,
-                    datosJSON: JSON.stringify(finalData),
+                    datasetsJSON: JSON.stringify(processedDataSources), // Guardamos todas las fuentes
                     configuracionGraficos: savedWidgetsConfig
                 });
                 alert("¡Guardado exitoso!");
@@ -624,8 +695,8 @@
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const btn = document.createElement('button');
-                    btn.className = "w-full text-left p-3 bg-white border rounded hover:border-blue-500 hover:shadow transition group text-sm";
-                    btn.innerHTML = `<p class="font-bold text-slate-700 group-hover:text-blue-600">${data.nombre}</p><p class="text-[10px] text-slate-400 mt-1"><i class="fas fa-chart-pie"></i> ${data.configuracionGraficos?.length || 0} Gráficos</p>`;
+                    btn.className = "w-full text-left p-3 bg-white border rounded hover:border-indigo-500 hover:shadow transition group text-sm";
+                    btn.innerHTML = `<p class="font-bold text-slate-700 group-hover:text-indigo-600">${data.nombre}</p><p class="text-[10px] text-slate-400 mt-1"><i class="fas fa-database"></i> Proyecto en Nube</p>`;
                     btn.onclick = () => openCloudProject(data);
                     listDiv.appendChild(btn);
                 });
@@ -633,19 +704,34 @@
         }
 
         window.openCloudProject = function(firebaseData) {
-            columns = firebaseData.columnas;
-            finalData = JSON.parse(firebaseData.datosJSON);
-            savedWidgetsConfig = firebaseData.configuracionGraficos || [];
-            
-            document.querySelectorAll('.column-selector').forEach(sel => {
-                sel.innerHTML = '';
-                columns.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
-            });
+            // Retrocompatibilidad: Si es un proyecto viejo (V10), adaptarlo al nuevo formato
+            if (firebaseData.datasetsJSON) {
+                processedDataSources = JSON.parse(firebaseData.datasetsJSON);
+            } else {
+                let legacyDsId = 'ds_legacy';
+                processedDataSources = {};
+                processedDataSources[legacyDsId] = {
+                    id: legacyDsId,
+                    name: firebaseData.hoja || 'Datos Antiguos',
+                    columns: firebaseData.columnas,
+                    data: JSON.parse(firebaseData.datosJSON)
+                };
+                
+                // Actualizar los gráficos viejos para que usen esta fuente
+                firebaseData.configuracionGraficos.forEach(c => {
+                    if(!c.datasetId) { c.datasetId = legacyDsId; c.datasetName = processedDataSources[legacyDsId].name; }
+                });
+            }
 
+            savedWidgetsConfig = firebaseData.configuracionGraficos || [];
             document.getElementById('projectName').value = firebaseData.nombre;
+            
+            // Ir directamente al playground con las fuentes cargadas
+            window.goToPlayground();
+            
+            // Dibujar graficos guardados
             document.getElementById('widgetsGrid').innerHTML = ''; 
             savedWidgetsConfig.forEach(cfg => window.buildWidget(cfg));
-            window.switchView(3);
         }
 
         loadCloudProjects();
