@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Data Workspace v6</title>
+    <title>Cloud Data Workspace v7 - Studio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .tab-active { border-bottom: 3px solid #3b82f6; color: #1d4ed8; font-weight: bold; }
+        /* Scrollbar personalizado para el panel de filtros */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden">
 
     <header class="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center z-20">
-        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-cloud text-blue-400 mr-2"></i> CLOUD<span class="font-light">WORKSPACE</span></h1>
+        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-chart-pie text-blue-400 mr-2"></i> DATA<span class="font-light">STUDIO</span></h1>
         <div class="flex gap-4">
             <button id="tab1" class="px-4 py-2 tab-active transition" onclick="switchView(1)">1. Inicio</button>
             <button id="tab2" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>2. Preparar Datos</button>
@@ -30,17 +34,14 @@
                 <div class="bg-white p-10 rounded-2xl shadow border border-slate-200 text-center flex flex-col justify-center">
                     <i class="fas fa-file-excel text-6xl text-green-500 mb-6"></i>
                     <h2 class="text-2xl font-bold text-slate-800 mb-2">Nuevo Proyecto</h2>
-                    <p class="text-slate-500 mb-8">Sube un Excel para empezar desde cero.</p>
-                    <label class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-8 block hover:bg-blue-100 transition">
+                    <label class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-8 block hover:bg-blue-100 transition mt-4">
                         <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden"/>
                         <span class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition"><i class="fas fa-upload mr-2"></i> Subir Archivo</span>
                     </label>
                 </div>
-
                 <div class="bg-white p-8 rounded-2xl shadow border border-slate-200 flex flex-col">
-                    <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-cloud-download-alt text-blue-500 mr-2"></i> Proyectos en la Nube</h2>
-                    <p class="text-sm text-slate-500 mb-4">Dashboards guardados en Firebase.</p>
-                    <div id="cloudProjectsList" class="flex-1 overflow-y-auto space-y-3 bg-slate-50 p-4 rounded border inner-shadow">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-cloud-download-alt text-blue-500 mr-2"></i> Nube Firebase</h2>
+                    <div id="cloudProjectsList" class="flex-1 overflow-y-auto space-y-3 bg-slate-50 p-4 rounded border mt-2">
                         <div class="text-center text-slate-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Cargando...</div>
                     </div>
                 </div>
@@ -52,21 +53,17 @@
                 <div class="mb-4 flex flex-wrap justify-between items-end pb-4 border-b gap-4">
                     <div>
                         <h2 class="text-xl font-bold text-slate-800">Preparar Datos</h2>
-                        <p class="text-sm text-slate-500">Selecciona la hoja que quieres analizar y dónde empiezan los encabezados.</p>
                     </div>
                     <div class="flex gap-4 items-end flex-wrap">
-                        
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1"><i class="fas fa-layer-group text-blue-500 mr-1"></i> Hoja del Excel</label>
-                            <select id="sheetSelector" class="w-48 p-2 border rounded font-bold bg-blue-50 text-blue-800 outline-none" onchange="changeSheet()"></select>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Hoja del Excel</label>
+                            <select id="sheetSelector" class="w-48 p-2 border rounded bg-blue-50 text-blue-800" onchange="changeSheet()"></select>
                         </div>
-
                         <div>
                             <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Fila Encabezados</label>
-                            <input type="number" id="headerRow" value="1" min="1" class="w-24 p-2 border rounded text-center font-bold bg-slate-50 outline-none">
+                            <input type="number" id="headerRow" value="1" min="1" class="w-24 p-2 border rounded text-center font-bold">
                         </div>
-                        
-                        <button onclick="extractData()" class="bg-green-600 text-white px-6 py-2 rounded font-bold shadow hover:bg-green-700 transition">Confirmar Rango <i class="fas fa-check ml-1"></i></button>
+                        <button onclick="extractData()" class="bg-green-600 text-white px-6 py-2 rounded font-bold shadow hover:bg-green-700">Confirmar <i class="fas fa-check ml-1"></i></button>
                     </div>
                 </div>
                 <div class="flex-1 overflow-auto border rounded relative">
@@ -76,40 +73,78 @@
         </div>
 
         <div id="view-playground" class="absolute inset-0 hidden flex bg-slate-100">
-            <aside class="w-80 bg-white shadow-lg z-10 flex flex-col border-r border-slate-200">
+            <aside class="w-96 bg-white shadow-xl z-10 flex flex-col border-r border-slate-200">
                 <div class="p-4 bg-slate-800 text-white flex justify-between items-center">
-                    <h3 class="font-bold"><i class="fas fa-toolbox mr-2"></i> Herramientas</h3>
+                    <h3 class="font-bold"><i class="fas fa-sliders-h mr-2"></i> Constructor de Gráficos</h3>
                 </div>
                 
-                <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-6">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <h4 class="font-bold text-blue-800 mb-2 text-sm">Contar Categorías</h4>
-                        <select id="countCol" class="w-full p-2 text-sm border rounded mb-2 bg-white column-selector"></select>
-                        <button onclick="createWidget('count')" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold shadow hover:bg-blue-700 transition">Crear Gráfico</button>
+                <div class="p-5 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Título del Gráfico</label>
+                        <input type="text" id="widgetTitle" placeholder="Ej: Progreso de Digitalización" class="w-full p-2 border rounded border-slate-300 focus:border-blue-500 outline-none">
                     </div>
 
-                    <div class="bg-green-50 p-4 rounded-xl border border-green-100">
-                        <h4 class="font-bold text-green-800 mb-2 text-sm">Métricas Numéricas</h4>
-                        <div class="flex gap-2 mb-2">
-                            <select id="mathOp" class="p-2 text-sm border rounded bg-white w-1/3"><option value="sum">Sumar</option><option value="avg">Prom</option></select>
-                            <select id="mathValCol" class="p-2 text-sm border rounded bg-white w-2/3 column-selector"></select>
-                        </div>
-                        <label class="text-xs text-green-700 font-bold">Agrupar por (X):</label>
-                        <select id="mathGroupCol" class="w-full p-2 text-sm border rounded mb-2 bg-white column-selector"><option value="">-- Total General --</option></select>
-                        <button onclick="createWidget('math')" class="w-full bg-green-600 text-white py-2 rounded text-sm font-bold shadow hover:bg-green-700 transition">Calcular</button>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Tipo de Visualización</label>
+                        <select id="widgetType" class="w-full p-2 border rounded bg-slate-50 outline-none font-medium">
+                            <option value="column">&#xf080; Columna (Vertical)</option>
+                            <option value="bar">&#xf0c9; Barra (Horizontal)</option>
+                            <option value="line">&#xf201; Línea (Tendencia)</option>
+                            <option value="area">&#xf1fe; Área</option>
+                            <option value="pie">&#xf200; Circular (Pastel)</option>
+                            <option value="doughnut">&#xf1ce; Dona</option>
+                            <option value="scatter">&#xf00a; Dispersión</option>
+                        </select>
                     </div>
+
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100 flex flex-col gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-blue-800 uppercase mb-1">Agrupar por (Categoría / Eje X)</label>
+                            <select id="axisX" class="w-full p-2 border rounded column-selector outline-none text-sm" onchange="generateFilters()"></select>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-blue-800 uppercase mb-1">Cálculo</label>
+                                <select id="aggType" class="w-full p-2 border rounded outline-none text-sm" onchange="toggleYAxis()">
+                                    <option value="count">Contar</option>
+                                    <option value="sum">Sumar</option>
+                                    <option value="avg">Promedio</option>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-blue-800 uppercase mb-1" id="labelY">Basado en (Eje Y)</label>
+                                <select id="axisY" class="w-full p-2 border rounded column-selector outline-none text-sm bg-gray-200" disabled title="No requerido para Contar"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-lg">
+                        <div class="bg-slate-100 p-2 border-b rounded-t-lg">
+                            <h4 class="text-xs font-bold text-slate-600 uppercase"><i class="fas fa-filter mr-1"></i> Filtros (Excluir Datos)</h4>
+                        </div>
+                        <div id="filterContainer" class="p-3 max-h-40 overflow-y-auto custom-scroll text-sm space-y-1">
+                            <p class="text-xs text-slate-400 italic">Selecciona un Eje X arriba para ver las opciones a filtrar.</p>
+                        </div>
+                    </div>
+
+                    <button onclick="buildWidget()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition mt-2">
+                        <i class="fas fa-plus-circle mr-2"></i> Generar Dashboard
+                    </button>
+
                 </div>
 
                 <div class="p-4 bg-yellow-50 border-t border-yellow-200">
-                    <input type="text" id="projectName" placeholder="Nombre del reporte..." class="w-full p-2 text-sm border border-yellow-300 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                    <button onclick="saveToFirebase()" id="btnSave" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded font-bold shadow transition flex justify-center items-center">
-                        <i class="fas fa-cloud-upload-alt mr-2"></i> Guardar en la Nube
+                    <input type="text" id="projectName" placeholder="Nombre del archivo nube..." class="w-full p-2 text-sm border border-yellow-300 rounded mb-2">
+                    <button onclick="saveToFirebase()" id="btnSave" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded font-bold shadow transition">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Guardar Proyecto
                     </button>
                 </div>
             </aside>
 
-            <main class="flex-1 p-6 overflow-y-auto relative" id="dashboardCanvas">
-                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10"></div>
+            <main class="flex-1 p-6 overflow-y-auto relative bg-slate-200" id="dashboardCanvas">
+                <div id="widgetsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6 relative z-10"></div>
             </main>
         </div>
     </main>
@@ -135,51 +170,42 @@
         let finalData = [];
         let columns = [];
         let savedWidgetsConfig = []; 
-        let chartInstances = {};
+        let uniqueValuesForX = []; // Guarda los valores únicos para el filtro
 
+        // FontAwesome support inside select tags
+        document.getElementById('widgetType').style.fontFamily = "'Font Awesome 6 Free', 'Arial'";
+        document.getElementById('widgetType').style.fontWeight = "900";
+
+        // --- NAVEGACIÓN Y CARGA DE DATOS (MANTENIDO DE V6) ---
         window.switchView = function(step) {
             document.getElementById('view-upload').classList.add('hidden');
             document.getElementById('view-range').classList.add('hidden');
             document.getElementById('view-playground').classList.add('hidden');
-            
             if(step === 1) document.getElementById('view-upload').classList.remove('hidden');
             if(step === 2) document.getElementById('view-range').classList.remove('hidden', 'flex');
             if(step === 3) document.getElementById('view-playground').classList.remove('hidden');
-
-            document.getElementById('tab1').className = step === 1 ? "px-4 py-2 tab-active transition" : "px-4 py-2 text-slate-300 transition";
-            document.getElementById('tab2').className = step === 2 ? "px-4 py-2 tab-active transition" : (step > 2 ? "px-4 py-2 text-slate-300 transition" : "px-4 py-2 text-slate-500 cursor-not-allowed");
-            document.getElementById('tab3').className = step === 3 ? "px-4 py-2 tab-active transition" : "px-4 py-2 text-slate-500 cursor-not-allowed";
+            
+            document.getElementById('tab1').className = step === 1 ? "px-4 py-2 tab-active" : "px-4 py-2 text-slate-300";
+            document.getElementById('tab2').className = step === 2 ? "px-4 py-2 tab-active" : (step>2?"px-4 py-2 text-slate-300":"px-4 py-2 text-slate-500 cursor-not-allowed");
+            document.getElementById('tab3').className = step === 3 ? "px-4 py-2 tab-active" : "px-4 py-2 text-slate-500 cursor-not-allowed";
         }
 
-        // CARGAR ARCHIVO LOCAL Y LEER HOJAS
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const data = await file.arrayBuffer();
             rawWorkbook = XLSX.read(data);
-            
-            // Llenar el selector de hojas
             const sheetSelect = document.getElementById('sheetSelector');
             sheetSelect.innerHTML = '';
-            rawWorkbook.SheetNames.forEach(sheet => {
-                sheetSelect.innerHTML += `<option value="${sheet}">${sheet}</option>`;
-            });
-
-            // Seleccionar la primera hoja por defecto
+            rawWorkbook.SheetNames.forEach(s => sheetSelect.innerHTML += `<option value="${s}">${s}</option>`);
             activeSheetName = rawWorkbook.SheetNames[0];
-            document.getElementById('headerRow').value = 1; // resetear fila a 1
-            
+            document.getElementById('headerRow').value = 1;
             window.renderRawPreview();
             window.switchView(2);
         });
 
-        // CAMBIAR DE HOJA DESDE EL SELECTOR
-        window.changeSheet = function() {
-            activeSheetName = document.getElementById('sheetSelector').value;
-            window.renderRawPreview();
-        }
+        window.changeSheet = function() { activeSheetName = document.getElementById('sheetSelector').value; window.renderRawPreview(); }
 
-        // DIBUJAR VISTA PREVIA CRUDA DE LA HOJA ACTIVA
         window.renderRawPreview = function() {
             const rawArray = XLSX.utils.sheet_to_json(rawWorkbook.Sheets[activeSheetName], { header: 1, defval: "" });
             const tbody = document.getElementById('rawTablePreview');
@@ -192,7 +218,6 @@
             }
         }
 
-        // EXTRAER DATOS FINALES DE LA HOJA SELECCIONADA
         window.extractData = function() {
             const headerRowNum = parseInt(document.getElementById('headerRow').value);
             const sheet = rawWorkbook.Sheets[activeSheetName];
@@ -200,106 +225,198 @@
             range.s.r = Math.max(0, headerRowNum - 1);
             
             finalData = XLSX.utils.sheet_to_json(sheet, { range: XLSX.utils.encode_range(range), defval: null });
+            finalData = finalData.map(row => { let clean = {}; for(let key in row) if(!key.includes("__EMPTY")) clean[key.trim()] = row[key]; return clean; });
             
-            finalData = finalData.map(row => {
-                let clean = {};
-                for(let key in row) if(!key.includes("__EMPTY")) clean[key.trim()] = row[key];
-                return clean;
-            });
-
-            if(finalData.length === 0) {
-                alert("No se encontraron datos. Verifica la fila de encabezados o cambia de hoja.");
-                return;
-            }
+            if(finalData.length === 0) return alert("No se encontraron datos.");
 
             columns = Object.keys(finalData[0]);
-            populateSelectors();
+            document.querySelectorAll('.column-selector').forEach(sel => {
+                sel.innerHTML = '';
+                columns.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
+            });
             
             document.getElementById('widgetsGrid').innerHTML = '';
             savedWidgetsConfig = [];
+            window.generateFilters(); // Cargar filtros iniciales
             window.switchView(3);
         }
 
-        function populateSelectors() {
-            document.querySelectorAll('.column-selector').forEach(sel => {
-                const def = sel.querySelector('option[value=""]');
-                sel.innerHTML = '';
-                if(def) sel.appendChild(def);
-                columns.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
+        // --- LÓGICA DEL NUEVO CONSTRUCTOR (STUDIO) ---
+        
+        // Desactiva el Eje Y si solo estamos contando
+        window.toggleYAxis = function() {
+            const agg = document.getElementById('aggType').value;
+            const yAxis = document.getElementById('axisY');
+            if(agg === 'count') {
+                yAxis.disabled = true;
+                yAxis.classList.add('bg-gray-200');
+            } else {
+                yAxis.disabled = false;
+                yAxis.classList.remove('bg-gray-200');
+            }
+        }
+
+        // Genera los Checkboxes para filtrar según el Eje X elegido
+        window.generateFilters = function() {
+            const xCol = document.getElementById('axisX').value;
+            if(!xCol) return;
+
+            // Encontrar valores únicos
+            let uniqueSet = new Set();
+            finalData.forEach(row => {
+                let val = row[xCol];
+                if (val !== null && val !== undefined) uniqueSet.add(val.toString().trim());
+            });
+            
+            uniqueValuesForX = Array.from(uniqueSet).sort();
+            
+            // Dibujar checkboxes (Todos marcados por defecto)
+            const container = document.getElementById('filterContainer');
+            container.innerHTML = '';
+            uniqueValuesForX.forEach(val => {
+                container.innerHTML += `
+                    <label class="flex items-center gap-2 cursor-pointer hover:bg-slate-200 p-1 rounded">
+                        <input type="checkbox" value="${val}" checked class="filter-checkbox w-4 h-4 text-blue-600 rounded">
+                        <span class="truncate" title="${val}">${val === "" ? "(Vacío)" : val}</span>
+                    </label>
+                `;
             });
         }
 
-        // CREAR WIDGETS
-        window.createWidget = function(type, existingConfig = null) {
+        // Captura los datos del formulario y crea el objeto de configuración
+        window.buildWidget = function(existingConfig = null) {
             let config = existingConfig;
 
             if (!config) {
-                if(type === 'count') config = { type: 'count', col: document.getElementById('countCol').value };
-                if(type === 'math') config = { type: 'math', op: document.getElementById('mathOp').value, valCol: document.getElementById('mathValCol').value, groupCol: document.getElementById('mathGroupCol').value };
+                // Obtener filtros seleccionados
+                let checkedFilters = Array.from(document.querySelectorAll('.filter-checkbox:checked')).map(cb => cb.value);
+                
+                let userTitle = document.getElementById('widgetTitle').value;
+                let axisX = document.getElementById('axisX').value;
+                let agg = document.getElementById('aggType').value;
+
+                config = {
+                    title: userTitle || `${agg.toUpperCase()} por ${axisX}`,
+                    type: document.getElementById('widgetType').value,
+                    axisX: axisX,
+                    axisY: document.getElementById('axisY').value,
+                    agg: agg,
+                    allowedFilters: checkedFilters
+                };
                 savedWidgetsConfig.push(config);
             }
 
+            // Crear UI del Widget
             const widgetId = 'w_' + Date.now() + Math.random().toString(36).substr(2, 5);
             const grid = document.getElementById('widgetsGrid');
-            
             const card = document.createElement('div');
-            card.className = "bg-white p-5 rounded-2xl shadow border border-slate-200 relative group flex flex-col min-h-[300px]";
+            card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-200 relative group flex flex-col min-h-[350px] transition hover:shadow-lg";
             card.innerHTML = `
-                <button onclick="this.parentElement.remove()" class="absolute top-3 right-3 text-red-400 opacity-0 group-hover:opacity-100"><i class="fas fa-times"></i></button>
-                <h3 class="font-bold text-slate-700 mb-4 text-sm truncate" id="title_${widgetId}">Cargando...</h3>
-                <div class="flex-1 relative"><canvas id="${widgetId}"></canvas></div>
+                <button onclick="this.parentElement.remove()" class="absolute top-4 right-4 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash-alt text-lg"></i></button>
+                <h3 class="font-bold text-slate-800 text-lg mb-1 truncate pr-8" title="${config.title}">${config.title}</h3>
+                <p class="text-xs text-slate-400 mb-4 uppercase tracking-wide border-b pb-2">${config.agg} | Eje X: ${config.axisX}</p>
+                <div class="flex-1 relative w-full h-full min-h-[250px]"><canvas id="${widgetId}"></canvas></div>
             `;
             grid.appendChild(card);
 
-            setTimeout(() => renderChartConfig(config, widgetId, card), 50);
+            setTimeout(() => renderAdvancedChart(config, widgetId), 50);
+            
+            // Limpiar título para el siguiente
+            document.getElementById('widgetTitle').value = '';
         }
 
-        function renderChartConfig(config, canvasId, cardEl) {
+        // DIBUJAR EL GRÁFICO BASADO EN LA CONFIGURACIÓN
+        function renderAdvancedChart(config, canvasId) {
             const ctx = document.getElementById(canvasId).getContext('2d');
-            let chartData = { labels: [], datasets: [] };
-            let title = "";
-            let chartType = "bar";
-            let options = { responsive: true, maintainAspectRatio: false };
+            
+            // 1. APLICAR FILTROS
+            let filteredData = finalData.filter(row => {
+                let xVal = row[config.axisX] !== null && row[config.axisX] !== undefined ? row[config.axisX].toString().trim() : "";
+                return config.allowedFilters.includes(xVal);
+            });
 
-            if(config.type === 'count') {
-                title = `<i class="fas fa-chart-pie text-blue-500 mr-2"></i> Conteo: ${config.col}`;
-                chartType = 'doughnut';
-                let counts = {};
-                finalData.forEach(r => counts[r[config.col]||'Vacio'] = (counts[r[config.col]||'Vacio']||0) + 1);
-                let sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
-                chartData.labels = sorted.map(i=>i[0]);
-                chartData.datasets = [{ data: sorted.map(i=>i[1]), backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899', '#06b6d4'] }];
-            }
+            // 2. AGRUPAR DATOS (PIVOT)
+            let grouped = {};
+            let countsForAvg = {};
+            
+            filteredData.forEach(row => {
+                let key = row[config.axisX] || 'Vacío';
+                let yVal = parseFloat(row[config.axisY]) || 0;
 
-            if(config.type === 'math') {
-                title = `<i class="fas fa-calculator text-green-500 mr-2"></i> ${config.op==='sum'?'Suma':'Promedio'}: ${config.valCol} ${config.groupCol ? 'por '+config.groupCol : ''}`;
-                
-                if(!config.groupCol) {
-                    let sum = finalData.reduce((acc, r) => acc + (parseFloat(r[config.valCol])||0), 0);
-                    let val = config.op === 'sum' ? sum : sum/finalData.length;
-                    cardEl.querySelector('.flex-1').innerHTML = `<div class="flex items-center justify-center h-full"><span class="text-4xl font-black text-green-600">${val.toLocaleString(undefined, {maximumFractionDigits:2})}</span></div>`;
-                    document.getElementById(`title_${canvasId}`).innerHTML = title;
-                    return;
+                if (config.agg === 'count') {
+                    grouped[key] = (grouped[key] || 0) + 1;
+                } else {
+                    grouped[key] = (grouped[key] || 0) + yVal;
+                    countsForAvg[key] = (countsForAvg[key] || 0) + 1;
                 }
+            });
 
-                let grouped = {}, counts = {};
-                finalData.forEach(r => {
-                    let g = r[config.groupCol]||'Vacio', v = parseFloat(r[config.valCol])||0;
-                    grouped[g] = (grouped[g]||0) + v;
-                    counts[g] = (counts[g]||0) + 1;
-                });
+            // Ordenar por valor para que se vea mejor (descendente)
+            let sortedKeys = Object.keys(grouped).sort((a, b) => grouped[b] - grouped[a]);
+            let finalLabels = sortedKeys;
+            let finalValues = sortedKeys.map(k => config.agg === 'avg' ? (grouped[k] / countsForAvg[k]) : grouped[k]);
 
-                chartType = 'bar';
-                chartData.labels = Object.keys(grouped);
-                chartData.datasets = [{ label: 'Valor', data: chartData.labels.map(l => config.op==='sum'?grouped[l]:grouped[l]/counts[l]), backgroundColor: 'rgba(34, 197, 94, 0.7)' }];
+            // 3. MAPEAR A CHART.JS
+            let cType = 'bar'; // default
+            let cOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+            let cDataset = { 
+                label: config.title, 
+                data: finalValues,
+                backgroundColor: getColors(finalLabels.length)
+            };
+
+            switch(config.type) {
+                case 'column': 
+                    cType = 'bar'; 
+                    break;
+                case 'bar': 
+                    cType = 'bar'; 
+                    cOptions.indexAxis = 'y'; // Vuelve la barra horizontal
+                    break;
+                case 'line': 
+                    cType = 'line'; 
+                    cDataset.borderColor = '#3b82f6'; 
+                    cDataset.tension = 0.3; // Curva suave
+                    cDataset.fill = false;
+                    break;
+                case 'area': 
+                    cType = 'line'; 
+                    cDataset.borderColor = '#10b981'; 
+                    cDataset.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+                    cDataset.fill = true;
+                    cDataset.tension = 0.3;
+                    break;
+                case 'pie': 
+                    cType = 'pie'; 
+                    cOptions.plugins.legend = { display: true, position: 'right' };
+                    break;
+                case 'doughnut': 
+                    cType = 'doughnut'; 
+                    cOptions.plugins.legend = { display: true, position: 'right' };
+                    break;
+                case 'scatter':
+                    // Scatter no agrupa, muestra todos los puntos crudos (X numerico, Y numerico)
+                    cType = 'scatter';
+                    cOptions.plugins.legend = { display: true };
+                    let scatterData = filteredData.map(r => ({
+                        x: parseFloat(r[config.axisX]) || 0,
+                        y: parseFloat(r[config.axisY]) || 0
+                    }));
+                    cDataset = { label: 'Datos', data: scatterData, backgroundColor: '#ef4444' };
+                    finalLabels = []; // Scatter no usa labels tradicionales
+                    break;
             }
 
-            document.getElementById(`title_${canvasId}`).innerHTML = title;
-            new Chart(ctx, { type: chartType, data: chartData, options: options });
+            new Chart(ctx, { type: cType, data: { labels: finalLabels, datasets: [cDataset] }, options: cOptions });
         }
 
+        // Paleta de colores atractiva
+        function getColors(count) {
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b', '#84cc16', '#14b8a6'];
+            return Array(count).fill().map((_, i) => colors[i % colors.length]);
+        }
 
-        // FIREBASE GUARDAR Y CARGAR
+        // --- FIREBASE GUARDAR Y CARGAR ---
         window.saveToFirebase = async function() {
             const name = document.getElementById('projectName').value || "Reporte sin nombre";
             const btn = document.getElementById('btnSave');
@@ -310,19 +427,18 @@
                 await addDoc(collection(db, "reportes"), {
                     nombre: name,
                     fecha: serverTimestamp(),
-                    hoja: activeSheetName, // Agregamos la hoja para tener el registro
+                    hoja: activeSheetName,
                     columnas: columns,
                     datosJSON: JSON.stringify(finalData),
                     configuracionGraficos: savedWidgetsConfig
                 });
-                
-                alert("¡Dashboard guardado exitosamente en la nube!");
+                alert("¡Proyecto guardado!");
                 loadCloudProjects();
             } catch (error) {
                 console.error(error);
-                alert("Hubo un error al guardar. Revisa la consola.");
+                alert("Error al guardar.");
             } finally {
-                btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> Guardar en la Nube';
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> Guardar Proyecto';
                 btn.disabled = false;
             }
         }
@@ -332,31 +448,17 @@
             try {
                 const q = query(collection(db, "reportes"), orderBy("fecha", "desc"));
                 const querySnapshot = await getDocs(q);
-                
                 listDiv.innerHTML = '';
-                if(querySnapshot.empty) {
-                    listDiv.innerHTML = '<p class="text-sm text-slate-500 text-center mt-4">No hay reportes guardados aún.</p>';
-                    return;
-                }
-
+                if(querySnapshot.empty) { listDiv.innerHTML = '<p class="text-slate-500 text-center text-sm">No hay reportes.</p>'; return; }
                 querySnapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const btn = document.createElement('button');
-                    btn.className = "w-full text-left p-3 bg-white border rounded hover:border-blue-500 hover:shadow transition flex justify-between items-center group";
-                    btn.innerHTML = `
-                        <div>
-                            <p class="font-bold text-slate-700 group-hover:text-blue-600">${data.nombre}</p>
-                            <p class="text-xs text-slate-400"><i class="fas fa-layer-group text-blue-300"></i> ${data.hoja || 'Hoja 1'} | ${data.columnas.length} columnas</p>
-                        </div>
-                        <i class="fas fa-chevron-right text-slate-300 group-hover:text-blue-500 transition"></i>
-                    `;
+                    btn.className = "w-full text-left p-3 bg-white border rounded hover:border-blue-500 hover:shadow transition group text-sm";
+                    btn.innerHTML = `<p class="font-bold text-slate-700 group-hover:text-blue-600">${data.nombre}</p><p class="text-xs text-slate-400">${data.hoja || 'Hoja'} - ${data.configuracionGraficos?.length || 0} Gráficos</p>`;
                     btn.onclick = () => openCloudProject(data);
                     listDiv.appendChild(btn);
                 });
-            } catch (error) {
-                console.error(error);
-                listDiv.innerHTML = '<p class="text-xs text-red-500 p-2">Error cargando. Revisa la consola o crea los índices en Firebase.</p>';
-            }
+            } catch (error) { console.log(error); }
         }
 
         window.openCloudProject = function(firebaseData) {
@@ -364,18 +466,21 @@
             finalData = JSON.parse(firebaseData.datosJSON);
             savedWidgetsConfig = firebaseData.configuracionGraficos || [];
             
-            populateSelectors();
+            document.querySelectorAll('.column-selector').forEach(sel => {
+                sel.innerHTML = '';
+                columns.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
+            });
+            window.generateFilters();
+
             document.getElementById('projectName').value = firebaseData.nombre;
             document.getElementById('widgetsGrid').innerHTML = ''; 
-
-            savedWidgetsConfig.forEach(widgetConfig => {
-                createWidget(widgetConfig.type, widgetConfig);
-            });
-
+            savedWidgetsConfig.forEach(cfg => window.buildWidget(cfg));
             window.switchView(3);
         }
 
         loadCloudProjects();
+        // Inicializar UI
+        window.toggleYAxis(); 
     </script>
 </body>
 </html>
