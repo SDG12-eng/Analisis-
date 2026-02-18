@@ -64,7 +64,7 @@
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-96 md:h-auto">
                     <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100"><h2 class="font-bold text-slate-800"><i class="fas fa-history text-slate-400 mr-2"></i> Guardados</h2><span id="authStatus" class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full font-bold">Offline</span></div>
-                    <div id="cloudProjectsList" class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1"><div class="text-center text-slate-400 mt-10 flex flex-col items-center"><i class="fas fa-cloud-slash text-2xl mb-2"></i><span class="text-xs">Sin conexión a BD</span></div></div>
+                    <div id="cloudProjectsList" class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1"><div class="text-center text-slate-400 mt-10 flex flex-col items-center"><i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><span class="text-xs">Conectando...</span></div></div>
                 </div>
             </div>
         </div>
@@ -287,23 +287,32 @@
 
         function renderChart(cfg, id, data) {
             let fdata = data;
-            if(cfg.filters) cfg.filters.forEach(f => fdata = fdata.filter(r => f.allowed.includes(r[f.col]?.toString().trim())));
+            if(cfg.filters) cfg.filters.forEach(f => fdata = fdata.filter(r => { let v = r[f.col] ? String(r[f.col]).trim() : ""; return f.allowed.includes(v); }));
+            
             let groups = {};
             fdata.forEach(r => {
-                let k = r[cfg.x] || 'N/A'; let v = parseFloat(r[cfg.y])||0; let raw = r[cfg.y]?.toString().trim().toLowerCase();
+                let k = r[cfg.x] ? String(r[cfg.x]).trim() : '(Vacío)';
+                let v = parseFloat(r[cfg.y]) || 0;
+                let raw = r[cfg.y] ? String(r[cfg.y]).trim().toLowerCase() : "";
+                
                 if(!groups[k]) groups[k] = {sum:0, count:0, hits:0, valid:0};
                 groups[k].count++;
-                if(cfg.agg === 'percent') { if(raw === cfg.target?.toLowerCase()) groups[k].hits++; }
+                
+                if(cfg.agg === 'percent') { 
+                    if(cfg.target && raw === cfg.target.trim().toLowerCase()) groups[k].hits++; 
+                }
                 else if(cfg.agg === 'count') { if(r[cfg.y]) groups[k].valid++; }
                 else groups[k].sum += v;
             });
+
             let labels = Object.keys(groups);
             let vals = labels.map(l => {
-                if(cfg.agg==='percent') return (groups[l].hits/groups[l].count)*100;
+                if(cfg.agg==='percent') return groups[l].count > 0 ? (groups[l].hits/groups[l].count)*100 : 0;
                 if(cfg.agg==='count') return groups[l].valid;
-                if(cfg.agg==='avg') return groups[l].sum/groups[l].count;
+                if(cfg.agg==='avg') return groups[l].count > 0 ? groups[l].sum/groups[l].count : 0;
                 return groups[l].sum;
             });
+
             new Chart(document.getElementById(id), { type: cfg.type, data: { labels: labels, datasets: [{ label: 'Valor', data: vals, backgroundColor: '#3b82f6', maxBarThickness: 40, borderRadius: 4 }] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } } } });
         }
 
@@ -335,8 +344,15 @@
         window.fillVal = function(id) {
             const col = document.getElementById(`ay_${id}`).value; const container = document.getElementById(`av_container_${id}`);
             if(!col) { container.innerHTML = '<span class="text-slate-400 italic p-1">Selecciona columna primero</span>'; return; }
-            let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(r[col].toString().trim()); });
-            let html = ''; Array.from(vals).sort().forEach(v => { html += `<label class="flex items-center gap-1.5 p-1 hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="av_chk_${id} w-3 h-3 text-emerald-600 rounded" value="${v}"> <span class="truncate">${v}</span></label>`; });
+            let vals = new Set();
+            processedDataSources[id].data.forEach(r => { 
+                if(r[col]) vals.add(String(r[col]).trim()); 
+            });
+            
+            let html = '';
+            Array.from(vals).sort().forEach(v => {
+                html += `<label class="flex items-center gap-1.5 p-1 hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="av_chk_${id} w-3 h-3 text-emerald-600 rounded" value="${v}"> <span class="truncate">${v}</span></label>`;
+            });
             container.innerHTML = html;
         }
         window.addAuditFilter = function(dsId) {
@@ -347,7 +363,7 @@
         }
         window.fillAC = function(fid, dsId) {
             const col = document.getElementById(`ac_${fid}`).value; const box = document.getElementById(`ak_${fid}`); box.innerHTML = '';
-            let vals = new Set(); processedDataSources[dsId].data.forEach(r => { if(r[col]) vals.add(r[col].toString().trim()); });
+            let vals = new Set(); processedDataSources[dsId].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
             Array.from(vals).forEach(v => box.innerHTML+=`<label class="block"><input type="checkbox" class="ack_${fid}" value="${v}" checked> ${v}</label>`);
         }
 
@@ -384,7 +400,6 @@
                 
                 if(mappings.length === 0) return alert("Selecciona fuentes.");
                 
-                // VALIDACIÓN CRÍTICA: Si es percent/count, debe haber target
                 if (agg === 'percent' || agg === 'count') {
                     let missingTarget = mappings.find(m => m.y && (!m.target || m.target.length === 0));
                     if (missingTarget) return alert(`Para ${missingTarget.name}, debes seleccionar al menos un valor en "Evaluar/Contar".`);
@@ -405,13 +420,13 @@
             let globalLabels = new Set(); let tableData = {};
             cfg.mappings.forEach(map => {
                 let data = processedDataSources[map.dsId].data;
-                if(map.filters) map.filters.forEach(f => data = data.filter(r => f.allowed.includes(r[f.col]?.toString().trim())));
+                if(map.filters) map.filters.forEach(f => data = data.filter(r => { let v = r[f.col] ? String(r[f.col]).trim() : ""; return f.allowed.includes(v); }));
                 let local = {};
                 data.forEach(r => {
-                    let k = r[map.x] ? r[map.x].toString().trim() : map.name; globalLabels.add(k);
+                    let k = r[map.x] ? String(r[map.x]).trim() : map.name; globalLabels.add(k);
                     if(!local[k]) local[k] = {sum:0, count:0, hits:0, valid:0};
                     local[k].count++;
-                    let v = parseFloat(r[map.y]) || 0; let raw = r[map.y]?.toString().trim();
+                    let v = parseFloat(r[map.y]) || 0; let raw = r[map.y] ? String(r[map.y]).trim() : "";
                     if(cfg.agg === 'percent') { if(map.target && map.target.includes(raw)) local[k].hits++; }
                     else if(cfg.agg === 'count') { 
                         if(map.target && map.target.length > 0) { if(map.target.includes(raw)) local[k].valid++; }
@@ -421,9 +436,9 @@
                 });
                 Object.keys(local).forEach(k => {
                     let res = 0;
-                    if(cfg.agg === 'percent') res = (local[k].hits/local[k].count)*100;
+                    if(cfg.agg === 'percent') res = local[k].count > 0 ? (local[k].hits/local[k].count)*100 : 0;
                     else if(cfg.agg === 'count') res = local[k].valid;
-                    else if(cfg.agg === 'avg') res = local[k].sum/local[k].count;
+                    else if(cfg.agg === 'avg') res = local[k].count > 0 ? local[k].sum/local[k].count : 0;
                     else res = local[k].sum;
                     if(!tableData[k]) tableData[k] = {};
                     tableData[k][map.name] = res;
@@ -433,7 +448,7 @@
             let datasets = [];
             if(cfg.mode === 'compare') {
                 cfg.mappings.forEach((map, i) => {
-                    let d = labels.map(l => tableData[l][map.name] || 0);
+                    let d = labels.map(l => (tableData[l] && tableData[l][map.name]) || 0);
                     datasets.push({ label: map.name, data: d, backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444'][i%4], maxBarThickness: 40, borderRadius: 4 });
                 });
             } else {
@@ -446,7 +461,7 @@
             }
             
             let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100 text-slate-600"><tr><th class="p-2">Categoría</th>${cfg.mappings.map(m=>`<th class="p-2 text-right">${m.name}</th>`).join('')}</tr></thead><tbody>`;
-            labels.forEach(l => { th += `<tr class="border-b border-slate-50"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${(tableData[l][m.name]||0).toFixed(1)}</td>`).join('')}</tr>`; });
+            labels.forEach(l => { th += `<tr class="border-b border-slate-50"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${((tableData[l]&&tableData[l][m.name])||0).toFixed(1)}</td>`).join('')}</tr>`; });
             th += '</tbody></table>'; document.getElementById('tb_' + id).innerHTML = th;
 
             new Chart(document.getElementById(id), {
