@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v18 - Analytics & Filters</title>
+    <title>DataMaster v18.2 - Fixed & MultiTarget</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS -->
@@ -186,10 +186,9 @@
                 <i class="fas fa-sliders-h text-xl"></i>
             </button>
 
-            <!-- Panel de Configuración (Sidebar Desktop / Bottom Sheet Mobile) -->
+            <!-- Panel de Configuración -->
             <aside id="localConfigPanel" class="mobile-panel fixed inset-x-0 bottom-0 top-auto z-40 bg-white rounded-t-2xl shadow-[0_-5px_20px_rgba(0,0,0,0.1)] md:static md:w-96 md:h-full md:transform-none md:shadow-none md:border-r border-slate-200 flex flex-col h-[85vh]">
                 
-                <!-- Handle para móvil -->
                 <div class="md:hidden w-full h-6 flex justify-center items-center" onclick="toggleMobilePanel('localConfigPanel')">
                     <div class="w-12 h-1.5 bg-slate-300 rounded-full"></div>
                 </div>
@@ -563,9 +562,9 @@
                 
                 // Mapeo Condicional
                 if(agg === 'percent') {
-                    html += `<div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100"><label class="text-[9px] text-emerald-700 uppercase font-bold block mb-1">Evaluar Estado</label><select id="ay_${ds.id}" class="w-full bg-white border border-emerald-200 rounded p-1 text-[10px] outline-none mb-1" onchange="fillVal('${ds.id}')">${opts}</select><select id="av_${ds.id}" class="w-full bg-white border border-emerald-200 rounded p-1 text-[10px] outline-none" disabled><option>Valor Éxito...</option></select></div>`;
+                    html += `<div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100"><label class="text-[9px] text-emerald-700 uppercase font-bold block mb-1">Evaluar Estado</label><select id="ay_${ds.id}" class="w-full bg-white border border-emerald-200 rounded p-1 text-[10px] outline-none mb-1" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_container_${ds.id}" class="max-h-24 overflow-y-auto bg-white border border-emerald-200 rounded p-1 text-[10px]">Selecciona columna primero...</div></div>`;
                 } else if(agg === 'count') {
-                    html += `<div class="bg-blue-50 p-2 rounded-lg border border-blue-100"><label class="text-[9px] text-blue-700 uppercase font-bold block mb-1">Contar Columna</label><select id="ay_${ds.id}" class="w-full bg-white border border-blue-200 rounded p-1 text-[10px] outline-none" onchange="fillVal('${ds.id}')">${opts}</select><label class="text-[9px] text-blue-500 uppercase font-bold block mt-1 mb-1">Valor a Contar (Opcional)</label><select id="av_${ds.id}" class="w-full bg-white border border-blue-200 rounded p-1 text-[10px] outline-none" disabled><option value="">Contar Todos</option></select></div>`;
+                    html += `<div class="bg-blue-50 p-2 rounded-lg border border-blue-100"><label class="text-[9px] text-blue-700 uppercase font-bold block mb-1">Contar Columna</label><select id="ay_${ds.id}" class="w-full bg-white border border-blue-200 rounded p-1 text-[10px] outline-none" onchange="fillVal('${ds.id}')">${opts}</select><label class="text-[9px] text-blue-500 uppercase font-bold block mt-1 mb-1">Valor a Contar (Selección Múltiple)</label><div id="av_container_${ds.id}" class="max-h-24 overflow-y-auto bg-white border border-blue-200 rounded p-1 text-[10px]">Selecciona columna primero...</div></div>`;
                 } else {
                     html += `<div class="bg-blue-50 p-2 rounded-lg border border-blue-100"><label class="text-[9px] text-blue-700 uppercase font-bold block mb-1">Columna Valor</label><select id="ay_${ds.id}" class="w-full bg-white border border-blue-200 rounded p-1 text-[10px] outline-none">${opts}</select></div>`;
                 }
@@ -578,11 +577,20 @@
             });
         }
         window.fillVal = function(id) {
-            const col = document.getElementById(`ay_${id}`).value; const sel = document.getElementById(`av_${id}`);
-            if(!col || !sel) { if(sel) sel.disabled=true; return; }
-            let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(r[col].toString().trim()); });
-            sel.innerHTML = '<option value="">-- Seleccionar (Opcional) --</option>'; 
-            Array.from(vals).sort().forEach(v => sel.innerHTML+=`<option value="${v}">${v}</option>`); sel.disabled = false;
+            const col = document.getElementById(`ay_${id}`).value;
+            const container = document.getElementById(`av_container_${id}`);
+            if(!col) { container.innerHTML = '<span class="text-slate-400 italic p-1">Selecciona columna primero</span>'; return; }
+            
+            let vals = new Set();
+            processedDataSources[id].data.forEach(r => { 
+                if(r[col]) vals.add(r[col].toString().trim()); 
+            });
+            
+            let html = '';
+            Array.from(vals).sort().forEach(v => {
+                html += `<label class="flex items-center gap-1.5 p-1 hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="av_chk_${id} w-3 h-3 text-emerald-600 rounded" value="${v}"> <span class="truncate">${v}</span></label>`;
+            });
+            container.innerHTML = html;
         }
         
         window.addAuditFilter = function(dsId) {
@@ -619,10 +627,12 @@
                             });
                         }
                         
-                        // Target
-                        let target = null;
-                        const avEl = document.getElementById(`av_${ds.id}`);
-                        if(avEl && !avEl.disabled) target = avEl.value;
+                        // Target Values (Multi-select)
+                        let target = [];
+                        if (agg === 'percent' || agg === 'count') {
+                            const checkboxes = document.querySelectorAll(`.av_chk_${ds.id}:checked`);
+                            target = Array.from(checkboxes).map(cb => cb.value);
+                        }
 
                         mappings.push({ 
                             dsId: ds.id, name: ds.name, 
@@ -657,17 +667,17 @@
                     let k = r[map.x] ? r[map.x].toString().trim() : map.name; globalLabels.add(k);
                     if(!local[k]) local[k] = {sum:0, count:0, hits:0, valid:0};
                     local[k].count++;
-                    let v = parseFloat(r[map.y]) || 0; let raw = r[map.y]?.toString().trim().toLowerCase();
+                    let v = parseFloat(r[map.y]) || 0; let raw = r[map.y]?.toString().trim(); // removed toLowerCase for precise matching or handle properly
                     
                     if(cfg.agg === 'percent') { 
-                        if(raw === map.target?.toLowerCase()) local[k].hits++; 
+                        // Check if raw value exists in target array
+                        if (map.target && map.target.includes(raw)) local[k].hits++; 
                     }
                     else if(cfg.agg === 'count') { 
-                        // NEW LOGIC: Count Specific Value if target is set, else count non-empty
-                        if (map.target) {
-                            if (raw === map.target.toLowerCase()) local[k].valid++;
+                        if (map.target && map.target.length > 0) {
+                            if (map.target.includes(raw)) local[k].valid++;
                         } else {
-                            if(r[map.y]) local[k].valid++; 
+                            if (r[map.y]) local[k].valid++; 
                         }
                     }
                     else local[k].sum += v;
@@ -698,10 +708,10 @@
                 datasets.push({ label: 'Total Unificado', data: d, backgroundColor: '#10b981', maxBarThickness: 50, borderRadius: 4 });
             }
             
-            // Tabla HTML
+            // Tabla HTML - Fixed ID reference
             let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100 text-slate-600"><tr><th class="p-2">Categoría</th>${cfg.mappings.map(m=>`<th class="p-2 text-right">${m.name}</th>`).join('')}</tr></thead><tbody>`;
             labels.forEach(l => { th += `<tr class="border-b border-slate-50"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${(tableData[l][m.name]||0).toFixed(1)}</td>`).join('')}</tr>`; });
-            th += '</tbody></table>'; document.getElementById(`tb_${id.replace('w','f').replace('f_','')}`).innerHTML = th; // fix ID ref
+            th += '</tbody></table>'; document.getElementById('tb_' + id).innerHTML = th;
 
             new Chart(document.getElementById(id), {
                 type: cfg.type, data: { labels: labels, datasets: datasets },
