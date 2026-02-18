@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v20 - Stable & Offline Ready</title>
+    <title>DataMaster v21 - Interactive Metrics</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS -->
@@ -279,8 +279,8 @@
             const wid = 'w_'+Date.now()+Math.random();
             const grid = document.getElementById('widgetsGrid');
             const card = document.createElement('div');
-            card.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-80 relative flex flex-col";
-            card.innerHTML = `<div class="flex justify-between items-start mb-4"><h3 class="text-sm font-bold text-slate-800">${config.title}</h3><button onclick="this.parentElement.parentElement.remove()" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-times"></i></button></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div>`;
+            card.className = "flip-container h-80 w-full perspective-1000";
+            card.innerHTML = `<div class="flipper rounded-2xl shadow-sm border border-slate-200 bg-white" id="f_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl"><div class="flex justify-between items-start mb-4"><h3 class="font-bold text-sm text-slate-800">${config.title}</h3><div class="flex gap-2"><button onclick="document.getElementById('f_${wid}').parentNode.classList.toggle('flipped')" class="text-blue-500 hover:text-blue-700 transition"><i class="fas fa-table"></i></button><button onclick="this.closest('.flip-container').remove()" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div></div><div class="back p-5 flex flex-col bg-slate-50 rounded-2xl border-2 border-blue-400 overflow-hidden"><div class="flex justify-between mb-4"><h3 class="font-bold text-xs text-blue-700">Detalle de Datos</h3><button onclick="document.getElementById('f_${wid}').parentNode.classList.toggle('flipped')" class="text-xs font-bold text-slate-500 hover:text-slate-800"><i class="fas fa-undo"></i> Volver</button></div><div class="flex-1 overflow-auto bg-white border rounded-lg" id="tb_${wid}"></div></div></div>`;
             grid.prepend(card);
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 100);
         }
@@ -313,7 +313,32 @@
                 return groups[l].sum;
             });
 
-            new Chart(document.getElementById(id), { type: cfg.type, data: { labels: labels, datasets: [{ label: 'Valor', data: vals, backgroundColor: '#3b82f6', maxBarThickness: 40, borderRadius: 4 }] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } } } });
+            // CHART CONFIG - Click Event Added
+            new Chart(document.getElementById(id), { 
+                type: cfg.type, 
+                data: { labels: labels, datasets: [{ label: 'Valor', data: vals, backgroundColor: '#3b82f6', maxBarThickness: 40, borderRadius: 4 }] }, 
+                options: { 
+                    maintainAspectRatio: false, 
+                    scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } },
+                    onClick: (e) => {
+                        const canvas = e.chart.canvas;
+                        const flipContainer = canvas.closest('.flip-container');
+                        if (flipContainer) {
+                            const flipper = flipContainer.querySelector('.flipper');
+                            flipper.classList.toggle('flipped');
+                        }
+                    }
+                } 
+            });
+
+            // Fill Back Table
+            let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100"><tr><th class="p-2">Grupo</th><th class="p-2 text-right">Valor</th></tr></thead><tbody>`;
+            labels.forEach((l, i) => {
+                let displayVal = cfg.agg === 'percent' ? vals[i].toFixed(1) + '%' : vals[i].toLocaleString();
+                th += `<tr class="border-b"><td class="p-2 font-medium">${l}</td><td class="p-2 text-right">${displayVal}</td></tr>`;
+            });
+            th += '</tbody></table>';
+            document.getElementById('tb_' + id).innerHTML = th;
         }
 
         // --- UNIFICACIÓN ---
@@ -427,9 +452,18 @@
                     if(!local[k]) local[k] = {sum:0, count:0, hits:0, valid:0};
                     local[k].count++;
                     let v = parseFloat(r[map.y]) || 0; let raw = r[map.y] ? String(r[map.y]).trim() : "";
-                    if(cfg.agg === 'percent') { if(map.target && map.target.includes(raw)) local[k].hits++; }
+                    
+                    // LÓGICA DE COINCIDENCIA DE TEXTO FLEXIBLE
+                    if(cfg.agg === 'percent') { 
+                        // Verifica si el valor crudo está incluido en la lista de targets (ignorando mayúsculas/espacios)
+                        if (map.target && map.target.some(t => t.toLowerCase().trim() === raw.toLowerCase().trim())) {
+                            local[k].hits++;
+                        }
+                    }
                     else if(cfg.agg === 'count') { 
-                        if(map.target && map.target.length > 0) { if(map.target.includes(raw)) local[k].valid++; }
+                        if (map.target && map.target.length > 0) { 
+                            if (map.target.some(t => t.toLowerCase().trim() === raw.toLowerCase().trim())) local[k].valid++;
+                        }
                         else if(r[map.y]) local[k].valid++; 
                     }
                     else local[k].sum += v;
@@ -464,9 +498,22 @@
             labels.forEach(l => { th += `<tr class="border-b border-slate-50"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${((tableData[l]&&tableData[l][m.name])||0).toFixed(1)}</td>`).join('')}</tr>`; });
             th += '</tbody></table>'; document.getElementById('tb_' + id).innerHTML = th;
 
+            // CHART CONFIG - Click Interaction Added
             new Chart(document.getElementById(id), {
-                type: cfg.type, data: { labels: labels, datasets: datasets },
-                options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } } }
+                type: cfg.type, 
+                data: { labels: labels, datasets: datasets },
+                options: { 
+                    maintainAspectRatio: false, 
+                    scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } },
+                    onClick: (e) => {
+                        const canvas = e.chart.canvas;
+                        const flipContainer = canvas.closest('.flip-container');
+                        if (flipContainer) {
+                            const flipper = flipContainer.querySelector('.flipper');
+                            flipper.classList.toggle('flipped');
+                        }
+                    }
+                } 
             });
         }
 
