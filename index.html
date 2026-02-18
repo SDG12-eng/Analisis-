@@ -544,7 +544,7 @@
                     labels: labels,
                     datasets: [{
                         label: cfg.agg.toUpperCase(),
-                        data: values = vals,
+                        data: vals,
                         backgroundColor: cfg.type === 'line' ? 'transparent' : colors,
                         borderColor: cfg.type === 'line' ? '#4f46e5' : 'transparent',
                         borderWidth: 2, borderRadius: 4, maxBarThickness: 50
@@ -671,7 +671,7 @@
                 datasets.push({ label: 'Total Unificado', data: d, backgroundColor: '#10b981', maxBarThickness: 50, borderRadius: 4 });
             }
             
-            let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100"><tr><th>Categoría</th>${cfg.mappings.map(m=>`<th class="text-right">${m.name.substring(0,10)}...</th>`).join('')}</tr></thead><tbody>`;
+            let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100 text-slate-600"><tr><th>Categoría</th>${cfg.mappings.map(m=>`<th class="text-right">${m.name.substring(0,10)}...</th>`).join('')}</tr></thead><tbody>`;
             labels.forEach(l => { 
                 th += `<tr class="border-b"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${((tableData[l]&&tableData[l][m.name])||0).toFixed(1)}</td>`).join('')}</tr>`; 
             });
