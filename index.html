@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v17 - Responsive UX</title>
+    <title>DataMaster v18 - Analytics & Filters</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS -->
@@ -329,7 +329,7 @@
                                 <select id="auditAggType" class="w-full p-2 border border-slate-200 rounded-lg text-xs outline-none bg-white" onchange="buildAuditSidebar()">
                                     <option value="percent">Porcentaje %</option>
                                     <option value="sum">Sumatoria</option>
-                                    <option value="count">Contar Filas</option>
+                                    <option value="count">Contar (Opc. Filtro)</option>
                                     <option value="avg">Promedio</option>
                                 </select>
                             </div>
@@ -347,7 +347,7 @@
                     <!-- Contenedor de Mapeo Dinámico -->
                     <div id="auditMappingContainer" class="flex flex-col gap-3"></div>
 
-                    <button onclick="generateMergedAudit(); toggleMobilePanel('auditConfigPanel')" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition active:scale-95 mt-2">
+                    <button type="button" onclick="handleGenerate()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-emerald-700 transition active:scale-95 mt-2">
                         Generar Reporte
                     </button>
                 </div>
@@ -394,6 +394,16 @@
         window.toggleMobilePanel = function(id) {
             document.getElementById(id).classList.toggle('open');
         }
+        
+        window.handleGenerate = function() {
+            try {
+                generateMergedAudit();
+                toggleMobilePanel('auditConfigPanel');
+            } catch(e) {
+                console.error(e);
+                alert("Error generando el reporte. Revisa que hayas seleccionado columnas válidas.");
+            }
+        }
 
         window.switchView = function(step) {
             ['view-upload','view-range','view-playground','view-compare'].forEach(v => document.getElementById(v).classList.add('hidden'));
@@ -417,7 +427,7 @@
             });
         }
 
-        // --- CORE LOGIC (Igual a V16 pero limpia) ---
+        // --- CORE LOGIC ---
         
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files); if(files.length===0) return;
@@ -550,21 +560,43 @@
                 div.className = "bg-white border border-slate-200 rounded-xl p-3 shadow-sm mb-3";
                 let html = `<div class="flex justify-between font-bold mb-2 text-slate-800 text-xs items-center"><span>${ds.name}</span><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="inc_${ds.id}" checked class="rounded text-emerald-600"><span class="text-[10px] text-emerald-600">Incluir</span></label></div>`;
                 html += `<div class="space-y-2"><div class="bg-slate-50 p-2 rounded-lg border border-slate-100"><label class="text-[9px] text-slate-400 uppercase font-bold block mb-1">Agrupar Por (Eje X)</label><select id="ax_${ds.id}" class="w-full bg-white border border-slate-200 rounded p-1 text-[10px] outline-none">${opts}</select></div>`;
+                
+                // Mapeo Condicional
                 if(agg === 'percent') {
                     html += `<div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100"><label class="text-[9px] text-emerald-700 uppercase font-bold block mb-1">Evaluar Estado</label><select id="ay_${ds.id}" class="w-full bg-white border border-emerald-200 rounded p-1 text-[10px] outline-none mb-1" onchange="fillVal('${ds.id}')">${opts}</select><select id="av_${ds.id}" class="w-full bg-white border border-emerald-200 rounded p-1 text-[10px] outline-none" disabled><option>Valor Éxito...</option></select></div>`;
+                } else if(agg === 'count') {
+                    html += `<div class="bg-blue-50 p-2 rounded-lg border border-blue-100"><label class="text-[9px] text-blue-700 uppercase font-bold block mb-1">Contar Columna</label><select id="ay_${ds.id}" class="w-full bg-white border border-blue-200 rounded p-1 text-[10px] outline-none" onchange="fillVal('${ds.id}')">${opts}</select><label class="text-[9px] text-blue-500 uppercase font-bold block mt-1 mb-1">Valor a Contar (Opcional)</label><select id="av_${ds.id}" class="w-full bg-white border border-blue-200 rounded p-1 text-[10px] outline-none" disabled><option value="">Contar Todos</option></select></div>`;
                 } else {
                     html += `<div class="bg-blue-50 p-2 rounded-lg border border-blue-100"><label class="text-[9px] text-blue-700 uppercase font-bold block mb-1">Columna Valor</label><select id="ay_${ds.id}" class="w-full bg-white border border-blue-200 rounded p-1 text-[10px] outline-none">${opts}</select></div>`;
                 }
+                
+                // Filtros Locales
+                html += `<div class="mt-2 pt-1 border-t border-slate-100"><div class="flex justify-between items-center"><span class="text-[9px] font-bold text-slate-400">Filtros Locales</span><button onclick="addAuditFilter('${ds.id}')" class="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[9px] hover:bg-slate-200">+</button></div><div id="af_${ds.id}" class="mt-1"></div></div>`;
+                
                 html += `</div>`;
                 div.innerHTML = html; container.appendChild(div);
             });
         }
         window.fillVal = function(id) {
             const col = document.getElementById(`ay_${id}`).value; const sel = document.getElementById(`av_${id}`);
-            if(!col) { sel.disabled=true; return; }
+            if(!col || !sel) { if(sel) sel.disabled=true; return; }
             let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(r[col].toString().trim()); });
-            sel.innerHTML = ''; Array.from(vals).sort().forEach(v => sel.innerHTML+=`<option value="${v}">${v}</option>`); sel.disabled = false;
+            sel.innerHTML = '<option value="">-- Seleccionar (Opcional) --</option>'; 
+            Array.from(vals).sort().forEach(v => sel.innerHTML+=`<option value="${v}">${v}</option>`); sel.disabled = false;
         }
+        
+        window.addAuditFilter = function(dsId) {
+            const fid = 'af_'+Date.now()+Math.random();
+            const div = document.createElement('div'); div.className = "flex gap-1 mt-1 items-center bg-slate-50 p-1 rounded border";
+            div.innerHTML = `<select id="ac_${fid}" class="w-1/2 border text-[9px] rounded" onchange="fillAC('${fid}','${dsId}')"><option>Col...</option>${processedDataSources[dsId].columns.map(c=>`<option>${c}</option>`)}</select><div id="ak_${fid}" class="w-1/2 max-h-12 overflow-y-auto bg-white border text-[9px] p-1 rounded"></div><button onclick="this.parentElement.remove()" class="text-red-400 hover:text-red-600 px-1">×</button>`;
+            document.getElementById(`af_${dsId}`).appendChild(div);
+        }
+        window.fillAC = function(fid, dsId) {
+            const col = document.getElementById(`ac_${fid}`).value; const box = document.getElementById(`ak_${fid}`); box.innerHTML = '';
+            let vals = new Set(); processedDataSources[dsId].data.forEach(r => { if(r[col]) vals.add(r[col].toString().trim()); });
+            Array.from(vals).forEach(v => box.innerHTML+=`<label class="block"><input type="checkbox" class="ack_${fid}" value="${v}" checked> ${v}</label>`);
+        }
+
         window.generateMergedAudit = function(cfg=null) {
             document.getElementById('emptyAudit')?.remove();
             let config = cfg;
@@ -574,7 +606,31 @@
                 let mappings = [];
                 Object.values(processedDataSources).forEach(ds => {
                     if(document.getElementById(`inc_${ds.id}`).checked) {
-                        mappings.push({ dsId: ds.id, name: ds.name, x: document.getElementById(`ax_${ds.id}`).value, y: document.getElementById(`ay_${ds.id}`).value, target: agg==='percent' ? document.getElementById(`av_${ds.id}`).value : null });
+                        // Filtros locales
+                        let filters = [];
+                        const fDiv = document.getElementById(`af_${ds.id}`);
+                        if(fDiv) {
+                            fDiv.querySelectorAll('[id^="ac_af_"]').forEach(s => {
+                                if(s.value && s.value !== 'Col...') {
+                                    let fid = s.id.split('_')[2];
+                                    let allowed = Array.from(document.querySelectorAll(`.ack_af_${fid}:checked`)).map(c=>c.value);
+                                    filters.push({col: s.value, allowed: allowed});
+                                }
+                            });
+                        }
+                        
+                        // Target
+                        let target = null;
+                        const avEl = document.getElementById(`av_${ds.id}`);
+                        if(avEl && !avEl.disabled) target = avEl.value;
+
+                        mappings.push({ 
+                            dsId: ds.id, name: ds.name, 
+                            x: document.getElementById(`ax_${ds.id}`).value, 
+                            y: document.getElementById(`ay_${ds.id}`).value, 
+                            target: target,
+                            filters: filters
+                        });
                     }
                 });
                 if(mappings.length === 0) return alert("Selecciona fuentes.");
@@ -593,14 +649,27 @@
             let globalLabels = new Set(); let tableData = {};
             cfg.mappings.forEach(map => {
                 let data = processedDataSources[map.dsId].data;
+                // Filtros locales
+                if(map.filters) map.filters.forEach(f => data = data.filter(r => f.allowed.includes(r[f.col]?.toString().trim())));
+                
                 let local = {};
                 data.forEach(r => {
                     let k = r[map.x] ? r[map.x].toString().trim() : map.name; globalLabels.add(k);
                     if(!local[k]) local[k] = {sum:0, count:0, hits:0, valid:0};
                     local[k].count++;
                     let v = parseFloat(r[map.y]) || 0; let raw = r[map.y]?.toString().trim().toLowerCase();
-                    if(cfg.agg === 'percent') { if(raw === map.target?.toLowerCase()) local[k].hits++; }
-                    else if(cfg.agg === 'count') { if(r[map.y]) local[k].valid++; }
+                    
+                    if(cfg.agg === 'percent') { 
+                        if(raw === map.target?.toLowerCase()) local[k].hits++; 
+                    }
+                    else if(cfg.agg === 'count') { 
+                        // NEW LOGIC: Count Specific Value if target is set, else count non-empty
+                        if (map.target) {
+                            if (raw === map.target.toLowerCase()) local[k].valid++;
+                        } else {
+                            if(r[map.y]) local[k].valid++; 
+                        }
+                    }
                     else local[k].sum += v;
                 });
                 Object.keys(local).forEach(k => {
