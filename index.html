@@ -3,130 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Workspace - Analizador Avanzado</title>
+    <title>Cloud Data Workspace v6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .tab-active { border-bottom: 3px solid #3b82f6; color: #1d4ed8; font-weight: bold; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans h-screen flex flex-col overflow-hidden">
 
     <header class="bg-gray-900 text-white p-4 shadow-lg flex justify-between items-center z-20">
-        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-database text-blue-400 mr-2"></i> DATA<span class="font-light">WORKSPACE</span></h1>
+        <h1 class="text-xl font-bold tracking-wider"><i class="fas fa-cloud text-blue-400 mr-2"></i> CLOUD<span class="font-light">WORKSPACE</span></h1>
         <div class="flex gap-4">
-            <button id="tab1" class="px-4 py-2 tab-active transition">1. Cargar Archivo</button>
-            <button id="tab2" class="px-4 py-2 text-gray-400 cursor-not-allowed transition" disabled>2. Rango de Datos</button>
-            <button id="tab3" class="px-4 py-2 text-gray-400 cursor-not-allowed transition" disabled>3. Analizar (Playground)</button>
+            <button id="tab1" class="px-4 py-2 tab-active transition" onclick="switchView(1)">1. Inicio</button>
+            <button id="tab2" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>2. Preparar Datos</button>
+            <button id="tab3" class="px-4 py-2 text-slate-500 cursor-not-allowed transition" disabled>3. Dashboard</button>
         </div>
     </header>
 
     <main class="flex-1 relative overflow-hidden">
 
-        <div id="view-upload" class="absolute inset-0 flex flex-col items-center justify-center p-6 bg-slate-50 transition-opacity">
-            <div class="bg-white p-10 rounded-2xl shadow-xl w-full max-w-2xl text-center border border-slate-200">
-                <i class="fas fa-file-excel text-6xl text-green-500 mb-6"></i>
-                <h2 class="text-2xl font-bold text-slate-800 mb-2">Importar Datos</h2>
-                <p class="text-slate-500 mb-8">Sube tu archivo para comenzar a jugar con las métricas.</p>
-                
-                <label class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-8 block hover:bg-blue-100 transition">
-                    <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden"/>
-                    <span class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition"><i class="fas fa-upload mr-2"></i> Explorar Archivo</span>
-                </label>
+        <div id="view-upload" class="absolute inset-0 flex flex-col items-center p-10 bg-slate-50 overflow-y-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+                <div class="bg-white p-10 rounded-2xl shadow border border-slate-200 text-center flex flex-col justify-center">
+                    <i class="fas fa-file-excel text-6xl text-green-500 mb-6"></i>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Nuevo Proyecto</h2>
+                    <p class="text-slate-500 mb-8">Sube un Excel para empezar desde cero.</p>
+                    <label class="cursor-pointer bg-blue-50 border-2 border-dashed border-blue-300 rounded-xl p-8 block hover:bg-blue-100 transition">
+                        <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden"/>
+                        <span class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold shadow-md hover:bg-blue-700 transition"><i class="fas fa-upload mr-2"></i> Subir Archivo</span>
+                    </label>
+                </div>
+
+                <div class="bg-white p-8 rounded-2xl shadow border border-slate-200 flex flex-col">
+                    <h2 class="text-xl font-bold text-slate-800 mb-2"><i class="fas fa-cloud-download-alt text-blue-500 mr-2"></i> Proyectos en la Nube</h2>
+                    <p class="text-sm text-slate-500 mb-4">Dashboards guardados en Firebase.</p>
+                    <div id="cloudProjectsList" class="flex-1 overflow-y-auto space-y-3 bg-slate-50 p-4 rounded border inner-shadow">
+                        <div class="text-center text-slate-400 mt-10"><i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Cargando...</div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="view-range" class="absolute inset-0 hidden flex-col bg-slate-50 p-6 overflow-hidden">
             <div class="bg-white rounded-xl shadow-md p-6 flex flex-col h-full border border-slate-200">
-                <div class="mb-4 flex justify-between items-end pb-4 border-b">
+                <div class="mb-4 flex flex-wrap justify-between items-end pb-4 border-b gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-slate-800">Definir Rango de Datos</h2>
-                        <p class="text-sm text-slate-500">Indica dónde empiezan los encabezados y hasta qué fila leer.</p>
+                        <h2 class="text-xl font-bold text-slate-800">Preparar Datos</h2>
+                        <p class="text-sm text-slate-500">Selecciona la hoja que quieres analizar y dónde empiezan los encabezados.</p>
                     </div>
-                    <div class="flex gap-4 items-end">
+                    <div class="flex gap-4 items-end flex-wrap">
+                        
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Fila de Encabezados</label>
-                            <input type="number" id="headerRow" value="1" min="1" class="w-24 p-2 border rounded bg-slate-50 text-center font-bold">
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1"><i class="fas fa-layer-group text-blue-500 mr-1"></i> Hoja del Excel</label>
+                            <select id="sheetSelector" class="w-48 p-2 border rounded font-bold bg-blue-50 text-blue-800 outline-none" onchange="changeSheet()"></select>
                         </div>
-                        <button onclick="extractData()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded font-bold shadow transition">
-                            Confirmar Rango <i class="fas fa-check ml-2"></i>
-                        </button>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Fila Encabezados</label>
+                            <input type="number" id="headerRow" value="1" min="1" class="w-24 p-2 border rounded text-center font-bold bg-slate-50 outline-none">
+                        </div>
+                        
+                        <button onclick="extractData()" class="bg-green-600 text-white px-6 py-2 rounded font-bold shadow hover:bg-green-700 transition">Confirmar Rango <i class="fas fa-check ml-1"></i></button>
                     </div>
                 </div>
-
-                <div class="flex-1 overflow-auto border rounded bg-slate-100 relative">
-                    <table class="min-w-full text-xs text-left bg-white" id="rawTablePreview">
-                        </table>
+                <div class="flex-1 overflow-auto border rounded relative">
+                    <table class="min-w-full text-xs text-left bg-white" id="rawTablePreview"></table>
                 </div>
             </div>
         </div>
 
         <div id="view-playground" class="absolute inset-0 hidden flex bg-slate-100">
             <aside class="w-80 bg-white shadow-lg z-10 flex flex-col border-r border-slate-200">
-                <div class="p-4 bg-slate-800 text-white">
-                    <h3 class="font-bold"><i class="fas fa-toolbox mr-2"></i> Creador de Análisis</h3>
+                <div class="p-4 bg-slate-800 text-white flex justify-between items-center">
+                    <h3 class="font-bold"><i class="fas fa-toolbox mr-2"></i> Herramientas</h3>
                 </div>
                 
                 <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-6">
-                    
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <h4 class="font-bold text-blue-800 mb-2 text-sm"><i class="fas fa-chart-pie mr-1"></i> Contar Categorías</h4>
-                        <p class="text-xs text-blue-600 mb-3">Ideal para: Estados, Tipos, Sí/No.</p>
+                        <h4 class="font-bold text-blue-800 mb-2 text-sm">Contar Categorías</h4>
                         <select id="countCol" class="w-full p-2 text-sm border rounded mb-2 bg-white column-selector"></select>
-                        <button onclick="createWidget('count')" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold shadow hover:bg-blue-700">Crear Gráfico</button>
+                        <button onclick="createWidget('count')" class="w-full bg-blue-600 text-white py-2 rounded text-sm font-bold shadow hover:bg-blue-700 transition">Crear Gráfico</button>
                     </div>
 
                     <div class="bg-green-50 p-4 rounded-xl border border-green-100">
-                        <h4 class="font-bold text-green-800 mb-2 text-sm"><i class="fas fa-calculator mr-1"></i> Operaciones Matemáticas</h4>
-                        <div class="grid grid-cols-2 gap-2 mb-2">
-                            <select id="mathOp" class="p-2 text-sm border rounded bg-white">
-                                <option value="sum">Sumar</option>
-                                <option value="avg">Promediar</option>
-                            </select>
-                            <select id="mathValCol" class="p-2 text-sm border rounded bg-white column-selector" title="Columna a sumar"></select>
+                        <h4 class="font-bold text-green-800 mb-2 text-sm">Métricas Numéricas</h4>
+                        <div class="flex gap-2 mb-2">
+                            <select id="mathOp" class="p-2 text-sm border rounded bg-white w-1/3"><option value="sum">Sumar</option><option value="avg">Prom</option></select>
+                            <select id="mathValCol" class="p-2 text-sm border rounded bg-white w-2/3 column-selector"></select>
                         </div>
-                        <label class="text-xs text-green-700 font-bold">Agrupar por (Opcional):</label>
-                        <select id="mathGroupCol" class="w-full p-2 text-sm border rounded mb-2 bg-white column-selector">
-                            <option value="">-- Sin agrupar (Total General) --</option>
-                        </select>
-                        <button onclick="createWidget('math')" class="w-full bg-green-600 text-white py-2 rounded text-sm font-bold shadow hover:bg-green-700">Calcular</button>
+                        <label class="text-xs text-green-700 font-bold">Agrupar por (X):</label>
+                        <select id="mathGroupCol" class="w-full p-2 text-sm border rounded mb-2 bg-white column-selector"><option value="">-- Total General --</option></select>
+                        <button onclick="createWidget('math')" class="w-full bg-green-600 text-white py-2 rounded text-sm font-bold shadow hover:bg-green-700 transition">Calcular</button>
                     </div>
+                </div>
 
-                    <div class="bg-purple-50 p-4 rounded-xl border border-purple-100">
-                        <h4 class="font-bold text-purple-800 mb-2 text-sm"><i class="fas fa-code-branch mr-1"></i> Cruzar Columnas</h4>
-                        <p class="text-xs text-purple-600 mb-2">Eje X vs Eje Y (Cantidades)</p>
-                        <select id="crossX" class="w-full p-2 text-sm border rounded mb-2 bg-white column-selector" title="Eje X"></select>
-                        <select id="crossY" class="w-full p-2 text-sm border rounded mb-2 bg-white column-selector" title="Eje Y"></select>
-                        <button onclick="createWidget('cross')" class="w-full bg-purple-600 text-white py-2 rounded text-sm font-bold shadow hover:bg-purple-700">Generar Comparación</button>
-                    </div>
-
+                <div class="p-4 bg-yellow-50 border-t border-yellow-200">
+                    <input type="text" id="projectName" placeholder="Nombre del reporte..." class="w-full p-2 text-sm border border-yellow-300 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <button onclick="saveToFirebase()" id="btnSave" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-3 rounded font-bold shadow transition flex justify-center items-center">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Guardar en la Nube
+                    </button>
                 </div>
             </aside>
 
             <main class="flex-1 p-6 overflow-y-auto relative" id="dashboardCanvas">
-                <div id="emptyWorkspace" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-                    <i class="fas fa-shapes text-6xl mb-4 opacity-50"></i>
-                    <h2 class="text-2xl font-bold mb-2">Lienzo Vacío</h2>
-                    <p>Usa el panel izquierdo para crear gráficos y métricas a tu gusto.</p>
-                </div>
                 <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 relative z-10"></div>
             </main>
         </div>
-
     </main>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZXwXN15MYVpFP0-QbgR-H4bHqMH4_EFA",
+            authDomain: "reporte-d37d1.firebaseapp.com",
+            projectId: "reporte-d37d1",
+            storageBucket: "reporte-d37d1.firebasestorage.app",
+            messagingSenderId: "995600823465",
+            appId: "1:995600823465:web:3ae9ede621cf0631ad65b8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         let rawWorkbook = null;
         let activeSheetName = "";
         let finalData = [];
         let columns = [];
-        let chartIdCounter = 0;
+        let savedWidgetsConfig = []; 
+        let chartInstances = {};
 
-        // --- NAVEGACIÓN DE VISTAS ---
-        function switchView(step) {
+        window.switchView = function(step) {
             document.getElementById('view-upload').classList.add('hidden');
             document.getElementById('view-range').classList.add('hidden');
             document.getElementById('view-playground').classList.add('hidden');
@@ -136,226 +147,235 @@
             if(step === 3) document.getElementById('view-playground').classList.remove('hidden');
 
             document.getElementById('tab1').className = step === 1 ? "px-4 py-2 tab-active transition" : "px-4 py-2 text-slate-300 transition";
-            document.getElementById('tab2').className = step === 2 ? "px-4 py-2 tab-active transition" : (step > 2 ? "px-4 py-2 text-slate-300 transition" : "px-4 py-2 text-gray-500 cursor-not-allowed transition");
-            document.getElementById('tab3').className = step === 3 ? "px-4 py-2 tab-active transition" : "px-4 py-2 text-gray-500 cursor-not-allowed transition";
+            document.getElementById('tab2').className = step === 2 ? "px-4 py-2 tab-active transition" : (step > 2 ? "px-4 py-2 text-slate-300 transition" : "px-4 py-2 text-slate-500 cursor-not-allowed");
+            document.getElementById('tab3').className = step === 3 ? "px-4 py-2 tab-active transition" : "px-4 py-2 text-slate-500 cursor-not-allowed";
         }
 
-        // --- PASO 1: CARGAR ARCHIVO ---
+        // CARGAR ARCHIVO LOCAL Y LEER HOJAS
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
             const data = await file.arrayBuffer();
             rawWorkbook = XLSX.read(data);
-            activeSheetName = rawWorkbook.SheetNames[0]; // Toma la primera hoja
             
-            renderRawPreview();
-            switchView(2);
+            // Llenar el selector de hojas
+            const sheetSelect = document.getElementById('sheetSelector');
+            sheetSelect.innerHTML = '';
+            rawWorkbook.SheetNames.forEach(sheet => {
+                sheetSelect.innerHTML += `<option value="${sheet}">${sheet}</option>`;
+            });
+
+            // Seleccionar la primera hoja por defecto
+            activeSheetName = rawWorkbook.SheetNames[0];
+            document.getElementById('headerRow').value = 1; // resetear fila a 1
+            
+            window.renderRawPreview();
+            window.switchView(2);
         });
 
-        // --- PASO 2: SELECCIONAR RANGO ---
-        function renderRawPreview() {
-            const sheet = rawWorkbook.Sheets[activeSheetName];
-            // Leer como array 2D crudo (sin importar encabezados aún)
-            const rawArray = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-            
+        // CAMBIAR DE HOJA DESDE EL SELECTOR
+        window.changeSheet = function() {
+            activeSheetName = document.getElementById('sheetSelector').value;
+            window.renderRawPreview();
+        }
+
+        // DIBUJAR VISTA PREVIA CRUDA DE LA HOJA ACTIVA
+        window.renderRawPreview = function() {
+            const rawArray = XLSX.utils.sheet_to_json(rawWorkbook.Sheets[activeSheetName], { header: 1, defval: "" });
             const tbody = document.getElementById('rawTablePreview');
             tbody.innerHTML = '';
-
-            // Renderizar las primeras 30 filas para que el usuario ubique sus encabezados
-            const limit = Math.min(rawArray.length, 30);
-            for(let i = 0; i < limit; i++) {
+            for(let i = 0; i < Math.min(rawArray.length, 30); i++) {
                 const tr = document.createElement('tr');
-                tr.className = "border-b hover:bg-slate-100";
-                
-                // Columna de número de fila
-                const tdNum = document.createElement('td');
-                tdNum.className = "p-2 bg-slate-200 text-slate-500 font-bold border-r w-10 text-center";
-                tdNum.innerText = i + 1;
-                tr.appendChild(tdNum);
-
-                rawArray[i].forEach(cell => {
-                    const td = document.createElement('td');
-                    td.className = "p-2 border-r truncate max-w-[150px]";
-                    td.innerText = cell;
-                    tr.appendChild(td);
-                });
+                tr.innerHTML = `<td class="p-2 bg-slate-200 text-slate-500 font-bold border-r w-10 text-center">${i + 1}</td>`;
+                rawArray[i].forEach(cell => tr.innerHTML += `<td class="p-2 border-r truncate max-w-xs text-slate-700">${cell}</td>`);
                 tbody.appendChild(tr);
             }
         }
 
-        function extractData() {
+        // EXTRAER DATOS FINALES DE LA HOJA SELECCIONADA
+        window.extractData = function() {
             const headerRowNum = parseInt(document.getElementById('headerRow').value);
             const sheet = rawWorkbook.Sheets[activeSheetName];
-            
-            // Extraer datos usando la fila especificada como encabezado (0-indexado en JS)
-            // SheetJS usa range: N para saltar N filas. Si el encabezado es fila 3, saltamos 2.
-            const skipRows = headerRowNum > 0 ? headerRowNum - 1 : 0;
-            
-            // Configurar el rango dinámicamente
             let range = XLSX.utils.decode_range(sheet['!ref']);
-            range.s.r = skipRows; // Setear inicio de fila
-            let newRange = XLSX.utils.encode_range(range);
-
-            finalData = XLSX.utils.sheet_to_json(sheet, { range: newRange, defval: null });
+            range.s.r = Math.max(0, headerRowNum - 1);
             
+            finalData = XLSX.utils.sheet_to_json(sheet, { range: XLSX.utils.encode_range(range), defval: null });
+            
+            finalData = finalData.map(row => {
+                let clean = {};
+                for(let key in row) if(!key.includes("__EMPTY")) clean[key.trim()] = row[key];
+                return clean;
+            });
+
             if(finalData.length === 0) {
-                alert("No se encontraron datos a partir de esa fila.");
+                alert("No se encontraron datos. Verifica la fila de encabezados o cambia de hoja.");
                 return;
             }
 
-            // Limpiar claves vacías generadas por SheetJS (__EMPTY)
-            finalData = finalData.map(row => {
-                let cleanRow = {};
-                for(let key in row) {
-                    if(!key.includes("__EMPTY")) cleanRow[key.trim()] = row[key];
-                }
-                return cleanRow;
-            });
-
             columns = Object.keys(finalData[0]);
             populateSelectors();
-            switchView(3);
+            
+            document.getElementById('widgetsGrid').innerHTML = '';
+            savedWidgetsConfig = [];
+            window.switchView(3);
         }
 
-        // --- PASO 3: PLAYGROUND / MOTORES DE ANÁLISIS ---
         function populateSelectors() {
-            const selectors = document.querySelectorAll('.column-selector');
-            selectors.forEach(sel => {
-                // Guardar la opción por defecto si existe (ej. "-- Sin agrupar --")
-                const defaultOption = sel.querySelector('option[value=""]');
+            document.querySelectorAll('.column-selector').forEach(sel => {
+                const def = sel.querySelector('option[value=""]');
                 sel.innerHTML = '';
-                if(defaultOption) sel.appendChild(defaultOption);
-
-                columns.forEach(col => {
-                    sel.innerHTML += `<option value="${col}">${col}</option>`;
-                });
+                if(def) sel.appendChild(def);
+                columns.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`);
             });
         }
 
-        function createWidget(type) {
-            document.getElementById('emptyWorkspace').style.display = 'none';
+        // CREAR WIDGETS
+        window.createWidget = function(type, existingConfig = null) {
+            let config = existingConfig;
+
+            if (!config) {
+                if(type === 'count') config = { type: 'count', col: document.getElementById('countCol').value };
+                if(type === 'math') config = { type: 'math', op: document.getElementById('mathOp').value, valCol: document.getElementById('mathValCol').value, groupCol: document.getElementById('mathGroupCol').value };
+                savedWidgetsConfig.push(config);
+            }
+
+            const widgetId = 'w_' + Date.now() + Math.random().toString(36).substr(2, 5);
             const grid = document.getElementById('widgetsGrid');
-            const widgetId = 'chart_' + chartIdCounter++;
             
-            // Contenedor del Widget
             const card = document.createElement('div');
-            card.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200 relative group flex flex-col";
+            card.className = "bg-white p-5 rounded-2xl shadow border border-slate-200 relative group flex flex-col min-h-[300px]";
             card.innerHTML = `
-                <button onclick="this.parentElement.remove()" class="absolute top-3 right-3 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition"><i class="fas fa-trash"></i></button>
-                <h3 class="font-bold text-slate-700 mb-4 text-sm" id="title_${widgetId}">Analizando...</h3>
-                <div class="flex-1 relative min-h-[250px]"><canvas id="${widgetId}"></canvas></div>
-                <div id="data_${widgetId}" class="mt-4 pt-4 border-t border-slate-100 text-xs text-slate-500"></div>
+                <button onclick="this.parentElement.remove()" class="absolute top-3 right-3 text-red-400 opacity-0 group-hover:opacity-100"><i class="fas fa-times"></i></button>
+                <h3 class="font-bold text-slate-700 mb-4 text-sm truncate" id="title_${widgetId}">Cargando...</h3>
+                <div class="flex-1 relative"><canvas id="${widgetId}"></canvas></div>
             `;
             grid.appendChild(card);
 
-            const ctx = document.getElementById(widgetId).getContext('2d');
-            let chartConfig = null;
+            setTimeout(() => renderChartConfig(config, widgetId, card), 50);
+        }
 
-            // --- MOTOR DE CONTEOS (Frecuencias) ---
-            if(type === 'count') {
-                const col = document.getElementById('countCol').value;
-                document.getElementById(`title_${widgetId}`).innerHTML = `<i class="fas fa-chart-pie text-blue-500 mr-2"></i> Conteo de: ${col}`;
-                
+        function renderChartConfig(config, canvasId, cardEl) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            let chartData = { labels: [], datasets: [] };
+            let title = "";
+            let chartType = "bar";
+            let options = { responsive: true, maintainAspectRatio: false };
+
+            if(config.type === 'count') {
+                title = `<i class="fas fa-chart-pie text-blue-500 mr-2"></i> Conteo: ${config.col}`;
+                chartType = 'doughnut';
                 let counts = {};
-                let totalItems = 0;
-                finalData.forEach(row => {
-                    let val = row[col] || '(Vacío)';
-                    counts[val] = (counts[val] || 0) + 1;
-                    totalItems++;
-                });
-
-                // Ordenar de mayor a menor
-                let sortedCounts = Object.entries(counts).sort((a,b) => b[1] - a[1]);
-                let labels = sortedCounts.map(item => item[0]);
-                let data = sortedCounts.map(item => item[1]);
-
-                document.getElementById(`data_${widgetId}`).innerHTML = `Total registros procesados: <b>${totalItems}</b> | Categorías únicas: <b>${labels.length}</b>`;
-
-                chartConfig = {
-                    type: 'doughnut',
-                    data: { labels: labels, datasets: [{ data: data, backgroundColor: getColors(labels.length) }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
-                };
+                finalData.forEach(r => counts[r[config.col]||'Vacio'] = (counts[r[config.col]||'Vacio']||0) + 1);
+                let sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+                chartData.labels = sorted.map(i=>i[0]);
+                chartData.datasets = [{ data: sorted.map(i=>i[1]), backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#ec4899', '#06b6d4'] }];
             }
 
-            // --- MOTOR MATEMÁTICO (Sumas/Promedios) ---
-            if(type === 'math') {
-                const op = document.getElementById('mathOp').value;
-                const valCol = document.getElementById('mathValCol').value;
-                const groupCol = document.getElementById('mathGroupCol').value;
+            if(config.type === 'math') {
+                title = `<i class="fas fa-calculator text-green-500 mr-2"></i> ${config.op==='sum'?'Suma':'Promedio'}: ${config.valCol} ${config.groupCol ? 'por '+config.groupCol : ''}`;
                 
-                let titlePrefix = op === 'sum' ? 'Suma' : 'Promedio';
-                let title = groupCol ? `${titlePrefix} de ${valCol} por ${groupCol}` : `${titlePrefix} Total de ${valCol}`;
-                document.getElementById(`title_${widgetId}`).innerHTML = `<i class="fas fa-calculator text-green-500 mr-2"></i> ${title}`;
-
-                if(!groupCol) {
-                    // KPI Simple (Sin gráfico)
-                    let sum = finalData.reduce((acc, row) => acc + (parseFloat(row[valCol]) || 0), 0);
-                    let result = op === 'sum' ? sum : (sum / finalData.length);
-                    document.getElementById(widgetId).style.display = 'none'; // ocultar canvas
-                    card.querySelector('.flex-1').innerHTML = `
-                        <div class="flex items-center justify-center h-full">
-                            <span class="text-5xl font-black text-green-600">${result.toLocaleString(undefined, {maximumFractionDigits:2})}</span>
-                        </div>
-                    `;
+                if(!config.groupCol) {
+                    let sum = finalData.reduce((acc, r) => acc + (parseFloat(r[config.valCol])||0), 0);
+                    let val = config.op === 'sum' ? sum : sum/finalData.length;
+                    cardEl.querySelector('.flex-1').innerHTML = `<div class="flex items-center justify-center h-full"><span class="text-4xl font-black text-green-600">${val.toLocaleString(undefined, {maximumFractionDigits:2})}</span></div>`;
+                    document.getElementById(`title_${canvasId}`).innerHTML = title;
                     return;
-                } else {
-                    // Agrupado
-                    let grouped = {};
-                    let counts = {};
-                    finalData.forEach(row => {
-                        let gVal = row[groupCol] || '(Vacío)';
-                        let num = parseFloat(row[valCol]) || 0;
-                        grouped[gVal] = (grouped[gVal] || 0) + num;
-                        counts[gVal] = (counts[gVal] || 0) + 1;
-                    });
-
-                    let labels = Object.keys(grouped);
-                    let data = labels.map(l => op === 'sum' ? grouped[l] : (grouped[l] / counts[l]));
-
-                    document.getElementById(`data_${widgetId}`).innerHTML = `Grupos analizados: <b>${labels.length}</b>`;
-
-                    chartConfig = {
-                        type: 'bar',
-                        data: { labels: labels, datasets: [{ label: title, data: data, backgroundColor: 'rgba(34, 197, 94, 0.6)', borderColor: 'rgb(21, 128, 61)', borderWidth: 1 }] },
-                        options: { responsive: true, maintainAspectRatio: false }
-                    };
                 }
-            }
 
-            // --- MOTOR DE CRUCE (X vs Y) ---
-            if(type === 'cross') {
-                const colX = document.getElementById('crossX').value;
-                const colY = document.getElementById('crossY').value;
-                document.getElementById(`title_${widgetId}`).innerHTML = `<i class="fas fa-code-branch text-purple-500 mr-2"></i> Relación: ${colY} según ${colX}`;
-                
-                let grouped = {};
-                finalData.forEach(row => {
-                    let xVal = row[colX] || '(Vacío)';
-                    let numY = parseFloat(row[colY]) || 0;
-                    grouped[xVal] = (grouped[xVal] || 0) + numY;
+                let grouped = {}, counts = {};
+                finalData.forEach(r => {
+                    let g = r[config.groupCol]||'Vacio', v = parseFloat(r[config.valCol])||0;
+                    grouped[g] = (grouped[g]||0) + v;
+                    counts[g] = (counts[g]||0) + 1;
                 });
 
-                let labels = Object.keys(grouped);
-                let data = Object.values(grouped);
-
-                chartConfig = {
-                    type: 'line',
-                    data: { labels: labels, datasets: [{ label: colY, data: data, borderColor: 'rgb(168, 85, 247)', backgroundColor: 'rgba(168, 85, 247, 0.2)', fill: true, tension: 0.3 }] },
-                    options: { responsive: true, maintainAspectRatio: false }
-                };
+                chartType = 'bar';
+                chartData.labels = Object.keys(grouped);
+                chartData.datasets = [{ label: 'Valor', data: chartData.labels.map(l => config.op==='sum'?grouped[l]:grouped[l]/counts[l]), backgroundColor: 'rgba(34, 197, 94, 0.7)' }];
             }
 
-            // Renderizar Gráfico si aplica
-            if(chartConfig) new Chart(ctx, chartConfig);
+            document.getElementById(`title_${canvasId}`).innerHTML = title;
+            new Chart(ctx, { type: chartType, data: chartData, options: options });
         }
 
-        // Utilidades
-        function getColors(count) {
-            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
-            return Array(count).fill().map((_, i) => colors[i % colors.length]);
+
+        // FIREBASE GUARDAR Y CARGAR
+        window.saveToFirebase = async function() {
+            const name = document.getElementById('projectName').value || "Reporte sin nombre";
+            const btn = document.getElementById('btnSave');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Guardando...';
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "reportes"), {
+                    nombre: name,
+                    fecha: serverTimestamp(),
+                    hoja: activeSheetName, // Agregamos la hoja para tener el registro
+                    columnas: columns,
+                    datosJSON: JSON.stringify(finalData),
+                    configuracionGraficos: savedWidgetsConfig
+                });
+                
+                alert("¡Dashboard guardado exitosamente en la nube!");
+                loadCloudProjects();
+            } catch (error) {
+                console.error(error);
+                alert("Hubo un error al guardar. Revisa la consola.");
+            } finally {
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt mr-2"></i> Guardar en la Nube';
+                btn.disabled = false;
+            }
         }
+
+        async function loadCloudProjects() {
+            const listDiv = document.getElementById('cloudProjectsList');
+            try {
+                const q = query(collection(db, "reportes"), orderBy("fecha", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                listDiv.innerHTML = '';
+                if(querySnapshot.empty) {
+                    listDiv.innerHTML = '<p class="text-sm text-slate-500 text-center mt-4">No hay reportes guardados aún.</p>';
+                    return;
+                }
+
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-3 bg-white border rounded hover:border-blue-500 hover:shadow transition flex justify-between items-center group";
+                    btn.innerHTML = `
+                        <div>
+                            <p class="font-bold text-slate-700 group-hover:text-blue-600">${data.nombre}</p>
+                            <p class="text-xs text-slate-400"><i class="fas fa-layer-group text-blue-300"></i> ${data.hoja || 'Hoja 1'} | ${data.columnas.length} columnas</p>
+                        </div>
+                        <i class="fas fa-chevron-right text-slate-300 group-hover:text-blue-500 transition"></i>
+                    `;
+                    btn.onclick = () => openCloudProject(data);
+                    listDiv.appendChild(btn);
+                });
+            } catch (error) {
+                console.error(error);
+                listDiv.innerHTML = '<p class="text-xs text-red-500 p-2">Error cargando. Revisa la consola o crea los índices en Firebase.</p>';
+            }
+        }
+
+        window.openCloudProject = function(firebaseData) {
+            columns = firebaseData.columnas;
+            finalData = JSON.parse(firebaseData.datosJSON);
+            savedWidgetsConfig = firebaseData.configuracionGraficos || [];
+            
+            populateSelectors();
+            document.getElementById('projectName').value = firebaseData.nombre;
+            document.getElementById('widgetsGrid').innerHTML = ''; 
+
+            savedWidgetsConfig.forEach(widgetConfig => {
+                createWidget(widgetConfig.type, widgetConfig);
+            });
+
+            window.switchView(3);
+        }
+
+        loadCloudProjects();
     </script>
 </body>
 </html>
