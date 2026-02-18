@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v19 - Stable</title>
+    <title>DataMaster v20 - Stable & Offline Ready</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SheetJS -->
@@ -63,8 +63,8 @@
                     <button id="btnNext1" onclick="switchView(2)" class="hidden w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 transition animate-bounce">Continuar <i class="fas fa-arrow-right ml-2"></i></button>
                 </div>
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-96 md:h-auto">
-                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100"><h2 class="font-bold text-slate-800"><i class="fas fa-history text-slate-400 mr-2"></i> Guardados</h2><span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-bold">Nube</span></div>
-                    <div id="cloudProjectsList" class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1"><div class="text-center text-slate-400 mt-10 flex flex-col items-center"><i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><span class="text-xs">Conectando...</span></div></div>
+                    <div class="flex justify-between items-center mb-4 pb-4 border-b border-slate-100"><h2 class="font-bold text-slate-800"><i class="fas fa-history text-slate-400 mr-2"></i> Guardados</h2><span id="authStatus" class="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full font-bold">Offline</span></div>
+                    <div id="cloudProjectsList" class="flex-1 overflow-y-auto custom-scroll space-y-2 pr-1"><div class="text-center text-slate-400 mt-10 flex flex-col items-center"><i class="fas fa-cloud-slash text-2xl mb-2"></i><span class="text-xs">Sin conexión a BD</span></div></div>
                 </div>
             </div>
         </div>
@@ -158,17 +158,18 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // FIREBASE & AUTH FIX
         const firebaseConfig = { apiKey: "AIzaSyCZXwXN15MYVpFP0-QbgR-H4bHqMH4_EFA", authDomain: "reporte-d37d1.firebaseapp.com", projectId: "reporte-d37d1", storageBucket: "reporte-d37d1.firebasestorage.app", messagingSenderId: "995600823465", appId: "1:995600823465:web:3ae9ede621cf0631ad65b8" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // AUTO-LOGIN ANÓNIMO PARA CORREGIR PERMISOS
+        let isAuth = false;
         signInAnonymously(auth).then(() => {
-            console.log("Conectado a Firebase");
-            loadProjs(); // Cargar proyectos solo cuando tengamos permiso
-        }).catch((error) => console.error("Error Auth:", error));
+            isAuth = true; document.getElementById('authStatus').innerText = "Online";
+            document.getElementById('authStatus').classList.replace('bg-gray-100', 'bg-green-100');
+            document.getElementById('authStatus').classList.replace('text-gray-500', 'text-green-700');
+            loadProjs();
+        }).catch((e) => console.log("Modo Offline activo (Error Auth: " + e.code + ")"));
 
         let rawWorkbooks = {}; let processedDataSources = {}; let currentFileId = null;
         let savedWidgetsConfig = []; let savedAuditWidgetsConfig = [];
@@ -176,7 +177,7 @@
         window.toggleMobilePanel = function(id) { document.getElementById(id).classList.toggle('open'); }
         window.handleGenerate = function() {
             try { generateMergedAudit(); toggleMobilePanel('auditConfigPanel'); } 
-            catch(e) { console.error(e); alert("Revisa la configuración de columnas."); }
+            catch(e) { console.error(e); alert("Hubo un error al generar. Verifica que hayas seleccionado las columnas."); }
         }
 
         window.switchView = function(step) {
@@ -279,7 +280,7 @@
             const grid = document.getElementById('widgetsGrid');
             const card = document.createElement('div');
             card.className = "bg-white p-5 rounded-2xl shadow-sm border border-slate-200 h-80 relative flex flex-col";
-            card.innerHTML = `<div class="flex justify-between items-start mb-4"><h3 class="text-sm font-bold text-slate-800">${config.title}</h3><button onclick="this.parentElement.parentElement.remove()" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-times"></i></button></div><div class="flex-1 relative w-full"><canvas id="${wid}"></canvas></div>`;
+            card.innerHTML = `<div class="flex justify-between items-start mb-4"><h3 class="text-sm font-bold text-slate-800">${config.title}</h3><button onclick="this.parentElement.parentElement.remove()" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-times"></i></button></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div>`;
             grid.prepend(card);
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 100);
         }
@@ -380,16 +381,23 @@
                         mappings.push({ dsId: ds.id, name: ds.name, x: document.getElementById(`ax_${ds.id}`).value, y: document.getElementById(`ay_${ds.id}`).value, target: target, filters: filters });
                     }
                 });
+                
                 if(mappings.length === 0) return alert("Selecciona fuentes.");
+                
+                // VALIDACIÓN CRÍTICA: Si es percent/count, debe haber target
+                if (agg === 'percent' || agg === 'count') {
+                    let missingTarget = mappings.find(m => m.y && (!m.target || m.target.length === 0));
+                    if (missingTarget) return alert(`Para ${missingTarget.name}, debes seleccionar al menos un valor en "Evaluar/Contar".`);
+                }
+
                 config = { title: document.getElementById('auditTitle').value || 'Unificado', mode: mode, agg: agg, type: document.getElementById('auditChartType').value, mappings: mappings };
                 savedAuditWidgetsConfig.push(config);
             }
             const wid = 'aw_'+Date.now()+Math.random();
             const grid = document.getElementById('auditWidgetsGrid');
             const card = document.createElement('div');
-            card.className = "flip-container h-80 w-full perspective-1000";
-            // FIXED ID REFERENCE ERROR
-            card.innerHTML = `<div class="flipper rounded-2xl shadow-sm border border-slate-200 bg-white" id="f_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm text-slate-800">${config.title} <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-2">${config.mode==='merge'?'Unificado':'Comparativa'}</span></h3><div class="flex gap-2"><button onclick="document.getElementById('f_${wid}').parentNode.classList.toggle('flipped')" class="text-slate-400 hover:text-blue-600 transition"><i class="fas fa-table"></i></button><button onclick="this.closest('.flip-container').remove()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full"><canvas id="${wid}"></canvas></div></div><div class="back p-5 flex flex-col bg-slate-50 rounded-2xl border-2 border-blue-400 overflow-hidden"><div class="flex justify-between mb-4"><h3 class="font-bold text-xs text-blue-700">Tabla de Datos</h3><button onclick="document.getElementById('f_${wid}').parentNode.classList.toggle('flipped')" class="text-xs font-bold text-slate-500 hover:text-slate-800"><i class="fas fa-undo"></i> Volver</button></div><div class="flex-1 overflow-auto bg-white border rounded-lg" id="tb_${wid}"></div></div></div>`;
+            card.className = "flip-container h-96 w-full perspective-1000";
+            card.innerHTML = `<div class="flipper rounded-2xl shadow-sm border border-slate-200 bg-white" id="f_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm text-slate-800">${config.title} <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-2">${config.mode==='merge'?'Unificado':'Comparativa'}</span></h3><div class="flex gap-2"><button onclick="document.getElementById('f_${wid}').parentNode.classList.toggle('flipped')" class="text-slate-400 hover:text-blue-600 transition"><i class="fas fa-table"></i></button><button onclick="this.closest('.flip-container').remove()" class="text-slate-400 hover:text-red-500 transition"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div></div><div class="back p-5 flex flex-col bg-slate-50 rounded-2xl border-2 border-blue-400 overflow-hidden"><div class="flex justify-between mb-4"><h3 class="font-bold text-xs text-blue-700">Tabla de Datos</h3><button onclick="document.getElementById('f_${wid}').parentNode.classList.toggle('flipped')" class="text-xs font-bold text-slate-500 hover:text-slate-800"><i class="fas fa-undo"></i> Volver</button></div><div class="flex-1 overflow-auto bg-white border rounded-lg" id="tb_${wid}"></div></div></div>`;
             grid.prepend(card); setTimeout(() => renderUnifiedChart(config, wid), 100);
         }
 
@@ -448,7 +456,7 @@
         }
 
         window.saveToFirebase = async function() {
-            if (!auth.currentUser) { alert("Autenticando... intente en 2 segundos"); return; }
+            if (!isAuth) { alert("Modo Offline: Configura Firebase Auth en la consola para guardar en la nube."); return; }
             const btn = document.getElementById('btnSave'); btn.innerText = 'Guardando...'; btn.disabled = true;
             try {
                 await addDoc(collection(db, "reportes_v17"), {
@@ -460,7 +468,7 @@
             btn.innerText = 'Guardar'; btn.disabled = false;
         }
         async function loadProjs() {
-            if (!auth.currentUser) return;
+            if (!isAuth) return;
             const snaps = await getDocs(query(collection(db, "reportes_v17"), orderBy("date", "desc")));
             const list = document.getElementById('cloudProjectsList'); list.innerHTML = '';
             snaps.forEach(doc => {
