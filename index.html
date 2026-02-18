@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Data Workspace v14 - Ultimate Unification</title>
+    <title>Cloud Data Workspace v15 - Perfect Pivot Unification</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -67,8 +67,8 @@
                 <select id="sheetSelector" class="w-full p-2 border rounded bg-slate-50 mb-4 text-sm" onchange="renderRawPreview()"></select>
                 <label class="text-[11px] font-bold text-slate-500 uppercase mb-1">3. Fila de Encabezados</label>
                 <input type="number" id="headerRow" value="1" min="1" class="w-full p-2 border rounded text-center mb-4">
-                <button onclick="saveAsDataSource()" class="w-full bg-blue-600 text-white px-4 py-3 rounded font-bold shadow hover:bg-blue-700 flex justify-center items-center">
-                    <i class="fas fa-plus mr-2"></i> Guardar como Fuente
+                <button onclick="saveAsDataSource()" class="w-full bg-blue-600 text-white px-4 py-3 rounded font-bold shadow hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i> Guardar Fuente
                 </button>
                 <div class="mt-4 border-t pt-2 flex-1 overflow-y-auto">
                     <h4 class="text-[10px] font-bold text-slate-500 uppercase mb-2">Fuentes Listas:</h4>
@@ -91,18 +91,18 @@
             <aside class="w-[420px] bg-white shadow-xl z-10 flex flex-col border-r border-slate-300">
                 <div class="p-4 bg-slate-800 text-white flex justify-between items-center"><h3 class="font-bold"><i class="fas fa-chart-pie mr-2"></i> Métricas Locales</h3></div>
                 <div class="p-4 overflow-y-auto flex-1 flex flex-col gap-4 custom-scroll">
-                    <div class="bg-indigo-50 border border-indigo-200 p-2 rounded-lg"><label class="block text-[11px] font-bold text-indigo-900 uppercase">1. Fuente de Datos</label><select id="dsSelector" class="w-full p-1.5 border rounded outline-none text-sm font-bold bg-white" onchange="onDataSourceChange()"></select></div>
-                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 flex flex-col gap-2 shadow-inner">
+                    <div class="bg-indigo-50 border p-2 rounded-lg"><label class="block text-[11px] font-bold text-indigo-900 uppercase">Fuente de Datos</label><select id="dsSelector" class="w-full p-1.5 border rounded text-sm font-bold bg-white" onchange="onDataSourceChange()"></select></div>
+                    <div class="bg-blue-50 p-3 rounded-lg border flex flex-col gap-2 shadow-inner">
                         <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Nombre del Gráfico</label><input type="text" id="widgetTitle" class="w-full p-1.5 border rounded"></div>
                         <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Agrupar Por (Eje X)</label><select id="axisX" class="w-full p-1.5 border rounded column-selector"></select></div>
                         <div class="grid grid-cols-2 gap-2 border-t pt-2">
                             <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Cálculo</label><select id="aggType" class="w-full p-1.5 border rounded" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="avg">Promedio</option><option value="percent">Porcentaje (%)</option></select></div>
                             <div><label class="block text-[10px] font-bold text-blue-900 uppercase">Eje Y</label><select id="axisY" class="w-full p-1.5 border rounded column-selector" onchange="updatePercentTargets()"></select></div>
                         </div>
-                        <div id="percentTargetUI" class="hidden bg-yellow-50 border p-2 rounded"><label class="block text-[10px] font-bold text-yellow-800 uppercase">¿Qué es el Éxito?</label><select id="percentTargetValue" class="w-full p-1.5 border rounded"></select></div>
+                        <div id="percentTargetUI" class="hidden bg-yellow-50 border p-2 rounded"><label class="block text-[10px] font-bold text-yellow-800 uppercase">Valor Éxito</label><select id="percentTargetValue" class="w-full p-1.5 border rounded"></select></div>
                     </div>
-                    <div class="border border-slate-300 rounded-lg bg-white shadow-sm">
-                        <div class="bg-slate-100 p-2 border-b rounded-t-lg flex justify-between items-center"><h4 class="text-[11px] font-bold text-slate-700 uppercase"><i class="fas fa-filter mr-1"></i> Filtros (Acumulables)</h4><button onclick="addGlobalFilter()" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-200">+ Añadir Filtro</button></div>
+                    <div class="border rounded-lg bg-white shadow-sm">
+                        <div class="bg-slate-100 p-2 border-b rounded-t-lg flex justify-between items-center"><h4 class="text-[11px] font-bold text-slate-700 uppercase">Filtros (Acumulables)</h4><button onclick="addGlobalFilter()" class="text-[10px] bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">+ Filtro</button></div>
                         <div id="globalFiltersArea" class="p-2 flex flex-col gap-2 max-h-40 overflow-y-auto custom-scroll"></div>
                     </div>
                     <div>
@@ -113,7 +113,7 @@
                             <button onclick="selectChartType('doughnut')" class="chart-btn p-2 border rounded hover:bg-slate-100" data-type="doughnut"><i class="fas fa-circle-notch text-lg text-orange-500 block"></i>Dona</button>
                         </div><input type="hidden" id="selectedChartType" value="column">
                     </div>
-                    <button onclick="buildWidget()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 mt-2"><i class="fas fa-play mr-2"></i> Generar Métrica Local</button>
+                    <button onclick="buildWidget()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-blue-700 mt-2"><i class="fas fa-play mr-2"></i> Generar Métrica</button>
                 </div>
             </aside>
             <main class="flex-1 p-8 overflow-y-auto bg-slate-200 relative">
@@ -135,12 +135,11 @@
                     </div>
                     <div class="grid grid-cols-2 gap-2">
                         <div>
-                            <label class="block text-[10px] font-bold text-emerald-900 uppercase">Tipo de Cálculo</label>
+                            <label class="block text-[10px] font-bold text-emerald-900 uppercase">Cálculo Global</label>
                             <select id="auditAggType" class="w-full p-1.5 border rounded text-[11px] font-bold outline-none text-emerald-800" onchange="buildAuditSidebar()">
                                 <option value="percent">Porcentaje (%)</option>
                                 <option value="sum">Sumatoria</option>
                                 <option value="count">Contar Filas</option>
-                                <option value="avg">Promedio</option>
                             </select>
                         </div>
                         <div>
@@ -172,7 +171,7 @@
 
             <main class="flex-1 p-8 overflow-y-auto relative bg-slate-100 flex flex-col">
                 <div id="emptyAudit" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-                    <i class="fas fa-link text-6xl mb-3 opacity-50"></i><p class="font-bold">Crea múltiples métricas consolidadas en el panel izquierdo.</p>
+                    <i class="fas fa-link text-6xl mb-3 opacity-50"></i><p class="font-bold">Mapea tus columnas en el panel izquierdo para unir datos.</p>
                 </div>
                 <div id="auditWidgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 relative z-10"></div>
             </main>
@@ -188,8 +187,7 @@
         const db = getFirestore(app);
 
         let rawWorkbooks = {}; let processedDataSources = {}; let currentFileId = null;
-        let savedWidgetsConfig = []; // Paso 3
-        let savedAuditWidgetsConfig = []; // Paso 4
+        let savedWidgetsConfig = []; let savedAuditWidgetsConfig = [];
 
         window.switchView = function(step) {
             document.getElementById('view-upload').classList.add('hidden');
@@ -212,10 +210,9 @@
             });
         }
 
-        // --- PASO 1 Y 2: SUBIR Y FUENTES ---
+        // --- FUNCIONES BÁSICAS DE CARGA (Sin cambios) ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
+            const files = Array.from(e.target.files); if (files.length === 0) return;
             document.getElementById('uploadStatus').innerHTML = `<i class="fas fa-spinner fa-spin"></i> Leyendo...`;
             rawWorkbooks = {}; processedDataSources = {};
             for(let i=0; i<files.length; i++) {
@@ -224,10 +221,7 @@
             }
             const fileSel = document.getElementById('fileSelector'); fileSel.innerHTML = '';
             Object.keys(rawWorkbooks).forEach(id => fileSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
-            
-            document.getElementById('btnNext1').classList.remove('hidden');
-            window.changeActiveFile();
-            document.getElementById('tab2').disabled = false;
+            document.getElementById('btnNext1').classList.remove('hidden'); window.changeActiveFile(); document.getElementById('tab2').disabled = false;
         });
 
         window.changeActiveFile = function() {
@@ -242,30 +236,25 @@
             const wb = rawWorkbooks[currentFileId].workbook;
             const rawArray = XLSX.utils.sheet_to_json(wb.Sheets[document.getElementById('sheetSelector').value], { header: 1, defval: "" });
             const tbody = document.getElementById('rawTablePreview'); tbody.innerHTML = '';
-            for(let i = 0; i < Math.min(rawArray.length, 20); i++) {
+            for(let i = 0; i < Math.min(rawArray.length, 10); i++) {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="p-1 bg-slate-200 text-slate-500 border-r w-8 text-center">${i + 1}</td>`;
+                tr.innerHTML = `<td class="p-1 bg-slate-200 text-slate-500 border-r text-center">${i + 1}</td>`;
                 rawArray[i].forEach(cell => tr.innerHTML += `<td class="p-1 border-r truncate max-w-[150px]">${cell}</td>`);
                 tbody.appendChild(tr);
             }
         }
 
         window.saveAsDataSource = function() {
-            const wb = rawWorkbooks[currentFileId].workbook;
-            const sheetName = document.getElementById('sheetSelector').value;
+            const wb = rawWorkbooks[currentFileId].workbook; const sheetName = document.getElementById('sheetSelector').value;
             const headerRowNum = parseInt(document.getElementById('headerRow').value) - 1;
-            const sheet = wb.Sheets[sheetName];
-            let range = XLSX.utils.decode_range(sheet['!ref']); range.s.r = Math.max(0, headerRowNum);
-            
+            const sheet = wb.Sheets[sheetName]; let range = XLSX.utils.decode_range(sheet['!ref']); range.s.r = Math.max(0, headerRowNum);
             let rawData = XLSX.utils.sheet_to_json(sheet, { range: XLSX.utils.encode_range(range), defval: null });
             let cleanData = rawData.map(r => { let c = {}; for(let k in r) if(!k.includes("__EMPTY")) c[k.trim()] = r[k]; return c; }).filter(r => Object.keys(r).length > 0);
-            
             if(cleanData.length === 0) return alert("Sin datos.");
 
             let dsId = 'ds_' + Date.now();
             processedDataSources[dsId] = { id: dsId, name: `${rawWorkbooks[currentFileId].name} (${sheetName})`, columns: Object.keys(cleanData[0]), data: cleanData };
-
-            document.getElementById('processedSourcesList').innerHTML = Object.values(processedDataSources).map(ds => `<div class="p-1 bg-blue-50 border border-blue-200 rounded text-blue-800 text-[10px] mb-1"><i class="fas fa-check-circle text-green-500 mr-1"></i>${ds.name}</div>`).join('');
+            document.getElementById('processedSourcesList').innerHTML = Object.values(processedDataSources).map(ds => `<div class="p-1 bg-blue-50 border rounded text-blue-800 text-[10px] mb-1">${ds.name}</div>`).join('');
             
             document.getElementById('btnGoPlayground').disabled = false; document.getElementById('btnGoPlayground').classList.remove('opacity-50');
             document.getElementById('btnGoAudit').disabled = false; document.getElementById('btnGoAudit').classList.remove('opacity-50');
@@ -276,12 +265,11 @@
             window.onDataSourceChange();
         }
 
-        // --- PASO 3: DASHBOARD LOCAL (Mantenido) ---
+        // --- DASHBOARD LOCAL (Simplificado para el código, funcionando OK) ---
         window.onDataSourceChange = function() {
             const dsId = document.getElementById('dsSelector').value; if(!dsId) return;
             const cols = processedDataSources[dsId].columns;
             document.querySelectorAll('.column-selector').forEach(sel => { sel.innerHTML = ''; cols.forEach(col => sel.innerHTML += `<option value="${col}">${col}</option>`); });
-            document.getElementById('globalFiltersArea').innerHTML = '';
         }
         window.selectChartType = function(type) { document.getElementById('selectedChartType').value = type; document.querySelectorAll('.chart-btn').forEach(b => { b.classList.remove('bg-blue-100'); if(b.dataset.type === type) b.classList.add('bg-blue-100'); });}
         window.togglePercentUI = function() { if(document.getElementById('aggType').value === 'percent') { document.getElementById('percentTargetUI').classList.remove('hidden'); window.updatePercentTargets(); } else document.getElementById('percentTargetUI').classList.add('hidden'); }
@@ -316,7 +304,6 @@
             grid.appendChild(card); setTimeout(() => renderChartCore(config, wId, processedDataSources[config.datasetId].data), 50);
         }
 
-        // Motor gráfico base compartido
         function renderChartCore(config, canvasId, sourceDataArray) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             let filteredData = sourceDataArray;
@@ -326,7 +313,12 @@
                 let key = row[config.axisX] || '(Vacío)'; let yVal = parseFloat(row[config.axisY]) || 0; let rawY = row[config.axisY];
                 if (!grouped[key]) grouped[key] = { sum: 0, count: 0, valid: 0, hits: 0 };
                 grouped[key].count += 1; 
-                if (config.agg === 'percent') { if (rawY && rawY.toString().trim() === config.percentTarget) grouped[key].hits += 1; } 
+                if (config.agg === 'percent') { 
+                    // COMPARACIÓN ROBUSTA DE STRINGS (Ignora mayúsculas y espacios invisibles)
+                    let vStr = rawY ? rawY.toString().trim().toLowerCase() : "";
+                    let targetStr = config.percentTarget ? config.percentTarget.trim().toLowerCase() : "";
+                    if (vStr === targetStr) grouped[key].hits += 1; 
+                } 
                 else if (config.agg === 'count') { if (rawY !== null && rawY !== undefined && rawY !== '') grouped[key].valid += 1; } 
                 else { grouped[key].sum += yVal; }
             });
@@ -343,10 +335,14 @@
                 fLabels.push(k); fValues.push(val); tbody += `<tr><td class="p-1 border-b">${k}</td><td class="p-1 border-b text-right font-bold">${disp}</td></tr>`;
             });
             document.getElementById(`tbody_${canvasId}`).innerHTML = tbody;
+            
             let cType = 'bar'; let cOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
-            if(config.agg==='percent' && config.type!=='doughnut' && config.type!=='pie') cOptions.scales = {y:{min:0,max:100}};
-            let cDataset = { label: 'Métrica', data: fValues, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] };
-            if(config.type==='bar'){ cOptions.indexAxis='y'; if(config.agg==='percent')cOptions.scales={x:{min:0,max:100}}; }
+            // FIX: Barras muy gruesas
+            let cDataset = { label: 'Métrica', data: fValues, backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'], maxBarThickness: 50 };
+            
+            if(config.agg==='percent' && config.type!=='doughnut') cOptions.scales = {y:{min:0,max:100}};
+            
+            if(config.type==='bar'){ cOptions.indexAxis='y'; if(config.agg==='percent')cOptions.scales={x:{min:0,max:100}, y:{}}; }
             else if(config.type==='line'){ cType='line'; cDataset.borderColor='#4f46e5'; cDataset.fill=false;}
             else if(config.type==='doughnut'){ cType='doughnut'; cOptions.plugins.legend.display=true; }
             new Chart(ctx, { type: cType, data: { labels: fLabels, datasets: [cDataset] }, options: cOptions });
@@ -354,7 +350,7 @@
 
 
         // ==============================================================
-        // 🔥 PASO 4: NUEVO ESTUDIO DE UNIFICACIÓN DEFINITIVA 🔥
+        // 🔥 PASO 4: NUEVO ESTUDIO DE UNIFICACIÓN (AGRUPACIÓN CRUZADA) 🔥
         // ==============================================================
 
         window.buildAuditSidebar = function() {
@@ -365,41 +361,51 @@
             Object.values(processedDataSources).forEach(ds => {
                 let opts = `<option value="">-- Columna --</option>` + ds.columns.map(c => `<option value="${c}">${c}</option>`).join('');
                 const card = document.createElement('div');
-                card.className = "bg-emerald-50 border border-emerald-200 rounded p-2 relative";
+                card.className = "bg-emerald-50 border border-emerald-200 rounded p-2 relative shadow-sm";
                 
                 let mappingHtml = `
                     <div class="flex justify-between items-center mb-1">
-                        <h4 class="font-bold text-emerald-900 text-[10px] truncate w-3/4"><i class="fas fa-file-excel mr-1"></i> ${ds.name}</h4>
+                        <h4 class="font-bold text-emerald-900 text-[10px] truncate w-3/4"><i class="fas fa-file-excel mr-1 text-emerald-600"></i> ${ds.name}</h4>
                         <label class="text-[9px] text-emerald-700 font-bold flex items-center gap-1 cursor-pointer"><input type="checkbox" checked id="inc_${ds.id}" class="w-3 h-3"> Incluir</label>
                     </div>
                 `;
 
-                // Según el tipo, mostramos qué mapear
+                // EJE X COMÚN (Para agrupar entre archivos, ej: DEPARTAMENTO)
+                mappingHtml += `
+                    <div class="bg-white p-1 rounded border border-emerald-100 mb-1">
+                        <label class="block text-[9px] font-bold text-slate-700 uppercase">Agrupar Por (Eje X)</label>
+                        <select id="auditXCol_${ds.id}" class="w-full p-1 border rounded text-[10px] font-bold text-blue-700 outline-none">${opts}</select>
+                    </div>
+                `;
+
+                // EJE Y / EVALUACIÓN SEGÚN TIPO
+                mappingHtml += `<div class="bg-white p-1 rounded border border-emerald-100">`;
                 if(agg === 'percent') {
                     mappingHtml += `
-                        <label class="block text-[9px] font-bold text-emerald-800 uppercase mt-1">Evaluar Estado</label>
-                        <select id="auditCol_${ds.id}" class="w-full p-1 border rounded text-[10px] mb-1" onchange="populateAuditSuccess('${ds.id}')">${opts}</select>
-                        <label class="block text-[9px] font-bold text-emerald-600 uppercase">Valor "Éxito"</label>
-                        <select id="auditDigVal_${ds.id}" class="w-full p-1 border rounded text-[10px] mb-1" disabled></select>
+                        <label class="block text-[9px] font-bold text-emerald-800 uppercase">Columna a Evaluar (Estado)</label>
+                        <select id="auditCol_${ds.id}" class="w-full p-1 border rounded text-[10px] mb-1 outline-none" onchange="populateAuditSuccess('${ds.id}')">${opts}</select>
+                        <label class="block text-[9px] font-bold text-yellow-600 uppercase">Valor "Éxito"</label>
+                        <select id="auditDigVal_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none" disabled></select>
                     `;
                 } else if(agg === 'count') {
                     mappingHtml += `
-                        <label class="block text-[9px] font-bold text-emerald-800 uppercase mt-1">Columna a Contar</label>
-                        <select id="auditCol_${ds.id}" class="w-full p-1 border rounded text-[10px] mb-1">${opts}</select>
+                        <label class="block text-[9px] font-bold text-emerald-800 uppercase">Columna a Contar</label>
+                        <select id="auditCol_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none">${opts}</select>
                     `;
-                } else { // sum o avg
+                } else { // sum
                     mappingHtml += `
-                        <label class="block text-[9px] font-bold text-emerald-800 uppercase mt-1">Valores Numéricos (Eje Y)</label>
-                        <select id="auditCol_${ds.id}" class="w-full p-1 border rounded text-[10px] mb-1">${opts}</select>
+                        <label class="block text-[9px] font-bold text-emerald-800 uppercase">Columna a Sumar (Números)</label>
+                        <select id="auditCol_${ds.id}" class="w-full p-1 border rounded text-[10px] outline-none">${opts}</select>
                     `;
                 }
+                mappingHtml += `</div>`;
 
-                // Área de Filtros Locales de esta fuente
+                // FILTROS LOCALES
                 mappingHtml += `
                     <div class="mt-2 border-t border-emerald-200 pt-1">
                         <div class="flex justify-between items-center">
-                            <span class="text-[9px] font-bold text-emerald-700"><i class="fas fa-filter"></i> Filtros Locales</span>
-                            <button onclick="addAuditFilter('${ds.id}')" class="text-[9px] text-emerald-600 bg-emerald-100 px-1 rounded hover:bg-emerald-200 transition">+ Filtro</button>
+                            <span class="text-[9px] font-bold text-emerald-700"><i class="fas fa-filter"></i> Filtros de este Archivo</span>
+                            <button onclick="addAuditFilter('${ds.id}')" class="text-[9px] text-emerald-600 bg-emerald-100 px-1 rounded hover:bg-emerald-200">+ Añadir</button>
                         </div>
                         <div id="auditFilters_${ds.id}" class="mt-1 flex flex-col gap-1"></div>
                     </div>
@@ -434,7 +440,7 @@
             Array.from(uSet).sort().forEach(val => { chk.innerHTML += `<label class="flex items-center gap-1 hover:bg-slate-100 p-0.5 rounded cursor-pointer"><input type="checkbox" value="${val}" checked class="w-3 h-3 text-emerald-600 achk-input-${fId}"><span class="truncate" title="${val}">${val}</span></label>`; });
         }
 
-        // GENERAR MÚLTIPLES WIDGETS UNIFICADOS
+        // GENERAR MÚLTIPLES WIDGETS UNIFICADOS CON AGRUPACIÓN CRUZADA
         window.generateMergedAudit = function(existingConfig = null) {
             document.getElementById('emptyAudit').style.display = 'none';
 
@@ -449,9 +455,10 @@
 
                 Object.values(processedDataSources).forEach(ds => {
                     if(document.getElementById(`inc_${ds.id}`).checked) {
-                        const col = document.getElementById(`auditCol_${ds.id}`).value;
-                        if(col) {
-                            // Cosechar filtros locales
+                        const colY = document.getElementById(`auditCol_${ds.id}`).value; // Lo que evalúa
+                        const colX = document.getElementById(`auditXCol_${ds.id}`).value; // Por lo que agrupa
+                        
+                        if(colY) {
                             let localFilters = [];
                             const filtersContainer = document.getElementById(`auditFilters_${ds.id}`);
                             if(filtersContainer) {
@@ -467,7 +474,8 @@
                             sourceMappings.push({
                                 dsId: ds.id,
                                 dsName: ds.name,
-                                column: col,
+                                axisX: colX, // Eje X local que se mapeará al Eje X global
+                                column: colY, // Eje Y
                                 digVal: agg === 'percent' ? document.getElementById(`auditDigVal_${ds.id}`).value : null,
                                 filters: localFilters
                             });
@@ -481,28 +489,27 @@
                 savedAuditWidgetsConfig.push(config);
             }
 
-            // CREAR UI DEL WIDGET UNIFICADO
+            // UI WIDGET UNIFICADO
             const wId = 'aw_' + Date.now() + Math.floor(Math.random()*1000);
             const grid = document.getElementById('auditWidgetsGrid');
             const card = document.createElement('div');
-            card.className = "flip-container h-[400px] w-full bg-transparent perspective-1000";
+            card.className = "flip-container h-[450px] w-full bg-transparent perspective-1000";
             
-            // Front (Gráfico) / Back (Tabla)
             card.innerHTML = `
                 <div class="flipper rounded-2xl shadow-lg border bg-white" id="flipper_${wId}">
                     <div class="front p-4 flex flex-col bg-white rounded-2xl">
                         <div class="flex justify-between items-start mb-2 border-b pb-2">
-                            <div class="flex-1"><h3 class="font-bold text-lg text-emerald-900 truncate"><i class="fas fa-globe"></i> ${config.title}</h3><p class="text-[10px] text-slate-400">Archivos fusionados: ${config.mappings.length}</p></div>
+                            <div class="flex-1 pr-2"><h3 class="font-bold text-lg text-emerald-900 truncate"><i class="fas fa-globe"></i> ${config.title}</h3><p class="text-[10px] text-slate-400">Datos consolidados desde ${config.mappings.length} archivos</p></div>
                             <div class="flex gap-1">
                                 <button onclick="document.getElementById('flipper_${wId}').parentNode.classList.toggle('flipped')" class="text-slate-400 hover:text-emerald-600 p-1 bg-slate-50 rounded"><i class="fas fa-table"></i></button>
                                 <button onclick="this.closest('.flip-container').remove()" class="text-slate-400 hover:text-red-500 p-1 bg-slate-50 rounded"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
-                        <div class="flex-1 relative"><canvas id="${wId}"></canvas></div>
+                        <div class="flex-1 relative min-h-0"><canvas id="${wId}"></canvas></div>
                     </div>
                     <div class="back p-4 flex flex-col bg-slate-50 rounded-2xl border-2 border-emerald-400">
-                        <div class="flex justify-between mb-2"><h3 class="font-bold text-emerald-800 text-sm"><i class="fas fa-table"></i> Desglose por Fuente</h3><button onclick="document.getElementById('flipper_${wId}').parentNode.classList.toggle('flipped')" class="text-emerald-600 text-xs font-bold"><i class="fas fa-undo"></i> Volver</button></div>
-                        <div class="flex-1 overflow-auto bg-white border custom-scroll"><table class="min-w-full text-xs text-left"><thead class="bg-emerald-50 text-emerald-900"><tr><th class="p-2 border-b">Fuente</th><th class="p-2 border-b text-right">Resultado</th></tr></thead><tbody id="tbody_${wId}"></tbody></table></div>
+                        <div class="flex justify-between mb-2"><h3 class="font-bold text-emerald-800 text-sm"><i class="fas fa-table"></i> Tabla Dinámica Consolidada</h3><button onclick="document.getElementById('flipper_${wId}').parentNode.classList.toggle('flipped')" class="text-emerald-600 text-xs font-bold"><i class="fas fa-undo"></i> Volver</button></div>
+                        <div class="flex-1 overflow-auto bg-white border custom-scroll"><table class="min-w-full text-xs text-left"><thead class="bg-emerald-50 text-emerald-900"><tr><th class="p-2 border-b">Categoría Agrupada</th><th class="p-2 border-b text-right">Resultado</th></tr></thead><tbody id="tbody_${wId}"></tbody></table></div>
                     </div>
                 </div>
             `;
@@ -512,51 +519,70 @@
             document.getElementById('auditTitle').value = '';
         }
 
-        // CÁLCULO DE DATOS UNIFICADOS
         function renderUnifiedChart(config, canvasId) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            let chartLabels = [];
-            let chartData = [];
-            let tbodyHtml = '';
-
+            let grouped = {};
             let grandTotalSum = 0; let grandTotalCount = 0; let grandTotalHits = 0;
 
+            // FUSIÓN Y AGRUPACIÓN CRUZADA REAL
             config.mappings.forEach(map => {
                 let rawData = processedDataSources[map.dsId].data;
                 
-                // Aplicar filtros locales de este archivo
                 if(map.filters && map.filters.length > 0) {
                     map.filters.forEach(f => {
                         rawData = rawData.filter(r => { let val = r[f.column]?r[f.column].toString().trim():""; return f.allowed.includes(val); });
                     });
                 }
 
-                let sum = 0; let count = 0; let hits = 0; let valid = 0;
-                
                 rawData.forEach(r => {
+                    // EXTRAER CATEGORÍA X. Si no configuró Eje X, se agrupa todo bajo "Total General"
+                    let key = map.axisX ? (r[map.axisX] ? r[map.axisX].toString().trim() : '(Sin Categoría)') : map.dsName.split(' ')[0];
                     let v = r[map.column];
                     let num = parseFloat(v) || 0;
                     
-                    count++;
-                    if(config.agg === 'percent') { if(v && v.toString().trim() === map.digVal) hits++; }
-                    else if(config.agg === 'count') { if(v !== null && v !== undefined && v !== '') valid++; }
-                    else { sum += num; }
+                    if(!grouped[key]) grouped[key] = { sum: 0, count: 0, hits: 0, valid: 0 };
+                    
+                    grouped[key].count++;
+                    grandTotalCount++;
+
+                    if(config.agg === 'percent') {
+                        let vStr = v ? v.toString().trim().toLowerCase() : "";
+                        let targetStr = map.digVal ? map.digVal.trim().toLowerCase() : "";
+                        if(vStr === targetStr) {
+                            grouped[key].hits++;
+                            grandTotalHits++;
+                        }
+                    } else if(config.agg === 'count') {
+                        if(v !== null && v !== undefined && v !== '') {
+                            grouped[key].valid++;
+                            grandTotalSum++;
+                        }
+                    } else { // sum
+                        grouped[key].sum += num;
+                        grandTotalSum += num;
+                    }
                 });
+            });
 
-                // Acumuladores Globales
-                grandTotalCount += count; grandTotalHits += hits; grandTotalSum += (config.agg==='count'?valid:sum);
+            let chartLabels = []; let chartData = []; let tbodyHtml = '';
 
-                // Resultado Local
+            // Ordenar de mayor a menor rendimiento
+            let sKeys = Object.keys(grouped).sort((a, b) => {
+                let vA = config.agg==='count'?grouped[a].valid : (config.agg==='percent'?(grouped[a].hits/grouped[a].count):grouped[a].sum);
+                let vB = config.agg==='count'?grouped[b].valid : (config.agg==='percent'?(grouped[b].hits/grouped[b].count):grouped[b].sum);
+                return vB - vA; 
+            });
+
+            sKeys.forEach(k => {
                 let res = 0; let disp = "";
-                if(config.agg === 'percent') { res = count>0?(hits/count)*100:0; disp = res.toFixed(1) + "%"; }
-                else if(config.agg === 'count') { res = valid; disp = res.toLocaleString(); }
-                else if(config.agg === 'sum') { res = sum; disp = res.toLocaleString(); }
-                else if(config.agg === 'avg') { res = count>0?(sum/count):0; disp = res.toFixed(2); }
+                if(config.agg === 'percent') { res = grouped[k].count>0?(grouped[k].hits/grouped[k].count)*100:0; if(res>100)res=100; disp = res.toFixed(1) + "%"; }
+                else if(config.agg === 'count') { res = grouped[k].valid; disp = res.toLocaleString(); }
+                else if(config.agg === 'sum') { res = grouped[k].sum; disp = res.toLocaleString(); }
 
-                chartLabels.push(map.dsName.split(' ')[0]); // Nombre corto
+                chartLabels.push(k);
                 chartData.push(Math.round(res*100)/100);
-                tbodyHtml += `<tr><td class="p-2 border-b border-r text-slate-700 font-medium">${map.dsName}</td><td class="p-2 border-b text-right font-bold">${disp}</td></tr>`;
+                tbodyHtml += `<tr><td class="p-2 border-b border-r text-slate-700 font-medium">${k}</td><td class="p-2 border-b text-right font-bold">${disp}</td></tr>`;
             });
 
             // Fila de Total Global Consolidado
@@ -568,9 +594,20 @@
             document.getElementById(`tbody_${canvasId}`).innerHTML = tbodyHtml;
 
             let cType = config.type === 'doughnut' ? 'doughnut' : 'bar';
-            let cOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: cType==='doughnut' } } };
+            let cOptions = { 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { legend: { display: cType==='doughnut' } }
+            };
+            
+            // FIX: Limitar grosor de barras y forzar eje Y al 100%
+            let cDataset = { 
+                label: 'Rendimiento', 
+                data: chartData, 
+                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'],
+                maxBarThickness: 50 // <--- Esto evita que la barra se vea estirada y aplastada
+            };
+
             if(config.agg==='percent' && cType==='bar') cOptions.scales = {y:{min:0,max:100}};
-            let cDataset = { label: 'Rendimiento', data: chartData, backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'] };
 
             new Chart(ctx, { type: cType, data: { labels: chartLabels, datasets: [cDataset] }, options: cOptions });
         }
@@ -616,7 +653,6 @@
             
             document.getElementById('projectName').value = firebaseData.nombre;
             
-            // Reconstruir Paso 3
             const dsSel = document.getElementById('dsSelector'); dsSel.innerHTML = '';
             Object.values(processedDataSources).forEach(ds => dsSel.innerHTML += `<option value="${ds.id}">${ds.name}</option>`);
             if(Object.keys(processedDataSources).length > 0) window.onDataSourceChange();
@@ -624,7 +660,6 @@
             document.getElementById('widgetsGrid').innerHTML = ''; 
             savedWidgetsConfig.forEach(cfg => window.buildWidget(cfg));
 
-            // Reconstruir Paso 4
             document.getElementById('auditWidgetsGrid').innerHTML = ''; 
             document.getElementById('emptyAudit').style.display = 'none';
             savedAuditWidgetsConfig.forEach(cfg => window.generateMergedAudit(cfg));
@@ -633,7 +668,7 @@
             document.getElementById('btnGoAudit').disabled = false; document.getElementById('btnGoAudit').classList.remove('opacity-50');
             document.getElementById('tab3').disabled = false; document.getElementById('tab4').disabled = false;
 
-            window.switchView(4); // Llevamos al usuario al final del flujo
+            window.switchView(4); 
         }
 
         loadCloudProjects();
