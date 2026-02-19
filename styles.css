@@ -1,53 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-
-/* Scrollbars finos */
+/* Custom SaaS Styles */
 .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .custom-scroll::-webkit-scrollbar-track { background: transparent; }
 .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-.hide-scroll::-webkit-scrollbar { display: none; }
-.hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Tarjetas 3D */
-.flip-container { perspective: 1000px; cursor: pointer; }
-.flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; height: 100%; width: 100%; }
-.front, .back { 
-    backface-visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-    border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); background: white;
-    display: flex; flex-direction: column;
-}
-.front { z-index: 2; transform: rotateY(0deg); }
-.back { transform: rotateY(180deg); overflow: hidden; border: 1px solid #e2e8f0; }
-.flipped .flipper { transform: rotateY(180deg); }
+.nav-item { @apply flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all font-medium text-sm; }
+.nav-active { @apply bg-indigo-600 text-white shadow-md shadow-indigo-500/30; }
+.nav-inactive { @apply text-slate-400 hover:bg-slate-800 hover:text-white; }
 
-/* Estilos de Tabla Excel */
-.excel-table { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 0.75rem; }
-.excel-table th { 
-    background-color: #f1f5f9; color: #475569; font-weight: 600; 
-    padding: 8px 12px; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;
-    position: sticky; top: 0; z-index: 10; text-transform: uppercase; letter-spacing: 0.05em;
-}
-.excel-table td { 
-    padding: 6px 12px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; 
-    color: #334155; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis;
-}
-.excel-table tr:hover td { background-color: #f8fafc; }
-
-/* Componentes UI */
-.step-btn { @apply px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent whitespace-nowrap cursor-pointer; }
+.step-btn { @apply px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent whitespace-nowrap; }
 .step-active { @apply bg-indigo-600 text-white shadow-md border-indigo-700; }
 .step-inactive { @apply text-slate-500 hover:bg-white hover:text-slate-700; }
 .step-disabled { @apply opacity-40 cursor-not-allowed; }
 
-.nav-item { @apply flex items-center gap-3 w-full px-4 py-3 rounded-xl transition-all font-medium text-sm cursor-pointer; }
-.nav-active { @apply bg-indigo-600 text-white shadow-md shadow-indigo-500/30; }
-.nav-inactive { @apply text-slate-400 hover:bg-slate-800 hover:text-white; }
+.panel-sidebar { @apply w-full lg:w-80 bg-white border-r border-slate-200 flex flex-col z-20 flex-none; }
 
-/* Panels */
-.panel-sidebar { @apply w-full lg:w-[350px] xl:w-[400px] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col z-20 flex-none; }
-.panel-content { @apply flex-1 bg-slate-50 relative flex flex-col min-w-0 min-h-[500px] lg:min-h-0; }
+/* Table Style */
+.excel-table th { @apply bg-slate-50 text-slate-500 font-bold p-3 text-left border-b border-r text-[11px] sticky top-0 uppercase; }
+.excel-table td { @apply p-2 border-b border-r text-xs whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]; }
 
-/* Fade Animation */
-.fade-enter { animation: fadeIn 0.3s ease-in-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+/* 3D Flip Card Effect */
+.flip-container { perspective: 1000px; cursor: pointer; height: 400px; }
+.flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; height: 100%; width: 100%; }
+.front, .back { backface-visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 0.75rem; @apply bg-white shadow-sm border; }
+.back { transform: rotateY(180deg); }
+.flipped .flipper { transform: rotateY(180deg); }
+
+.fade-in { animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.hide-scroll::-webkit-scrollbar { display: none; }
