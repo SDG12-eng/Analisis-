@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster Pro v26 - Expert Edition</title>
+    <title>fin</title>
     
     <!-- Librerías de Alta Disponibilidad -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,7 @@
         
         /* Layout de Paneles Estancos */
         .app-layout { display: flex; height: calc(100vh - 4rem); overflow: hidden; }
-        .sidebar { width: 400px; height: 100%; overflow-y: auto; background: white; border-right: 1px solid #e2e8f0; flex-shrink: 0; position: relative; }
+        .sidebar { width: 420px; height: 100%; overflow-y: auto; background: white; border-right: 1px solid #e2e8f0; flex-shrink: 0; position: relative; }
         .canvas-area { flex-grow: 1; height: 100%; overflow-y: auto; background: #f1f5f9; padding: 2rem; position: relative; }
 
         /* Tarjetas Giratorias */
@@ -82,7 +82,7 @@
     <main class="flex-1 app-layout relative">
 
         <!-- VISTA 1: CARGA INICIAL -->
-        <div id="view-1" class="absolute inset-0 z-40 bg-slate-50 flex flex-col items-center justify-center p-6">
+        <div id="view-1" class="absolute inset-0 z-40 bg-slate-50 flex flex-col items-center justify-center p-6 transition-all duration-500">
             <div class="bg-white p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center max-w-xl w-full">
                 <div class="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
                     <i class="fas fa-cloud-arrow-up text-4xl"></i>
@@ -100,6 +100,11 @@
                 
                 <div id="uploadStatus" class="h-6 text-sm font-bold text-indigo-500 mb-6 italic"></div>
                 <button id="btnNext1" onclick="switchView(2)" class="hidden w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm uppercase shadow-lg hover:bg-indigo-700 transition-all">Siguiente Paso <i class="fas fa-arrow-right ml-2"></i></button>
+            </div>
+            
+            <div class="mt-8 w-full max-w-xl text-center">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-4">Proyectos Guardados</h3>
+                <div id="cloudProjectsList" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto custom-scroll px-2"></div>
             </div>
         </div>
 
@@ -171,18 +176,23 @@
                     </div>
                     <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95 border-b-4 border-indigo-800">GENERAR GRÁFICO</button>
                 </div>
+                
+                <div class="p-4 bg-slate-900 border-t border-slate-800 flex gap-2">
+                    <input type="text" id="projectName3" placeholder="Nombre Workspace..." class="flex-1 p-2 text-slate-300 bg-slate-800 rounded-lg text-xs outline-none">
+                    <button onclick="saveToFirebase()" class="bg-indigo-500 text-white px-4 py-2 rounded-lg font-bold text-[10px] hover:bg-indigo-400 shadow-md">GUARDAR</button>
+                </div>
             </aside>
             <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea3">
                 <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-32">
                     <div id="emptyLocal" class="col-span-full h-80 border-4 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-300">
                         <i class="fas fa-chart-column text-6xl mb-4 opacity-10"></i>
-                        <p class="text-base font-bold tracking-tight">Sin dashboards proyectados todavía</p>
+                        <p class="text-base font-bold tracking-tight">Configure los parámetros para proyectar el dashboard</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- VISTA 4: UNIFICACIÓN Y COMPARACIÓN (VALIDAR VS) -->
+        <!-- VISTA 4: UNIFICAR + VALIDAR VS -->
         <div id="view-4" class="hidden absolute inset-0 w-full h-full flex flex-row fade-in">
             <aside class="sidebar custom-scroll flex flex-col shadow-lg border-r">
                 <div class="p-6 border-b bg-emerald-50/50"><h3 class="font-black text-emerald-900 text-sm uppercase tracking-wider">Módulo: Validar VS</h3></div>
@@ -220,6 +230,10 @@
 
                     <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-emerald-700 transition-all active:scale-95 border-b-4 border-emerald-800">GENERAR REPORTE GLOBAL</button>
                 </div>
+                <div class="p-4 bg-slate-900 border-t border-slate-800 flex gap-2">
+                    <input type="text" id="projectName4" placeholder="Nombre Global..." class="flex-1 p-2 text-slate-300 bg-slate-800 rounded-lg text-xs outline-none">
+                    <button onclick="saveToFirebase()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-[10px] hover:bg-emerald-400 shadow-md">GUARDAR</button>
+                </div>
             </aside>
             <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea4">
                 <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8">Resultados Consolidados y Comparativos</h2>
@@ -246,7 +260,18 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        signInAnonymously(auth).then(() => loadProjs()).catch(() => console.log("Firebase Standby."));
+        // Auto-login silencioso
+        signInAnonymously(auth).then(() => {
+            const badge = document.getElementById('authStatus');
+            if(badge) {
+                badge.innerText = "Online - Nube Activa";
+                badge.className = "text-[10px] font-black uppercase px-3 py-1.5 bg-green-50 text-green-600 rounded-full border border-green-100 shadow-sm";
+            }
+            loadProjs();
+        }).catch((e) => {
+            const badge = document.getElementById('authStatus');
+            if(badge) badge.innerText = "Modo Local";
+        });
 
         let currentStep = 1;
         let rawWorkbooks = {}; 
@@ -257,16 +282,25 @@
 
         window.switchView = function(step) {
             currentStep = step;
-            ['view-1','view-2','view-3','view-4'].forEach(v => document.getElementById(v).classList.add('hidden'));
-            document.getElementById('view-' + step).classList.remove('hidden');
-            if(step === 2) document.getElementById('view-2').classList.add('flex');
-            if(step === 3) document.getElementById('view-3').classList.add('flex');
-            if(step === 4) { document.getElementById('view-4').classList.add('flex'); if(Object.keys(processedDataSources).length>0) buildAuditSidebar(); }
+            ['view-1','view-2','view-3','view-4'].forEach(v => {
+                const el = document.getElementById(v);
+                if(el) el.classList.add('hidden');
+            });
+            
+            const targetView = document.getElementById('view-' + step);
+            if(targetView) {
+                targetView.classList.remove('hidden');
+                if(step === 2) targetView.classList.add('flex');
+                if(step === 3) targetView.classList.add('flex');
+                if(step === 4) { targetView.classList.add('flex'); if(Object.keys(processedDataSources).length>0) buildAuditSidebar(); }
+            }
             
             [1,2,3,4].forEach(n => {
                 const btn = document.getElementById('tab'+n);
-                if(n===step) { btn.className = "btn-step tab-active"; }
-                else { btn.className = "btn-step " + (btn.disabled ? "tab-disabled" : "tab-inactive"); }
+                if(btn) {
+                    if(n===step) { btn.className = "btn-step tab-active"; }
+                    else { btn.className = "btn-step " + (btn.disabled ? "tab-disabled" : "tab-inactive"); }
+                }
             });
         };
 
@@ -279,7 +313,7 @@
         // --- 1. CARGA ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files); if(files.length===0) return;
-            document.getElementById('uploadStatus').innerText = `Leyendo archivos...`;
+            document.getElementById('uploadStatus').innerText = `Procesando ${files.length} archivos...`;
             for(let i=0; i<files.length; i++) {
                 const data = await files[i].arrayBuffer();
                 rawWorkbooks['file_'+i] = { name: files[i].name, workbook: XLSX.read(data) };
@@ -288,7 +322,8 @@
             Object.keys(rawWorkbooks).forEach(id => fSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
             document.getElementById('btnNext1').classList.remove('hidden');
             window.changeActiveFile();
-            document.getElementById('tab2').disabled = false;
+            const t2 = document.getElementById('tab2');
+            if(t2) { t2.disabled = false; t2.classList.remove('tab-disabled'); }
         });
 
         // CARGA SECUNDARIA DINÁMICA (VALIDAR VS)
@@ -309,6 +344,7 @@
             if(!sid) return;
             const rawData = XLSX.utils.sheet_to_json(secondaryWb.Sheets[sid], {defval:""});
             
+            // NORMALIZACIÓN
             let clean = rawData.map(r => { 
                 let c={}; 
                 for(let k in r) if(!k.startsWith("__EMPTY")) c[String(k).trim()] = String(r[k]).trim(); 
@@ -342,7 +378,7 @@
             if(raw.length > 0) raw[0].forEach(h => html += `<th>${h}</th>`);
             html += '</tr></thead><tbody>';
             for(let i=1; i<Math.min(raw.length,40); i++) {
-                html += `<tr><td class="font-black text-slate-400 bg-slate-50 text-center border-r">${i}</td>${raw[i].map(c=>`<td>${c}</td>`).join('')}</tr>`;
+                html += `<tr><td class="font-bold text-slate-400 bg-slate-50 text-center border-r">${i}</td>${raw[i].map(c=>`<td>${c}</td>`).join('')}</tr>`;
             }
             tbody.innerHTML = html + '</tbody>';
         };
@@ -355,6 +391,7 @@
             let range = XLSX.utils.decode_range(sheet['!ref']); range.s.r = Math.max(0, hRow);
             let data = XLSX.utils.sheet_to_json(sheet, {range: XLSX.utils.encode_range(range), defval:null});
             
+            // NORMALIZACIÓN
             let clean = data.map(r => { 
                 let c={}; 
                 for(let k in r) if(!k.includes("__EMPTY")) c[String(k).trim()] = r[k]; 
@@ -366,7 +403,7 @@
             processedDataSources[dsId] = { id: dsId, name: `${rawWorkbooks[fid].name} (${sid})`, columns: Object.keys(clean[0]), data: clean };
             
             document.getElementById('processedSourcesList').innerHTML += `<div class="p-4 bg-white border border-slate-200 rounded-2xl text-xs text-slate-700 shadow-sm flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-green-500 shadow-lg shadow-green-100"></div> <span class="font-black truncate tracking-tighter">${processedDataSources[dsId].name}</span></div>`;
-            ['tab3','tab4','btn3','btn4'].forEach(id => { let el = document.getElementById(id); if(el) el.disabled = false; });
+            ['tab3','tab4','btn3','btn4'].forEach(id => { let el = document.getElementById(id); if(el) { el.disabled = false; el.classList.remove('tab-disabled', 'opacity-40'); } });
             updateSelectors();
         };
 
@@ -403,10 +440,10 @@
             Array.from(vals).sort().forEach(v => { container.innerHTML += `<label class="flex items-center gap-2 p-1.5 hover:bg-indigo-50 cursor-pointer rounded-lg font-bold text-slate-700 text-[10px] border-b border-slate-50 last:border-0"><input type="checkbox" class="target-val-chk rounded" value="${v}"><span>${v}</span></label>`; });
         }
         window.addGlobalFilter = function() {
-            const id = document.getElementById('dsSelector').value; if(!id) return;
+            const dsId = document.getElementById('dsSelector').value; if(!dsId) return;
             const fId = 'gf_'+Date.now();
             const div = document.createElement('div'); div.className = "bg-white border border-slate-200 p-3 rounded-2xl text-xs relative shadow-sm fade-in";
-            div.innerHTML = `<button onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full w-5 h-5 flex shadow border">×</button><select id="c_${fId}" class="w-full border rounded-lg mb-2 text-[10px] p-2 outline-none bg-slate-50 font-black tracking-tighter" onchange="renderCheckboxes('${fId}','${id}')"><option>Elegir Columna...</option>${processedDataSources[id].columns.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><div id="k_${fId}" class="max-h-24 overflow-y-auto custom-scroll space-y-1"></div>`;
+            div.innerHTML = `<button onclick="this.parentElement.remove()" class="absolute -top-2 -right-2 bg-white text-red-500 rounded-full w-6 h-6 flex shadow border">×</button><select id="c_${fId}" class="w-full border rounded-lg mb-2 text-[10px] p-2 outline-none bg-slate-50 font-black tracking-tighter" onchange="renderCheckboxes('${fId}','${dsId}')"><option>Elegir Columna...</option>${processedDataSources[dsId].columns.map(c=>`<option value="${c}">${c}</option>`).join('')}</select><div id="k_${fId}" class="max-h-24 overflow-y-auto custom-scroll space-y-1"></div>`;
             document.getElementById('globalFiltersArea').appendChild(div);
         }
         window.renderCheckboxes = function(fId, dsId) {
@@ -446,7 +483,7 @@
                 let raw = r[cfg.y] ? String(r[cfg.y]).trim() : "";
                 if(!groups[k]) groups[k] = { s: 0, c: 0, h: 0, v: 0 };
                 groups[k].c++;
-                if(cfg.agg === 'percent') { if(cfg.targets && cfg.targets.some(t => t.toLowerCase() === raw.toLowerCase())) groups[k].h++; }
+                if(cfg.agg === 'percent') { if(cfg.targets && cfg.targets.some(t => t.toLowerCase().trim() === raw.toLowerCase().trim())) groups[k].h++; }
                 else if(cfg.agg === 'count') { if(r[cfg.y]) groups[k].v++; }
                 else groups[k].s += parseFloat(r[cfg.y])||0;
             });
@@ -459,7 +496,7 @@
             });
 
             const tbody = document.getElementById('table_'+canvasId);
-            tbody.innerHTML = `<thead><tr><th>Segmento</th><th class="text-right">Total</th></tr></thead><tbody>`;
+            tbody.innerHTML = `<thead><tr><th>Segmento</th><th class="text-right">Métrica Final</th></tr></thead><tbody>`;
             labels.forEach((l, i) => { tbody.innerHTML += `<tr><td class="font-bold text-slate-700">${l}</td><td class="text-right font-black text-indigo-600">${cfg.agg==='percent'?vals[i].toFixed(1)+'%':vals[i].toLocaleString()}</td></tr>`; });
 
             const ctx = document.getElementById(canvasId).getContext('2d');
@@ -498,13 +535,15 @@
                 Object.values(processedDataSources).forEach(ds => {
                     let incEl = document.getElementById(`inc_${ds.id}`);
                     if(incEl && incEl.checked) {
-                        let targets = []; 
                         const axEl = document.getElementById(`ax_${ds.id}`);
                         const ayEl = document.getElementById(`ay_${ds.id}`);
                         
                         if(!axEl || !ayEl) return;
 
-                        if (agg === 'percent') targets = Array.from(document.querySelectorAll(`.av_chk_${ds.id}:checked`)).map(c=>c.value);
+                        let targets = []; 
+                        if (agg === 'percent') {
+                            targets = Array.from(document.querySelectorAll(`.av_chk_${ds.id}:checked`)).map(c=>c.value);
+                        }
                         mappings.push({ dsId: ds.id, name: ds.name, x: axEl.value, y: ayEl.value, targets: targets });
                     }
                 });
@@ -516,8 +555,9 @@
             const grid = document.getElementById('auditWidgetsGrid');
             const card = document.createElement('div');
             card.className = "flip-container h-[450px] fade-in";
-            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front flex flex-col"><div class="flex justify-between items-center mb-6"><div><h3 class="font-black text-slate-800 text-lg tracking-tight">${config.title}</h3><div class="flex gap-2 mt-1"><span class="px-2 py-0.5 bg-slate-100 rounded-md text-[8px] font-black text-slate-500 uppercase tracking-tighter">${config.mode}</span></div></div><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="p-2 text-emerald-400 hover:bg-emerald-50 rounded-full transition-all"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-2 text-slate-300 hover:text-red-500 rounded-full transition-all"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-4 uppercase font-black">Toca para auditoría detallada</p></div><div class="back flex flex-col"><div class="p-4 border-b border-emerald-50 bg-emerald-50/30 flex justify-between items-center shrink-0"><h3 class="font-black text-emerald-900 text-xs uppercase tracking-widest">Matriz Global</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-emerald-600 bg-white border border-emerald-100 px-4 py-1.5 rounded-full shadow-sm">VOLVER</button></div><div class="flex-1 overflow-auto custom-scroll bg-white p-2" id="tb_${wid}"></div></div></div>`;
+            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front flex flex-col"><div class="flex justify-between items-center mb-4"><h3 class="font-black text-slate-800 text-lg tracking-tight">${config.title}</h3><div class="flex gap-2 mt-1"><span class="px-2 py-0.5 bg-slate-100 rounded-md text-[8px] font-black text-slate-500 uppercase tracking-tighter">${config.mode}</span></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-4 uppercase font-black">Toca para auditoría detallada</p></div><div class="back flex flex-col"><div class="p-4 border-b border-emerald-50 bg-emerald-50/30 flex justify-between items-center shrink-0"><h3 class="font-black text-emerald-900 text-xs uppercase tracking-widest">Matriz Global</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-indigo-600 bg-white border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">VOLVER</button></div><div class="flex-1 overflow-auto custom-scroll bg-white p-2" id="tb_${wid}"></div></div></div>`;
             grid.prepend(card); setTimeout(() => renderUnifiedChart(config, wid), 100);
+            document.getElementById('canvasArea4').scrollTop = 0;
         }
 
         function renderUnifiedChart(cfg, id) {
@@ -534,7 +574,7 @@
                     if(!local[k]) local[k] = {s:0, c:0, h:0, v:0};
                     local[k].c++;
                     let raw = r[map.y] ? String(r[map.y]).trim() : "";
-                    if(cfg.agg === 'percent') { if(map.targets && map.targets.some(t => t.toLowerCase() === raw.toLowerCase())) local[k].h++; }
+                    if(cfg.agg === 'percent') { if(map.targets && map.targets.some(t => t.toLowerCase().trim() === raw.toLowerCase().trim())) local[k].h++; }
                     else if(cfg.agg === 'count') { if(r[map.y]) local[k].v++; } else local[k].s += parseFloat(r[map.y])||0;
                 });
                 Object.keys(local).forEach(k => {
