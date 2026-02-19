@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v26 - UX Pro</title>
+    <title>DataMaster v26 - UX Pro (Fixed)</title>
     
     <!-- Librerías -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -349,19 +349,19 @@
         let savedAuditWidgetsConfig = [];
 
         window.switchView = function(step) {
-            ['view-upload','view-range','view-playground','view-compare'].forEach(v => document.getElementById(v.replace('view-','view-')).classList.add('hidden'));
-            if(step===1) document.getElementById('view-upload').classList.remove('hidden');
-            if(step===2) document.getElementById('view-range').classList.remove('hidden', 'flex');
-            if(step===3) document.getElementById('view-playground').classList.remove('hidden', 'flex');
-            if(step===4) { document.getElementById('view-compare').classList.remove('hidden', 'flex'); if(Object.keys(processedDataSources).length>0) buildAuditSidebar(); }
+            ['view-1','view-2','view-3','view-4'].forEach(v => document.getElementById(v).classList.add('hidden'));
+            if(step===1) document.getElementById('view-1').classList.remove('hidden');
+            if(step===2) document.getElementById('view-2').classList.remove('hidden', 'flex');
+            if(step===3) document.getElementById('view-3').classList.remove('hidden', 'flex');
+            if(step===4) { document.getElementById('view-4').classList.remove('hidden', 'flex'); if(Object.keys(processedDataSources).length>0) buildAuditSidebar(); }
             
             [1,2,3,4].forEach(n => {
-                const btn = document.getElementById('tab'+n);
-                if(n===step) { btn.classList.add('tab-active'); btn.classList.remove('tab-inactive', 'tab-disabled'); }
+                const btn = document.getElementById('step'+n);
+                if(n===step) { btn.classList.add('step-active'); btn.classList.remove('step-inactive', 'step-disabled'); }
                 else { 
-                    btn.classList.remove('tab-active'); 
-                    if(document.getElementById('tab'+n).disabled) btn.classList.add('tab-disabled');
-                    else btn.classList.add('tab-inactive');
+                    btn.classList.remove('step-active'); 
+                    if(document.getElementById('step'+n).disabled) btn.classList.add('step-disabled');
+                    else btn.classList.add('step-inactive');
                 }
             });
         }
@@ -378,8 +378,8 @@
             Object.keys(rawWorkbooks).forEach(id => fSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
             document.getElementById('btnNext1').classList.remove('hidden');
             window.changeActiveFile();
-            document.getElementById('tab2').disabled = false;
-            document.getElementById('tab2').classList.remove('tab-disabled');
+            document.getElementById('step2').disabled = false;
+            document.getElementById('step2').classList.remove('step-disabled');
         });
 
         // 2. FUENTES
@@ -413,7 +413,7 @@
             let data = XLSX.utils.sheet_to_json(sheet, {range: XLSX.utils.encode_range(range), defval:null});
             let clean = data.map(r => { let c={}; for(let k in r) if(!k.includes("__EMPTY")) c[k.trim()]=r[k]; return c; }).filter(r=>Object.keys(r).length>0);
 
-            if(clean.length===0) return alert("Hoja vacía.");
+            if(clean.length===0) return alert("Error: Hoja vacía.");
             let id = 'ds_'+Date.now();
             processedDataSources[id] = { id: id, name: `${rawWorkbooks[currentFileId].name} (${sName})`, columns: Object.keys(clean[0]), data: clean };
             
@@ -421,9 +421,9 @@
             if(list.children[0]?.tagName === 'P') list.innerHTML = '';
             list.innerHTML += `<div class="p-3 bg-white border border-indigo-100 rounded-lg text-xs text-slate-600 shadow-sm flex items-center gap-2 animate-pulse"><div class="w-2 h-2 rounded-full bg-green-500"></div> ${processedDataSources[id].name}</div>`;
             
-            ['tab3','tab4','btnGoPlayground','btnGoAudit'].forEach(id => {
+            ['step3','step4','btnGoPlayground','btnGoAudit'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) { el.disabled=false; el.classList.remove('tab-disabled', 'opacity-50', 'cursor-not-allowed'); }
+                if(el) { el.disabled=false; el.classList.remove('step-disabled', 'opacity-50', 'cursor-not-allowed'); }
             });
             updateSelectors();
         }
@@ -492,7 +492,7 @@
             const card = document.createElement('div');
             card.className = "flip-container w-full h-[400px]"; // Altura fija
             
-            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wide">${config.agg} por ${config.x}</p></div><div class="flex gap-1"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-1.5 text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[10px] text-center text-slate-300 mt-2">Toca para ver datos</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden"><div class="p-3 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center"><h3 class="font-bold text-indigo-900 text-xs uppercase">Datos Detallados</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-bold text-indigo-600 bg-white border border-indigo-100 px-2 py-1 rounded shadow-sm">Volver</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="w-full text-xs text-left" id="table_${wid}"></table></div></div></div>`;
+            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wide">${config.agg} por ${config.x}</p></div><div class="flex gap-1"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-1.5 text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[10px] text-center text-slate-400 mt-2 italic"><i class="fas fa-hand-pointer mr-1"></i> Toca para ver datos</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden"><div class="p-3 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center"><h3 class="font-bold text-indigo-900 text-xs uppercase">Datos Detallados</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-bold text-indigo-600 bg-white border border-indigo-100 px-2 py-1 rounded shadow-sm">Volver</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="w-full text-xs text-left" id="table_${wid}"></table></div></div></div>`;
             grid.prepend(card);
             
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 50);
@@ -652,7 +652,7 @@
             if(cfg.mode === 'compare') {
                 cfg.mappings.forEach((map, i) => {
                     let d = labels.map(l => (tableData[l] && tableData[l][map.name]) || 0);
-                    const colors = ['#4f46e5','#06b6d4','#f59e0b','#ec4899'];
+                    const colors = ['#4f46e5','#06b6d4','#f59e0b','#ef4444'];
                     datasets.push({ label: map.name, data: d, backgroundColor: colors[i%4], maxBarThickness: 40, borderRadius: 4 });
                 });
             } else {
