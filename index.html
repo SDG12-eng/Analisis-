@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v24 - Flujo Final Integrado</title>
+    <title>DataMaster v25 - Final</title>
     
     <!-- Librerías -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -16,10 +16,10 @@
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
         
-        /* EFECTO 3D DE GIRO (FLIP) */
+        /* EFECTO 3D DE GIRO */
         .flip-container { perspective: 1000px; cursor: pointer; }
         .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; height: 100%; width: 100%; }
         .front, .back { 
@@ -30,6 +30,11 @@
         .back { transform: rotateY(180deg); background: #ffffff; overflow: hidden; border: 2px solid #4f46e5; }
         .flipped .flipper { transform: rotateY(180deg); }
 
+        /* ESTILOS DE TABLA */
+        .preview-table th { background-color: #f1f5f9; color: #475569; font-weight: 700; text-transform: uppercase; font-size: 0.7rem; padding: 0.75rem; border-bottom: 2px solid #e2e8f0; white-space: nowrap; }
+        .preview-table td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; color: #334155; white-space: nowrap; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+        .preview-table tr:hover td { background-color: #f8fafc; }
+
         /* UTILIDADES */
         .tab-active { background-color: #4f46e5; color: white; border-bottom: none; }
         .tab-inactive { background-color: white; color: #64748b; }
@@ -38,11 +43,11 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <!-- BARRA DE NAVEGACIÓN (FLUJO) -->
+    <!-- BARRA DE NAVEGACIÓN -->
     <header class="bg-white border-b border-slate-200 shadow-sm z-30 flex-none h-16">
         <div class="max-w-7xl mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <div class="bg-indigo-600 text-white p-2 rounded-lg"><i class="fas fa-cubes text-lg"></i></div>
+                <div class="bg-indigo-600 text-white p-2 rounded-lg"><i class="fas fa-chart-pie text-lg"></i></div>
                 <h1 class="text-xl font-bold tracking-tight hidden md:block">DATA<span class="text-indigo-600">MASTER</span></h1>
             </div>
             
@@ -80,7 +85,6 @@
             </div>
             
             <div class="mt-8 w-full max-w-lg text-center">
-                <button onclick="loadProjs()" class="text-xs text-indigo-600 hover:underline font-bold"><i class="fas fa-cloud-download-alt"></i> Cargar Proyectos de la Nube</button>
                 <div id="cloudProjectsList" class="mt-2 space-y-1"></div>
             </div>
         </div>
@@ -90,23 +94,40 @@
             <div class="w-full md:w-96 bg-white border-r border-slate-200 flex flex-col z-20 h-full shadow-lg">
                 <div class="p-6 bg-slate-50 border-b border-slate-100">
                     <h3 class="font-bold text-slate-800 text-lg">Paso 2: Definir Fuentes</h3>
+                    <p class="text-xs text-slate-500 mt-1">Selecciona la hoja y valida la vista previa.</p>
                 </div>
                 <div class="p-6 flex flex-col gap-5 overflow-y-auto flex-1">
                     <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Archivo</label><select id="fileSelector" class="w-full p-3 border rounded-xl text-sm outline-none bg-slate-50" onchange="changeActiveFile()"></select></div>
                     <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Hoja</label><select id="sheetSelector" class="w-full p-3 border rounded-xl text-sm outline-none bg-slate-50" onchange="renderRawPreview()"></select></div>
                     <div><label class="text-xs font-bold text-slate-500 uppercase block mb-1">Fila Encabezados</label><input type="number" id="headerRow" value="1" min="1" class="w-full p-3 border rounded-xl text-center font-bold bg-slate-50"></div>
-                    <button onclick="saveAsDataSource()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold shadow hover:bg-slate-700 flex justify-center gap-2"><i class="fas fa-plus-circle"></i> Crear Fuente</button>
-                    <div class="border-t pt-4"><h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Fuentes Listas:</h4><div id="processedSourcesList" class="space-y-2 max-h-40 overflow-y-auto custom-scroll"></div></div>
+                    
+                    <button onclick="saveAsDataSource()" class="w-full bg-slate-800 text-white py-3 rounded-xl font-bold shadow hover:bg-slate-700 flex justify-center gap-2 items-center">
+                        <i class="fas fa-plus-circle"></i> Guardar Fuente
+                    </button>
+                    
+                    <div class="border-t pt-4">
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">Fuentes Listas:</h4>
+                        <div id="processedSourcesList" class="space-y-2 max-h-40 overflow-y-auto custom-scroll">
+                            <p class="text-xs text-slate-300 italic text-center">No hay fuentes guardadas</p>
+                        </div>
+                    </div>
                 </div>
                 <div class="p-4 border-t bg-white flex gap-2">
-                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="flex-1 bg-indigo-50 text-indigo-700 py-3 rounded-xl font-bold text-xs disabled:opacity-50">Dashboard</button>
-                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="flex-1 bg-emerald-50 text-emerald-700 py-3 rounded-xl font-bold text-xs disabled:opacity-50">Unificar</button>
+                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="flex-1 bg-indigo-50 text-indigo-700 py-3 rounded-xl font-bold text-xs disabled:opacity-50 transition">Dashboard</button>
+                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="flex-1 bg-emerald-50 text-emerald-700 py-3 rounded-xl font-bold text-xs disabled:opacity-50 transition">Unificar</button>
                 </div>
             </div>
+            
+            <!-- Vista Previa Tabla -->
             <div class="flex-1 bg-slate-100 p-6 overflow-hidden flex flex-col">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex-1 overflow-hidden flex flex-col">
-                    <div class="p-3 bg-slate-50 border-b font-bold text-xs text-slate-500 uppercase">Vista Previa</div>
-                    <div class="flex-1 overflow-auto custom-scroll"><table class="w-full text-xs text-left" id="rawTablePreview"></table></div>
+                    <div class="p-4 bg-white border-b flex justify-between items-center">
+                        <h4 class="font-bold text-sm text-slate-600 uppercase"><i class="fas fa-table mr-2 text-indigo-500"></i> Vista Previa de Datos</h4>
+                        <span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded font-bold">Datos Crudos</span>
+                    </div>
+                    <div class="flex-1 overflow-auto custom-scroll p-0">
+                        <table class="w-full text-left border-collapse preview-table" id="rawTablePreview"></table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -145,7 +166,9 @@
                             <input type="hidden" id="selectedChartType" value="bar">
                         </div>
                     </div>
-                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 mt-auto">GENERAR GRÁFICO</button>
+                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 mt-auto flex items-center justify-center gap-2">
+                        <i class="fas fa-magic"></i> GENERAR GRÁFICO
+                    </button>
                 </div>
                 <div class="p-4 bg-slate-900 text-white border-t border-slate-800 flex gap-2">
                     <input type="text" id="projectName3" placeholder="Nombre Proyecto..." class="flex-1 p-2 text-slate-900 rounded text-sm outline-none">
@@ -176,7 +199,9 @@
                         </div>
                     </div>
                     <div id="auditMappingContainer" class="flex flex-col gap-3"></div>
-                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-emerald-700 mt-4">GENERAR REPORTE</button>
+                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-emerald-700 mt-4 flex justify-center items-center gap-2">
+                        <i class="fas fa-layer-group"></i> GENERAR REPORTE
+                    </button>
                 </div>
                 <div class="p-4 bg-slate-900 text-white border-t border-slate-800 flex gap-2">
                     <input type="text" id="projectName4" placeholder="Nombre Proyecto..." class="flex-1 p-2 text-slate-900 rounded text-sm outline-none">
@@ -212,7 +237,6 @@
         let savedWidgetsConfig = []; 
         let savedAuditWidgetsConfig = [];
 
-        // NAVEGACIÓN
         window.switchView = function(step) {
             ['view-upload','view-range','view-playground','view-compare'].forEach(v => document.getElementById(v).classList.add('hidden'));
             if(step===1) document.getElementById('view-upload').classList.remove('hidden');
@@ -254,10 +278,21 @@
         window.renderRawPreview = function() {
             const wb = rawWorkbooks[currentFileId].workbook;
             const raw = XLSX.utils.sheet_to_json(wb.Sheets[document.getElementById('sheetSelector').value], {header:1, defval:""});
-            const tbody = document.getElementById('rawTablePreview'); tbody.innerHTML = '';
-            for(let i=0; i<Math.min(raw.length,10); i++) {
-                tbody.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-2 border-r bg-slate-50 w-8 text-center text-slate-400 font-mono">${i+1}</td>${raw[i].map(c=>`<td class="p-2 border-r truncate max-w-[100px] text-slate-600">${c}</td>`).join('')}</tr>`;
+            const tbody = document.getElementById('rawTablePreview'); 
+            
+            // Header
+            let theadHtml = '<thead><tr><th>#</th>';
+            if(raw.length > 0) {
+                raw[0].forEach(h => theadHtml += `<th>${h}</th>`);
             }
+            theadHtml += '</tr></thead>';
+            
+            let tbodyHtml = '<tbody>';
+            for(let i=1; i<Math.min(raw.length,25); i++) {
+                tbodyHtml += `<tr><td class="font-bold text-slate-400 border-r text-center">${i}</td>${raw[i].map(c=>`<td>${c}</td>`).join('')}</tr>`;
+            }
+            tbodyHtml += '</tbody>';
+            tbody.innerHTML = theadHtml + tbodyHtml;
         }
 
         window.saveAsDataSource = function() {
