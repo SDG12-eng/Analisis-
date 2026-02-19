@@ -3,43 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster SaaS - Pro Modular</title>
+    <title>DataMaster SaaS - Pro</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    
-    <link rel="stylesheet" href="./assets/css/styles.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="h-screen flex overflow-hidden text-slate-800 bg-slate-100">
 
-    <aside class="w-20 lg:w-64 bg-slate-900 flex flex-col transition-all duration-300 z-50 flex-none shadow-xl">
-        <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800 shrink-0">
+    <aside class="w-20 lg:w-64 bg-slate-900 flex flex-col z-50 flex-none shadow-xl">
+        <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800">
             <div class="bg-gradient-to-br from-indigo-500 to-blue-500 text-white p-1.5 rounded-lg shadow-sm">
                 <i class="fas fa-database text-lg"></i>
             </div>
-            <h1 class="text-sm font-black tracking-wide text-white ml-3 hidden lg:block">DATA<span class="text-indigo-400">MASTER</span></h1>
+            <h1 class="text-sm font-black tracking-wide text-white ml-3 hidden lg:block uppercase">Data<span class="text-indigo-400">Master</span></h1>
         </div>
         
-        <nav id="sidebar-nav" class="flex-1 p-3 space-y-2 mt-4">
-            </nav>
+        <nav class="flex-1 p-3 space-y-2 mt-4">
+            <button onclick="switchSection('metrics')" id="nav-metrics" class="nav-item nav-active">
+                <i class="fas fa-chart-pie text-lg w-5 text-center"></i>
+                <span class="hidden lg:block">Sistema de Métricas</span>
+            </button>
+            <button onclick="switchSection('validations')" id="nav-validations" class="nav-item nav-inactive">
+                <i class="fas fa-check-double text-lg w-5 text-center"></i>
+                <span class="hidden lg:block">Validador de Excel</span>
+            </button>
+        </nav>
 
-        <div class="p-4 border-t border-slate-800 text-center lg:text-left">
-            <div class="w-8 h-8 rounded-full bg-slate-700 mx-auto lg:mx-0 flex items-center justify-center text-xs text-white font-bold">EM</div>
+        <div class="p-4 border-t border-slate-800 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-xs text-white font-bold">EM</div>
+            <span class="text-xs text-slate-400 hidden lg:block">Emanuel</span>
         </div>
     </aside>
 
-    <div class="flex-1 flex flex-col h-screen min-w-0">
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-30 shadow-sm">
-            <h2 id="global-header-title" class="font-bold text-slate-800 text-lg">Cargando...</h2>
-            <div id="section-header-controls" class="flex flex-1 sm:flex-none justify-end ml-4 max-w-full"></div>
+    <div class="flex-1 flex flex-col min-w-0 h-screen">
+        
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-30">
+            <h2 id="section-title" class="font-bold text-slate-800 text-lg">Dashboard Analytics</h2>
+            
+            <nav id="metrics-steps" class="flex bg-slate-100 p-1 rounded-xl gap-1 overflow-x-auto hide-scroll">
+                <button id="step1" onclick="switchMetricView(1)" class="step-btn step-active">1. Carga</button>
+                <button id="step2" onclick="switchMetricView(2)" disabled class="step-btn step-inactive step-disabled">2. Fuentes</button>
+                <button id="step3" onclick="switchMetricView(3)" disabled class="step-btn step-inactive step-disabled">3. Dashboard</button>
+                <button id="step4" onclick="switchMetricView(4)" disabled class="step-btn step-inactive step-disabled">4. Unificar</button>
+            </nav>
         </header>
 
-        <main id="app-content" class="flex-1 relative overflow-hidden flex bg-slate-50">
-            </main>
+        <main class="flex-1 relative overflow-hidden flex">
+            
+            <div id="section-metrics" class="flex-1 flex flex-col fade-in">
+                <div id="m-view-1" class="metric-view flex flex-col items-center justify-center p-6 overflow-y-auto h-full">
+                    <div class="bg-white p-10 rounded-2xl shadow-xl border border-slate-200 text-center max-w-lg w-full">
+                        <i class="fas fa-folder-open text-5xl text-indigo-500 mb-6"></i>
+                        <h2 class="text-xl font-bold mb-2">Comienza tu Análisis</h2>
+                        <p class="text-slate-500 text-sm mb-8">Sube tus archivos Excel para procesar los datos del dashboard.</p>
+                        <label class="block cursor-pointer">
+                            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" multiple class="hidden"/>
+                            <div class="bg-slate-900 text-white px-6 py-4 rounded-xl font-bold hover:bg-slate-800 transition flex items-center justify-center gap-3">
+                                <i class="fas fa-cloud-upload-alt"></i> Seleccionar Archivos
+                            </div>
+                        </label>
+                        <div id="uploadStatus" class="mt-4 text-xs font-bold text-indigo-600"></div>
+                        <button id="btnNext1" onclick="switchMetricView(2)" class="hidden w-full mt-6 bg-white border-2 border-indigo-600 text-indigo-600 py-3 rounded-xl font-bold">Siguiente Paso <i class="fas fa-arrow-right ml-1"></i></button>
+                    </div>
+                </div>
+
+                <div id="m-view-2" class="metric-view hidden flex-col lg:flex-row h-full overflow-hidden">
+                    <div class="panel-sidebar">
+                        <div class="p-5 border-b font-bold text-sm">Configuración de Fuente</div>
+                        <div class="p-5 flex-1 overflow-y-auto space-y-4">
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase">Archivo</label><select id="fileSelector" class="w-full p-2 border rounded text-xs" onchange="changeActiveFile()"></select></div>
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase">Hoja</label><select id="sheetSelector" class="w-full p-2 border rounded text-xs" onchange="renderRawPreview()"></select></div>
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase">Fila Encabezados</label><input type="number" id="headerRow" value="1" class="w-full p-2 border rounded text-xs text-center"></div>
+                            <button onclick="saveAsDataSource()" class="w-full bg-indigo-600 text-white py-2.5 rounded font-bold text-xs hover:bg-indigo-700">Guardar Fuente</button>
+                            <div class="pt-4 border-t"><h4 class="text-[10px] font-bold uppercase mb-2">Fuentes Activas</h4><div id="processedSourcesList" class="space-y-2"></div></div>
+                        </div>
+                    </div>
+                    <div class="flex-1 bg-white overflow-auto"><table class="excel-table w-full" id="rawTablePreview"></table></div>
+                </div>
+
+                <div id="m-view-3" class="metric-view hidden flex-col lg:flex-row h-full overflow-hidden">
+                    <div class="panel-sidebar">
+                        <div class="p-4 border-b flex justify-between items-center"><h3 class="font-bold text-sm">Constructor</h3></div>
+                        <div class="p-4 flex-1 overflow-y-auto space-y-4">
+                            <select id="dsSelector" class="w-full p-2 border rounded text-xs font-bold bg-slate-50" onchange="onDataSourceChange()"></select>
+                            <input type="text" id="widgetTitle" placeholder="Título del Gráfico..." class="w-full p-2 border-b text-sm outline-none">
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="axisX" class="w-full p-2 border rounded text-xs column-selector"></select>
+                                <select id="aggType" class="w-full p-2 border rounded text-xs" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="percent">Porcentaje %</option></select>
+                            </div>
+                            <select id="axisY" class="w-full p-2 border rounded text-xs column-selector" onchange="updatePercentTargets()"></select>
+                            <div id="percentTargetUI" class="hidden bg-yellow-50 p-2 border rounded border-yellow-100 text-[10px]"><label class="font-bold">Valor Éxito:</label><div id="percentTargetValue" class="max-h-24 overflow-y-auto bg-white p-1 mt-1"></div></div>
+                            <div class="grid grid-cols-3 gap-2"><button onclick="selectChartType('bar')" class="chart-btn p-2 border rounded bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar"></i></button><button onclick="selectChartType('line')" class="chart-btn p-2 border rounded" data-type="line"><i class="fas fa-chart-line"></i></button><button onclick="selectChartType('doughnut')" class="chart-btn p-2 border rounded" data-type="doughnut"><i class="fas fa-chart-pie"></i></button></div>
+                            <input type="hidden" id="selectedChartType" value="bar">
+                            <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold shadow-lg text-xs">Generar Gráfico</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-6 overflow-y-auto bg-slate-50"><div id="widgetsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div></div>
+                </div>
+
+                <div id="m-view-4" class="metric-view hidden flex-col lg:flex-row h-full overflow-hidden">
+                    <div class="panel-sidebar">
+                        <div class="p-4 border-b bg-emerald-50 text-emerald-900 font-bold text-sm">Unificar Fuentes</div>
+                        <div class="p-4 flex-1 overflow-y-auto space-y-4">
+                            <div class="flex bg-slate-100 p-1 rounded-lg">
+                                <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditMode" value="merge" class="hidden peer" checked><span class="block py-1.5 text-[10px] font-bold rounded peer-checked:bg-white peer-checked:text-emerald-600 transition">SUMA TOTAL</span></label>
+                                <label class="flex-1 text-center cursor-pointer"><input type="radio" name="auditMode" value="compare" class="hidden peer" onchange="toggleAuditMode()"><span class="block py-1.5 text-[10px] font-bold rounded peer-checked:bg-white peer-checked:text-blue-600 transition">COMPARAR</span></label>
+                            </div>
+                            <input type="text" id="auditTitle" placeholder="Título Unificado..." class="w-full p-2 border rounded text-sm">
+                            <div class="grid grid-cols-2 gap-2">
+                                <select id="auditAggType" class="w-full p-2 border rounded text-xs" onchange="buildAuditSidebar()"><option value="percent">Porcentaje %</option><option value="sum">Sumatoria</option><option value="count">Contar</option></select>
+                                <select id="auditChartType" class="w-full p-2 border rounded text-xs"><option value="bar">Barras</option><option value="line">Línea</option></select>
+                            </div>
+                            <div id="auditMappingContainer" class="space-y-3"></div>
+                            <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold text-xs shadow-lg">GENERAR REPORTE</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 p-6 overflow-y-auto bg-slate-50"><div id="auditWidgetsGrid" class="grid grid-cols-1 gap-8"></div></div>
+                </div>
+            </div>
+
+            <div id="section-validations" class="hidden flex-1 flex-col lg:flex-row fade-in h-full overflow-hidden">
+                <div class="panel-sidebar">
+                    <div class="p-5 border-b bg-slate-50 font-bold text-sm">Configuración Validación</div>
+                    <div class="p-5 flex-1 overflow-y-auto space-y-6">
+                        <div class="border-l-4 border-blue-500 bg-white p-3 shadow-sm rounded-r-lg">
+                            <h4 class="font-bold text-xs mb-3">1. Archivo Principal</h4>
+                            <input type="file" id="archivo1" accept=".xlsx, .xls" class="w-full text-[10px] mb-2">
+                            <select id="hoja1" class="w-full p-1 border text-[10px] mb-2"></select>
+                            <select id="col1" class="w-full p-1 border text-[10px]"></select>
+                        </div>
+                        <div class="border-l-4 border-amber-500 bg-white p-3 shadow-sm rounded-r-lg">
+                            <h4 class="font-bold text-xs mb-3">2. Archivo Referencia</h4>
+                            <input type="file" id="archivo2" accept=".xlsx, .xls" class="w-full text-[10px] mb-2">
+                            <select id="hoja2" class="w-full p-1 border text-[10px] mb-2"></select>
+                            <select id="col2" class="w-full p-1 border text-[10px]"></select>
+                        </div>
+                        <button id="btnValidar" class="w-full bg-slate-800 text-white py-3 rounded-lg font-bold text-xs shadow-lg hover:bg-slate-700">EJECUTAR VALIDACIÓN</button>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col p-6 gap-6 overflow-hidden bg-slate-50">
+                    <div class="bg-white rounded-xl shadow-sm border flex-1 overflow-hidden flex flex-col">
+                        <div class="p-3 border-b bg-blue-50/50 flex justify-between items-center"><span class="font-bold text-xs">Vista Previa: Principal</span><span id="info1" class="text-[9px] font-bold bg-white px-2 py-1 rounded">Esperando datos...</span></div>
+                        <div class="flex-1 overflow-auto"><table class="excel-table w-full" id="tabla1"><thead id="head1"></thead><tbody id="body1"></tbody></table></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border flex-1 overflow-hidden flex flex-col">
+                        <div class="p-3 border-b bg-amber-50/50 flex justify-between items-center"><span class="font-bold text-xs">Vista Previa: Referencia</span><span id="info2" class="text-[9px] font-bold bg-white px-2 py-1 rounded">Esperando datos...</span></div>
+                        <div class="flex-1 overflow-auto"><table class="excel-table w-full" id="tabla2"><thead id="head2"></thead><tbody id="body2"></tbody></table></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
     </div>
 
-    <script type="module" src="./assets/js/app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>
