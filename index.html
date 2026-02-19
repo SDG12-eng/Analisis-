@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v26 - UX Pro</title>
+    <title>DataMaster v26 - UX Pro (Responsive & Fixed)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -19,6 +19,10 @@
         .custom-scroll::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Ocultar scrollbar en elementos horizontales (como el menú en móvil) */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         
         /* Tarjetas 3D */
         .flip-container { perspective: 1000px; cursor: pointer; }
@@ -46,39 +50,39 @@
         .excel-table tr:last-child td { border-bottom: none; }
 
         /* Navegación Pasos */
-        .step-btn { @apply px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent; }
+        .step-btn { @apply px-4 py-2 rounded-lg text-xs font-bold transition-all border border-transparent whitespace-nowrap; }
         .step-active { @apply bg-slate-800 text-white shadow-md border-slate-700; }
         .step-inactive { @apply text-slate-500 hover:bg-white hover:text-slate-700; }
         .step-disabled { @apply opacity-40 cursor-not-allowed; }
 
-        /* Paneles */
-        .panel-sidebar { @apply w-96 bg-white border-r border-slate-200 flex flex-col z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]; }
-        .panel-content { @apply flex-1 bg-slate-50 relative flex flex-col min-w-0; }
+        /* Paneles Responsivos */
+        .panel-sidebar { @apply w-full lg:w-80 xl:w-96 bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col z-20 flex-none; }
+        .panel-content { @apply flex-1 bg-slate-50 relative flex flex-col min-w-0 min-h-[500px] lg:min-h-0; }
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-30 shadow-sm flex-none">
-        <div class="flex items-center gap-3">
+    <header class="bg-white border-b border-slate-200 h-16 lg:h-14 flex items-center justify-between px-4 lg:px-6 z-30 shadow-sm flex-none">
+        <div class="flex items-center gap-2 lg:gap-3 mr-4 lg:mr-0 flex-none">
             <div class="bg-gradient-to-br from-indigo-600 to-blue-500 text-white p-1.5 rounded-lg shadow-sm">
-                <i class="fas fa-chart-simple text-lg"></i>
+                <i class="fas fa-chart-simple text-sm lg:text-lg"></i>
             </div>
-            <h1 class="text-sm font-black tracking-wide text-slate-800">DATA<span class="text-indigo-600">MASTER</span></h1>
+            <h1 class="text-xs lg:text-sm font-black tracking-wide text-slate-800 hidden sm:block">DATA<span class="text-indigo-600">MASTER</span></h1>
         </div>
         
-        <nav class="flex bg-slate-100/80 p-1 rounded-xl gap-1">
+        <nav class="flex bg-slate-100/80 p-1 rounded-xl gap-1 overflow-x-auto hide-scroll flex-1 sm:flex-none justify-start sm:justify-center">
             <button id="step1" onclick="switchView(1)" class="step-btn step-active">1. Carga</button>
             <button id="step2" onclick="switchView(2)" disabled class="step-btn step-inactive step-disabled">2. Fuentes</button>
             <button id="step3" onclick="switchView(3)" disabled class="step-btn step-inactive step-disabled">3. Dashboard</button>
             <button id="step4" onclick="switchView(4)" disabled class="step-btn step-inactive step-disabled">4. Unificar</button>
         </nav>
 
-        <div class="w-24"></div> </header>
+        <div class="hidden lg:block w-24 flex-none"></div> </header>
 
     <main class="flex-1 relative overflow-hidden flex">
 
-        <div id="view-1" class="absolute inset-0 z-30 bg-slate-50 flex flex-col items-center justify-center p-6 fade-in">
-            <div class="bg-white p-10 rounded-2xl shadow-xl border border-slate-200 text-center max-w-lg w-full">
+        <div id="view-1" class="absolute inset-0 z-30 bg-slate-50 flex flex-col items-center justify-center p-4 lg:p-6 overflow-y-auto">
+            <div class="bg-white p-6 lg:p-10 rounded-2xl shadow-xl border border-slate-200 text-center max-w-lg w-full mt-auto mb-auto">
                 <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
                     <i class="fas fa-folder-open text-3xl"></i>
                 </div>
@@ -99,20 +103,21 @@
                 </button>
             </div>
             
-            <div class="mt-8">
-                <button onclick="loadProjs()" class="text-xs text-slate-400 hover:text-indigo-600 font-medium flex items-center gap-2">
+            <div class="mt-8 mb-auto w-full max-w-lg text-center">
+                <button onclick="loadProjs()" class="text-xs text-slate-400 hover:text-indigo-600 font-medium inline-flex items-center gap-2">
                     <i class="fas fa-sync-alt"></i> Cargar proyectos guardados
                 </button>
-                <div id="cloudProjectsList" class="mt-2 hidden"></div> </div>
+                <div id="cloudProjectsList" class="mt-4 hidden space-y-2"></div> 
+            </div>
         </div>
 
-        <div id="view-2" class="hidden absolute inset-0 w-full h-full flex flex-row bg-white">
+        <div id="view-2" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row bg-white overflow-y-auto lg:overflow-hidden">
             <div class="panel-sidebar">
-                <div class="p-5 border-b border-slate-100">
+                <div class="p-4 lg:p-5 border-b border-slate-100">
                     <h3 class="font-bold text-slate-800">Configuración de Fuente</h3>
                     <p class="text-xs text-slate-400 mt-1">Define qué hoja usarás como base.</p>
                 </div>
-                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5">
+                <div class="p-4 lg:p-5 flex-none lg:flex-1 lg:overflow-y-auto custom-scroll space-y-4 lg:space-y-5">
                     <div>
                         <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 block">Archivo</label>
                         <select id="fileSelector" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition" onchange="changeActiveFile()"></select>
@@ -138,7 +143,7 @@
                     </div>
                 </div>
                 
-                <div class="p-4 bg-slate-50 border-t border-slate-200">
+                <div class="p-4 bg-slate-50 border-t border-slate-200 mt-auto">
                     <button onclick="switchView(3)" id="btnGoPlayground" disabled class="w-full bg-slate-800 text-white py-3 rounded-lg font-bold text-sm shadow-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition">
                         Ir al Dashboard <i class="fas fa-chevron-right ml-1"></i>
                     </button>
@@ -146,7 +151,7 @@
             </div>
 
             <div class="panel-content">
-                <div class="h-10 bg-white border-b border-slate-200 flex items-center px-4 justify-between">
+                <div class="h-10 bg-white border-b border-slate-200 flex items-center px-4 justify-between flex-none">
                     <span class="text-xs font-bold text-slate-500 uppercase"><i class="fas fa-table mr-2"></i> Previsualización de Datos</span>
                     <span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Live Data</span>
                 </div>
@@ -156,13 +161,13 @@
             </div>
         </div>
 
-        <div id="view-3" class="hidden absolute inset-0 w-full h-full flex flex-row bg-slate-50">
+        <div id="view-3" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row bg-slate-50 overflow-y-auto lg:overflow-hidden">
             <div class="panel-sidebar">
-                <div class="p-4 border-b border-slate-100 flex justify-between items-center">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
                     <h3 class="font-bold text-slate-800">Constructor</h3>
-                    <button onclick="switchView(4)" class="text-xs bg-emerald-50 text-emerald-600 px-2 py-1 rounded hover:bg-emerald-100 transition font-bold">Unificar <i class="fas fa-arrow-right"></i></button>
+                    <button onclick="switchView(4)" class="text-xs bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded hover:bg-emerald-100 transition font-bold">Unificar <i class="fas fa-arrow-right"></i></button>
                 </div>
-                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5">
+                <div class="p-4 lg:p-5 flex-none lg:flex-1 lg:overflow-y-auto custom-scroll space-y-4 lg:space-y-5 bg-white">
                     
                     <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                         <label class="text-[10px] text-slate-400 font-bold uppercase mb-1 block">Fuente de Datos</label>
@@ -194,7 +199,7 @@
 
                         <div id="percentTargetUI" class="hidden bg-yellow-50 p-3 rounded-lg border border-yellow-100">
                             <label class="text-[10px] text-yellow-700 font-bold uppercase mb-1 block">Valor "Éxito" (Multi)</label>
-                            <div id="percentTargetValue" class="max-h-24 overflow-y-auto custom-scroll bg-white border border-yellow-200 rounded p-1 space-y-1"></div>
+                            <div id="percentTargetValue" class="max-h-32 overflow-y-auto custom-scroll bg-white border border-yellow-200 rounded p-1 space-y-1"></div>
                         </div>
                     </div>
 
@@ -213,48 +218,48 @@
                         <input type="hidden" id="selectedChartType" value="bar">
                     </div>
 
-                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-indigo-700 active:scale-95 transition mt-2">
+                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-indigo-700 active:scale-95 transition mt-4 mb-2">
                         Generar Gráfico
                     </button>
                 </div>
                 
-                <div class="p-3 bg-slate-900 border-t border-slate-800">
+                <div class="p-3 bg-slate-900 lg:border-t border-slate-800 mt-auto flex-none">
                     <div class="flex gap-2">
                         <input type="text" id="projectName3" placeholder="Nombre Proyecto..." class="flex-1 bg-slate-800 border-none rounded text-xs text-white p-2 outline-none">
-                        <button onclick="saveToFirebase()" class="text-xs bg-indigo-500 text-white px-3 rounded font-bold hover:bg-indigo-400">Guardar</button>
+                        <button onclick="saveToFirebase()" class="text-xs bg-indigo-500 text-white px-3 rounded font-bold hover:bg-indigo-400 transition">Guardar</button>
                     </div>
                 </div>
             </div>
 
-            <div class="panel-content p-6 overflow-y-auto custom-scroll scroll-smooth" id="canvasArea3">
-                <div class="flex justify-between items-center mb-6">
+            <div class="panel-content p-4 lg:p-6 lg:overflow-y-auto custom-scroll scroll-smooth" id="canvasArea3">
+                <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-6 gap-2">
                     <h2 class="text-xl font-bold text-slate-800">Tablero de Resultados</h2>
-                    <span class="text-xs text-slate-400"><i class="fas fa-info-circle"></i> Toca un gráfico para ver los datos</span>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded"><i class="fas fa-info-circle"></i> Toca un gráfico para ver los datos</span>
                 </div>
                 
                 <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-20">
                     <div id="emptyLocal" class="col-span-full h-64 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-400 bg-slate-50/50">
                         <i class="fas fa-chart-column text-4xl mb-3 opacity-50"></i>
-                        <p class="text-sm font-medium">Configura los parámetros a la izquierda y presiona "Generar"</p>
+                        <p class="text-sm font-medium text-center px-4">Configura los parámetros a la izquierda y presiona "Generar"</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="view-4" class="hidden absolute inset-0 w-full h-full flex flex-row bg-slate-50">
+        <div id="view-4" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row bg-slate-50 overflow-y-auto lg:overflow-hidden">
             <div class="panel-sidebar">
-                <div class="p-4 border-b border-slate-100 bg-emerald-50/50">
+                <div class="p-4 border-b border-slate-100 bg-emerald-50/50 sticky top-0 z-10">
                     <h3 class="font-bold text-emerald-900">Unificar Fuentes</h3>
                 </div>
-                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-4">
+                <div class="p-4 lg:p-5 flex-none lg:flex-1 lg:overflow-y-auto custom-scroll space-y-4 bg-white">
                     <div class="flex bg-slate-100 p-1 rounded-lg">
                         <label class="flex-1 text-center cursor-pointer">
                             <input type="radio" name="auditMode" value="merge" class="hidden peer" checked onchange="toggleAuditMode()">
-                            <span class="block py-1.5 text-[10px] font-bold text-slate-500 rounded peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition">Suma Total</span>
+                            <span class="block py-2 text-[10px] font-bold text-slate-500 rounded peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm transition uppercase">Suma Total</span>
                         </label>
                         <label class="flex-1 text-center cursor-pointer">
                             <input type="radio" name="auditMode" value="compare" class="hidden peer" onchange="toggleAuditMode()">
-                            <span class="block py-1.5 text-[10px] font-bold text-slate-500 rounded peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition">Comparar</span>
+                            <span class="block py-2 text-[10px] font-bold text-slate-500 rounded peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm transition uppercase">Comparar</span>
                         </label>
                     </div>
 
@@ -279,29 +284,29 @@
                         </div>
                     </div>
 
-                    <div id="auditMappingContainer" class="space-y-3"></div>
+                    <div id="auditMappingContainer" class="space-y-3 pt-2"></div>
 
-                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-emerald-700 active:scale-95 transition mt-2">
+                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-3 rounded-lg font-bold shadow-lg hover:bg-emerald-700 active:scale-95 transition mt-4 mb-2">
                         GENERAR REPORTE
                     </button>
                 </div>
                 
-                <div class="p-3 bg-slate-900 border-t border-slate-800">
+                <div class="p-3 bg-slate-900 border-t border-slate-800 mt-auto flex-none">
                     <div class="flex gap-2">
                         <input type="text" id="projectName4" placeholder="Nombre Proyecto..." class="flex-1 bg-slate-800 border-none rounded text-xs text-white p-2 outline-none">
-                        <button onclick="saveToFirebase()" class="text-xs bg-indigo-500 text-white px-3 rounded font-bold hover:bg-indigo-400">Guardar</button>
+                        <button onclick="saveToFirebase()" class="text-xs bg-indigo-500 text-white px-3 rounded font-bold hover:bg-indigo-400 transition">Guardar</button>
                     </div>
                 </div>
             </div>
 
-            <div class="panel-content p-6 overflow-y-auto custom-scroll scroll-smooth" id="canvasArea4">
+            <div class="panel-content p-4 lg:p-6 lg:overflow-y-auto custom-scroll scroll-smooth" id="canvasArea4">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-slate-800">Reportes Unificados</h2>
                 </div>
                 <div id="auditWidgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-20">
                      <div id="emptyAudit" class="col-span-full h-64 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-400 bg-slate-50/50">
                         <i class="fas fa-network-wired text-4xl mb-3 opacity-50"></i>
-                        <p class="text-sm font-medium">Configura el cruce de datos a la izquierda</p>
+                        <p class="text-sm font-medium text-center px-4">Configura el cruce de datos a la izquierda</p>
                     </div>
                 </div>
             </div>
@@ -319,8 +324,8 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Auto-login silencioso
-        signInAnonymously(auth).then(() => loadProjs()).catch((e) => console.log("Modo local."));
+        // Auto-login
+        signInAnonymously(auth).then(() => { window.loadProjs(); }).catch((e) => console.log("Modo local."));
 
         let rawWorkbooks = {}; 
         let processedDataSources = {}; 
@@ -329,40 +334,28 @@
         let savedAuditWidgetsConfig = [];
 
         window.switchView = function(step) {
-            // 1. Ocultar todas las vistas de forma segura
             ['view-1','view-2','view-3','view-4'].forEach(v => {
                 const el = document.getElementById(v);
-                if(el) {
-                    el.classList.add('hidden');
-                    el.classList.remove('flex');
-                }
+                if(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
             });
             
-            // 2. Mostrar la vista seleccionada
             const targetView = document.getElementById('view-' + step);
             if(targetView) {
                 targetView.classList.remove('hidden');
-                if(step !== 1) targetView.classList.add('flex');
+                targetView.classList.add('flex');
             }
 
-            if(step === 4 && Object.keys(processedDataSources).length > 0) {
-                buildAuditSidebar(); 
-            }
+            if(step === 4 && Object.keys(processedDataSources).length > 0) buildAuditSidebar();
             
-            // 3. Actualizar los botones de navegación
             [1,2,3,4].forEach(n => {
-                const btn = document.getElementById('step' + n);
+                const btn = document.getElementById('step'+n);
                 if(btn) {
                     if(n === step) { 
-                        btn.classList.add('step-active'); 
-                        btn.classList.remove('step-inactive', 'step-disabled'); 
+                        btn.classList.add('step-active'); btn.classList.remove('step-inactive', 'step-disabled'); 
                     } else { 
                         btn.classList.remove('step-active'); 
-                        if(btn.disabled) {
-                            btn.classList.add('step-disabled');
-                        } else {
-                            btn.classList.add('step-inactive');
-                        }
+                        if(btn.disabled) btn.classList.add('step-disabled');
+                        else btn.classList.add('step-inactive');
                     }
                 }
             });
@@ -380,8 +373,6 @@
             Object.keys(rawWorkbooks).forEach(id => fSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
             document.getElementById('btnNext1').classList.remove('hidden');
             window.changeActiveFile();
-            
-            // Corrección aquí (step en lugar de tab)
             document.getElementById('step2').disabled = false;
             document.getElementById('step2').classList.remove('step-disabled');
         });
@@ -417,7 +408,7 @@
             let data = XLSX.utils.sheet_to_json(sheet, {range: XLSX.utils.encode_range(range), defval:null});
             let clean = data.map(r => { let c={}; for(let k in r) if(!k.includes("__EMPTY")) c[k.trim()]=r[k]; return c; }).filter(r=>Object.keys(r).length>0);
 
-            if(clean.length===0) return alert("Hoja vacía.");
+            if(clean.length===0) return alert("Error: Hoja vacía.");
             let id = 'ds_'+Date.now();
             processedDataSources[id] = { id: id, name: `${rawWorkbooks[currentFileId].name} (${sName})`, columns: Object.keys(clean[0]), data: clean };
             
@@ -425,10 +416,9 @@
             if(list.children[0]?.tagName === 'P') list.innerHTML = '';
             list.innerHTML += `<div class="p-3 bg-white border border-indigo-100 rounded-lg text-xs text-slate-600 shadow-sm flex items-center gap-2 animate-pulse"><div class="w-2 h-2 rounded-full bg-green-500"></div> ${processedDataSources[id].name}</div>`;
             
-            // Corrección aquí (steps en lugar de tabs)
             ['step3','step4','btnGoPlayground','btnGoAudit'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) { el.disabled = false; el.classList.remove('step-disabled', 'opacity-50', 'cursor-not-allowed'); }
+                if(el) { el.disabled=false; el.classList.remove('step-disabled', 'opacity-50', 'cursor-not-allowed'); }
             });
             updateSelectors();
         }
@@ -495,14 +485,13 @@
             const wid = 'chart_' + Date.now() + Math.random();
             const grid = document.getElementById('widgetsGrid');
             const card = document.createElement('div');
-            card.className = "flip-container w-full h-[400px]"; // Altura fija
+            card.className = "flip-container w-full h-[350px] lg:h-[400px]"; 
             
-            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wide">${config.agg} por ${config.x}</p></div><div class="flex gap-1"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-1.5 text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[10px] text-center text-slate-300 mt-2">Toca para ver datos</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden"><div class="p-3 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center"><h3 class="font-bold text-indigo-900 text-xs uppercase">Datos Detallados</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-bold text-indigo-600 bg-white border border-indigo-100 px-2 py-1 rounded shadow-sm">Volver</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="w-full text-xs text-left" id="table_${wid}"></table></div></div></div>`;
+            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front p-4 lg:p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-sm lg:text-base">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wide">${config.agg} por ${config.x}</p></div><div class="flex gap-1"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-1.5 text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-[150px]"><canvas id="${wid}"></canvas></div><p class="text-[10px] text-center text-slate-400 mt-2 italic"><i class="fas fa-hand-pointer mr-1"></i> Toca para ver datos</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden"><div class="p-3 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center"><h3 class="font-bold text-indigo-900 text-xs uppercase">Datos Detallados</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-bold text-indigo-600 bg-white border border-indigo-100 px-2 py-1 rounded shadow-sm">Volver</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="w-full text-xs text-left" id="table_${wid}"></table></div></div></div>`;
             grid.prepend(card);
             
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 50);
-            
-            document.getElementById('canvasArea3').scrollTop = 0; // Scroll up to see new chart
+            document.getElementById('canvasArea3').scrollTop = 0; 
         }
 
         function renderChart(cfg, canvasId, data) {
@@ -573,7 +562,7 @@
             Object.values(processedDataSources).forEach(ds => {
                 let opts = `<option value="">-- Columna --</option>` + ds.columns.map(c => `<option value="${c}">${c}</option>`).join('');
                 let extraInputs = (agg === 'percent' || agg === 'count') 
-                    ? `<select id="ay_${ds.id}" class="w-full p-1.5 border border-slate-200 rounded-lg text-xs mb-1 outline-none font-medium" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_c_${ds.id}" class="max-h-24 overflow-y-auto bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px]">Selecciona Valor...</div>`
+                    ? `<select id="ay_${ds.id}" class="w-full p-1.5 border border-slate-200 rounded-lg text-xs mb-1 outline-none font-medium" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_c_${ds.id}" class="max-h-32 overflow-y-auto bg-slate-50 border border-slate-200 rounded-lg p-2 text-[10px]">Selecciona Valor...</div>`
                     : `<select id="ay_${ds.id}" class="w-full p-1.5 border border-slate-200 rounded-lg text-xs outline-none font-medium">${opts}</select>`;
 
                 container.innerHTML += `<div class="bg-white border border-slate-200 rounded-xl p-3 mb-2 shadow-sm"><div class="flex justify-between font-bold text-xs mb-2 text-slate-800"><span>${ds.name}</span><input type="checkbox" id="inc_${ds.id}" checked class="accent-indigo-600"></div><div class="space-y-2"><label class="text-[10px] text-slate-400 font-bold uppercase block">Agrupar Por</label><select id="ax_${ds.id}" class="w-full p-1.5 border border-slate-200 rounded-lg text-xs outline-none font-medium text-slate-600">${opts}</select><label class="text-[10px] text-slate-400 font-bold uppercase block">Valor/Estado</label>${extraInputs}</div></div>`;
@@ -584,7 +573,7 @@
             const col = document.getElementById(`ay_${id}`).value; const container = document.getElementById(`av_c_${id}`);
             if(!col) { container.innerHTML='Seleccionar...'; return; }
             let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
-            container.innerHTML = ''; Array.from(vals).sort().forEach(v => container.innerHTML+=`<label class="flex items-center gap-2 p-1 border-b border-slate-100 last:border-0 hover:bg-white"><input type="checkbox" class="av_chk_${id} rounded text-indigo-600" value="${v}"> ${v}</label>`);
+            container.innerHTML = ''; Array.from(vals).sort().forEach(v => container.innerHTML+=`<label class="flex items-center gap-2 p-1.5 border-b border-slate-100 last:border-0 hover:bg-white cursor-pointer"><input type="checkbox" class="av_chk_${id} rounded text-indigo-600" value="${v}"> ${v}</label>`);
         }
 
         window.generateMergedAudit = function(cfg=null) {
@@ -608,8 +597,8 @@
             const wid = 'aw_'+Date.now()+Math.random();
             const grid = document.getElementById('auditWidgetsGrid');
             const card = document.createElement('div');
-            card.className = "flip-container h-96 w-full perspective-1000";
-            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm text-slate-800">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="w-8 h-8 rounded-full bg-slate-100 hover:text-blue-600 flex items-center justify-center"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600 flex items-center justify-center"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-emerald-200 overflow-hidden"><div class="p-4 border-b border-emerald-100 bg-emerald-50 flex justify-between items-center"><h3 class="font-bold text-emerald-800">Datos Unificados</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-emerald-600 bg-white px-3 py-1 rounded-full shadow-sm">Volver</button></div><div class="flex-1 overflow-auto bg-white border rounded-lg p-2" id="tb_${wid}"></div></div></div>`;
+            card.className = "flip-container h-[400px] lg:h-[450px] w-full perspective-1000";
+            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front p-4 lg:p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-sm text-slate-800">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="w-8 h-8 rounded-full bg-slate-100 hover:text-blue-600 flex items-center justify-center transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="w-8 h-8 rounded-full bg-slate-100 hover:text-red-600 flex items-center justify-center transition"><i class="fas fa-times"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-[150px]"><canvas id="${wid}"></canvas></div></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-emerald-200 overflow-hidden"><div class="p-4 border-b border-emerald-100 bg-emerald-50 flex justify-between items-center"><h3 class="font-bold text-emerald-800 text-sm">Datos Unificados</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-emerald-600 bg-white px-3 py-1 rounded-full shadow-sm">Volver</button></div><div class="flex-1 overflow-auto bg-white border-t p-0" id="tb_${wid}"></div></div></div>`;
             grid.prepend(card); 
             setTimeout(() => renderUnifiedChart(config, wid), 100);
             document.getElementById('canvasArea4').scrollTop = 0;
@@ -622,22 +611,33 @@
                 let data = processedDataSources[map.dsId].data;
                 let local = {};
                 data.forEach(r => {
-                    let k = r[map.x] ? String(r[map.x]).trim() : map.name; globalLabels.add(k);
+                    let k = r[map.x] ? String(r[map.x]).trim() : '(Vacío)'; 
+                    globalLabels.add(k);
                     if(!local[k]) local[k] = {sum:0, count:0, hits:0, valid:0};
-                    local[k].count++;
-                    let v = parseFloat(r[map.y]) || 0; let raw = r[map.y] ? String(r[map.y]).trim() : "";
+                    local[k].count++; // Total del grupo
+                    
+                    let v = parseFloat(r[map.y]) || 0; 
+                    let raw = r[map.y] ? String(r[map.y]).trim() : "";
+                    
                     if(cfg.agg === 'percent' || cfg.agg === 'count') { 
-                        if(map.targets && map.targets.some(t => t.toLowerCase() === raw.toLowerCase())) { local[k].hits++; local[k].valid++; }
-                    } else local[k].sum += v;
+                        if(map.targets && map.targets.some(t => t.toLowerCase() === raw.toLowerCase())) { 
+                            local[k].hits++; 
+                            local[k].valid++; 
+                        }
+                    } else {
+                        local[k].sum += v;
+                    }
                 });
+
                 Object.keys(local).forEach(k => {
                     let res = 0;
                     if(cfg.agg === 'percent') res = local[k].count > 0 ? (local[k].hits/local[k].count)*100 : 0;
                     else if(cfg.agg === 'count') res = local[k].valid;
                     else res = local[k].sum;
+                    
                     if(!tableData[k]) tableData[k] = {};
-                    tableData[k][map.name] = res;
-                    // Guardar crudos
+                    tableData[k][map.name] = { val: res, hits: local[k].hits, count: local[k].count };
+                    
                     if(cfg.agg === 'percent') {
                          if(!tableData[k].rawHits) tableData[k].rawHits = 0;
                          if(!tableData[k].rawCount) tableData[k].rawCount = 0;
@@ -645,19 +645,43 @@
                          tableData[k].rawCount += local[k].count;
                     } else {
                          if(!tableData[k].rawSum) tableData[k].rawSum = 0;
-                         tableData[k].rawSum += (cfg.agg==='count'?local[k].valid:res);
+                         tableData[k].rawSum += (cfg.agg==='count' ? local[k].valid : res);
                     }
                 });
             });
 
             let labels = Array.from(globalLabels).sort();
             let datasets = [];
+            const colors = ['#4f46e5','#f59e0b','#06b6d4','#ec4899', '#8b5cf6'];
             
             if(cfg.mode === 'compare') {
-                cfg.mappings.forEach((map, i) => {
-                    let d = labels.map(l => (tableData[l] && tableData[l][map.name]) || 0);
-                    const colors = ['#4f46e5','#06b6d4','#f59e0b','#ec4899'];
-                    datasets.push({ label: map.name, data: d, backgroundColor: colors[i%4], maxBarThickness: 40, borderRadius: 4 });
+                let colorIdx = 0;
+                cfg.mappings.forEach((map) => {
+                    if (cfg.agg === 'percent' || cfg.agg === 'count') {
+                        let dHits = labels.map(l => {
+                            let d = tableData[l]?.[map.name];
+                            if(!d) return 0;
+                            return cfg.agg === 'percent' ? (d.count>0 ? (d.hits/d.count)*100 : 0) : d.hits;
+                        });
+                        
+                        let dRest = labels.map(l => {
+                            let d = tableData[l]?.[map.name];
+                            if(!d) return 0;
+                            let misses = d.count - d.hits;
+                            return cfg.agg === 'percent' ? (d.count>0 ? (misses/d.count)*100 : 0) : misses;
+                        });
+
+                        let targetLabel = map.targets && map.targets.length > 0 ? map.targets.join(', ') : 'Selección';
+                        if(targetLabel.length > 15) targetLabel = targetLabel.substring(0,15) + '...';
+
+                        datasets.push({ label: `${targetLabel} (${map.name.substring(0,8)})`, data: dHits, backgroundColor: colors[colorIdx % colors.length], stack: map.name, maxBarThickness: 40, borderRadius: 4 });
+                        datasets.push({ label: `Resto (${map.name.substring(0,8)})`, data: dRest, backgroundColor: '#cbd5e1', stack: map.name, maxBarThickness: 40, borderRadius: 4 });
+                        colorIdx++;
+                    } else {
+                        let d = labels.map(l => tableData[l]?.[map.name]?.val || 0);
+                        datasets.push({ label: map.name, data: d, backgroundColor: colors[colorIdx % colors.length], maxBarThickness: 40, borderRadius: 4 });
+                        colorIdx++;
+                    }
                 });
             } else {
                 let d = labels.map(l => {
@@ -669,17 +693,33 @@
                 datasets.push({ label: 'Total Unificado', data: d, backgroundColor: '#10b981', maxBarThickness: 50, borderRadius: 4 });
             }
             
-            let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-100 text-slate-600"><tr><th>Categoría</th>${cfg.mappings.map(m=>`<th class="text-right">${m.name.substring(0,8)}...</th>`).join('')}</tr></thead><tbody>`;
-            labels.forEach(l => { th += `<tr class="border-b"><td class="p-2 font-medium">${l}</td>${cfg.mappings.map(m=>`<td class="p-2 text-right">${((tableData[l]&&tableData[l][m.name])||0).toFixed(1)}</td>`).join('')}</tr>`; });
-            th += '</tbody></table>'; document.getElementById('tb_' + id).innerHTML = th;
+            let th = `<table class="w-full text-xs text-left"><thead class="bg-slate-50 text-slate-600 sticky top-0"><tr><th class="p-3 border-b border-r">Categoría</th>`;
+            datasets.forEach(ds => { th += `<th class="p-3 border-b text-right min-w-[100px]">${ds.label}</th>`; });
+            th += `</tr></thead><tbody>`;
+            labels.forEach((l, i) => { 
+                th += `<tr class="border-b hover:bg-slate-50"><td class="p-3 font-medium border-r bg-white sticky left-0">${l}</td>`;
+                datasets.forEach(ds => {
+                    let val = ds.data[i] || 0;
+                    th += `<td class="p-3 text-right">${cfg.agg === 'percent' ? val.toFixed(1) + '%' : val.toLocaleString()}</td>`;
+                });
+                th += `</tr>`; 
+            });
+            th += '</tbody></table>'; 
+            document.getElementById('tb_' + id).innerHTML = th;
 
             const ctx = document.getElementById(id).getContext('2d');
             let options = { 
                 responsive: true, maintainAspectRatio: false, 
-                onClick: (e) => { const card = document.getElementById('f_' + id); if(card) card.classList.toggle('flipped'); }
+                onClick: (e) => { const card = document.getElementById('f_' + id); if(card) card.classList.toggle('flipped'); },
+                plugins: { tooltip: { mode: 'index', intersect: false } }
             };
-            if(cfg.type !== 'doughnut') options.scales = { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined } };
-
+            
+            if(cfg.type !== 'doughnut') {
+                options.scales = { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined }, x: {} };
+                if (cfg.mode === 'compare' && cfg.type === 'bar' && (cfg.agg === 'percent' || cfg.agg === 'count')) {
+                    options.scales.x.stacked = true; options.scales.y.stacked = true;
+                }
+            }
             new Chart(ctx, { type: cfg.type, data: { labels: labels, datasets: datasets }, options: options });
         }
 
@@ -693,32 +733,31 @@
                     widgetsLocal: savedWidgetsConfig, 
                     widgetsGlobal: savedAuditWidgetsConfig
                 });
-                alert("Guardado Exitosamente en Nube"); loadProjs();
+                alert("Guardado Exitosamente en Nube"); window.loadProjs();
             } catch(e) { console.error(e); alert("Guardado (Local temporal)"); }
         }
 
-        async function loadProjs() {
+        window.loadProjs = async function() {
             try {
+                const list = document.getElementById('cloudProjectsList');
+                if(list) {
+                    list.classList.remove('hidden');
+                    list.innerHTML = '<p class="text-xs text-slate-400"><i class="fas fa-spinner fa-spin"></i> Cargando...</p>';
+                }
                 const snaps = await getDocs(query(collection(db, "reportes_v24"), orderBy("date", "desc")));
-                const list = document.getElementById('cloudProjectsList'); list.innerHTML = '';
+                if(list) list.innerHTML = '';
                 snaps.forEach(doc => {
                     const d = doc.data();
-                    const b = document.createElement('button'); b.className = "w-full text-left p-2 border border-slate-200 rounded-lg text-xs hover:bg-indigo-50 transition";
-                    b.innerText = `${d.nombre} (${new Date(d.date.seconds*1000).toLocaleDateString()})`;
+                    const b = document.createElement('button'); b.className = "w-full text-left p-3 border border-slate-200 rounded-lg text-sm font-semibold hover:bg-indigo-50 text-slate-700 transition";
+                    b.innerHTML = `<i class="fas fa-cloud text-indigo-400 mr-2"></i> ${d.nombre} <span class="block text-[10px] text-slate-400 font-normal mt-1">${new Date(d.date.seconds*1000).toLocaleString()}</span>`;
                     b.onclick = () => {
                         processedDataSources = JSON.parse(d.sources); savedWidgetsConfig = d.widgetsLocal||[]; savedAuditWidgetsConfig = d.widgetsGlobal||[];
                         const dsSel = document.getElementById('dsSelector'); dsSel.innerHTML = '';
                         Object.values(processedDataSources).forEach(dx => dsSel.innerHTML += `<option value="${dx.id}">${dx.name}</option>`);
                         document.getElementById('widgetsGrid').innerHTML = ''; savedWidgetsConfig.forEach(c => window.buildWidget(c));
                         document.getElementById('auditWidgetsGrid').innerHTML = ''; savedAuditWidgetsConfig.forEach(c => window.generateMergedAudit(c));
-                        
-                        // Corrección de carga de Firebase (usando steps en lugar de tabs)
                         ['step2','step3','step4'].forEach(id => { 
-                            const btn = document.getElementById(id);
-                            if(btn) {
-                                btn.disabled = false; 
-                                btn.classList.remove('step-disabled');
-                            }
+                            const btn = document.getElementById(id); if(btn) { btn.disabled=false; btn.classList.remove('step-disabled'); }
                         });
                         switchView(3);
                     };
