@@ -106,7 +106,7 @@
                 </button>
             </div>
             
-            <div class="mt-12 w-full max-w-xl">
+            <div class="mt-12 w-full max-w-xl text-center">
                 <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-4">Proyectos Guardados</h3>
                 <div id="cloudProjectsList" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto custom-scroll px-2"></div>
             </div>
@@ -320,7 +320,7 @@
             document.getElementById('btnNext1').classList.remove('hidden');
             window.changeActiveFile();
             document.getElementById('tab2').disabled = false;
-            document.getElementById('tab2').classList.remove('opacity-40');
+            document.getElementById('tab2').classList.remove('tab-disabled');
         });
 
         // CARGA SECUNDARIA (VALIDAR VS)
@@ -331,11 +331,15 @@
             const sheetName = workbook.SheetNames[0];
             const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {defval:""});
             
-            // Clean/De-duplicate logic
-            let clean = rawData.map(r => { let c={}; for(let k in r) if(!k.startsWith("__EMPTY")) c[String(k).trim().toLowerCase()] = String(r[k]).trim(); return c; });
+            // NORMALIZACIÓN
+            let clean = rawData.map(r => { 
+                let c={}; 
+                for(let k in r) if(!k.startsWith("__EMPTY")) c[String(k).trim()] = String(r[k]).trim(); 
+                return c; 
+            }).filter(r=>Object.keys(r).length > 0);
             
             let dsId = 'ds_sec_'+Date.now();
-            processedDataSources[dsId] = { id: dsId, name: `[VS] ${file.name}`, columns: Object.keys(clean[0]), data: clean };
+            processedDataSources[dsId] = { id: dsId, name: `[NUEVO] ${file.name}`, columns: Object.keys(clean[0]), data: clean };
             
             document.getElementById('secondarySourceInfo').innerText = `Cargado: ${file.name}`;
             document.getElementById('secondarySourceInfo').classList.remove('hidden');
@@ -374,7 +378,7 @@
             let range = XLSX.utils.decode_range(sheet['!ref']); range.s.r = Math.max(0, hRow);
             let data = XLSX.utils.sheet_to_json(sheet, {range: XLSX.utils.encode_range(range), defval:null});
             
-            // NORMALIZACIÓN DE DATOS (Anti-duplicados)
+            // NORMALIZACIÓN
             let clean = data.map(r => { 
                 let c={}; 
                 for(let k in r) if(!k.includes("__EMPTY")) c[String(k).trim()] = r[k]; 
@@ -386,7 +390,7 @@
             processedDataSources[dsId] = { id: dsId, name: `${rawWorkbooks[fid].name} (${sid})`, columns: Object.keys(clean[0]), data: clean };
             
             document.getElementById('processedSourcesList').innerHTML += `<div class="p-4 bg-white border border-slate-200 rounded-2xl text-xs text-slate-700 shadow-sm flex items-center gap-3"><div class="w-2 h-2 rounded-full bg-green-500 shadow-lg"></div> <span class="font-black truncate">${processedDataSources[dsId].name}</span></div>`;
-            ['tab3','tab4','btn3','btn4'].forEach(id => { let el = document.getElementById(id); if(el) { el.disabled = false; el.classList.remove('opacity-40'); } });
+            ['tab3','tab4','btnGoPlayground','btnGoAudit'].forEach(id => { let el = document.getElementById(id); if(el) { el.disabled = false; el.classList.remove('tab-disabled', 'opacity-40'); } });
             updateSelectors();
         };
 
@@ -516,7 +520,8 @@
                 const agg = document.getElementById('auditAggType').value;
                 let mappings = [];
                 Object.values(processedDataSources).forEach(ds => {
-                    if(document.getElementById(`inc_${ds.id}`).checked) {
+                    let incEl = document.getElementById(`inc_${ds.id}`);
+                    if(incEl && incEl.checked) {
                         let targets = []; if (agg === 'percent') targets = Array.from(document.querySelectorAll(`.av_chk_${ds.id}:checked`)).map(c=>c.value);
                         mappings.push({ dsId: ds.id, name: ds.name, x: document.getElementById(`ax_${ds.id}`).value, y: document.getElementById(`ay_${ds.id}`).value, targets: targets });
                     }
@@ -537,10 +542,12 @@
         function renderUnifiedChart(cfg, id) {
             let labelsS = new Set(); let tableData = {};
             cfg.mappings.forEach(map => {
-                let data = processedDataSources[map.dsId].data;
+                let source = processedDataSources[map.dsId];
+                if(!source) return;
+                let data = source.data;
                 let local = {};
                 data.forEach(r => {
-                    let k = r[map.x] ? String(r[map.x]).trim().toLowerCase() : map.name.toLowerCase(); 
+                    let k = r[map.x] ? String(r[map.x]).trim().toLowerCase() : String(map.name).toLowerCase(); 
                     labelsS.add(k);
                     if(!local[k]) local[k] = {s:0, c:0, h:0, v:0};
                     local[k].c++;
@@ -561,9 +568,20 @@
             } else {
                 datasets.push({ label: 'Métrica Global', data: labels.map(l => (cfg.agg==='percent') ? (tableData[l].h/tableData[l].c)*100 : tableData[l].s), backgroundColor: '#10b981', maxBarThickness: 60, borderRadius: 10 });
             }
-            let th = `<table class="excel-table"><thead><tr><th>Categoría (Normalizada)</th>${cfg.mappings.map(m=>`<th class="text-right">${m.name.substring(0,8)}...</th>`).join('')}</tr></thead><tbody>`;
-            labels.forEach(l => { th += `<tr><td class="font-bold text-slate-700 capitalize">${l}</td>${cfg.mappings.map(m=>`<td class="text-right font-black text-indigo-600">${((tableData[l]&&tableData[l].vs[m.name])||0).toFixed(1)}</td>`).join('')}</tr>`; });
-            document.getElementById('tb_'+id).innerHTML = th + '</tbody></table>';
+            
+            let th = `<table class="excel-table"><thead><tr><th>Categoría (Normalizada)</th>\${cfg.mappings.map(m=>\`<th class="text-right">\${String(m.name).substring(0,8)}...</th>\`).join('')}</tr></thead><tbody>`;
+            labels.forEach(l => { th += `<tr><td class="font-bold text-slate-700 capitalize">${l}</td>\${cfg.mappings.map(m=>\`<td class="text-right font-black text-indigo-600">\${((tableData[l]&&tableData[l].vs[m.name])||0).toFixed(1)}</td>\`).join('')}</tr>`; });
+            
+            // Render logic to prevent template string error in direct HTML
+            const headerRow = `<tr><th>Categoría (Normalizada)</th>` + cfg.mappings.map(m => `<th class="text-right">${String(m.name).substring(0,8)}...</th>`).join('') + `</tr>`;
+            const rows = labels.map(l => {
+                return `<tr><td class="font-bold text-slate-700 capitalize">${l}</td>` + 
+                cfg.mappings.map(m => `<td class="text-right font-black text-indigo-600">${((tableData[l] && tableData[l].vs[m.name]) || 0).toFixed(1)}</td>`).join('') + 
+                `</tr>`;
+            }).join('');
+
+            document.getElementById('tb_'+id).innerHTML = `<table class="excel-table"><thead>${headerRow}</thead><tbody>${rows}</tbody></table>`;
+            
             new Chart(document.getElementById(id).getContext('2d'), { type: cfg.type, data: { labels: labels, datasets: datasets }, options: { maintainAspectRatio: false, onClick: (e) => { let c = document.getElementById('f_' + id); if(c) c.classList.toggle('flipped'); }, scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined, grid: { color: '#f8fafc' } } } } });
         }
 
@@ -580,8 +598,7 @@
                     b.innerHTML = `<div class="font-black text-slate-700 group-hover:text-indigo-600 transition-colors uppercase tracking-tighter">${d.nombre}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(d.date.seconds*1000).toLocaleDateString()}</div>`;
                     b.onclick = () => {
                         processedDataSources = JSON.parse(d.sources); savedWidgetsConfig = d.widgetsLocal||[]; savedAuditWidgetsConfig = d.widgetsGlobal||[];
-                        const dsSel = document.getElementById('dsSelector'); dsSel.innerHTML = '';
-                        Object.values(processedDataSources).forEach(dx => dsSel.innerHTML += `<option value="${dx.id}">${dx.name}</option>`);
+                        updateSelectors();
                         document.getElementById('widgetsGrid').innerHTML = ''; savedWidgetsConfig.forEach(c => window.buildWidget(c));
                         document.getElementById('auditWidgetsGrid').innerHTML = ''; savedAuditWidgetsConfig.forEach(c => window.generateMergedAudit(c));
                         ['tab2','tab3','tab4'].forEach(id => { let el = document.getElementById(id); if(el) el.disabled=false; el.classList.remove('opacity-40'); });
