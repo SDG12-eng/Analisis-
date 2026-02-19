@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v30 - Enterprise Compliance</title>
+    <title>DataMaster v31 - Adaptativo & Visual</title>
     
     <!-- Librerías -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,207 +15,274 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; height: 100vh; overflow: hidden; }
         
-        .custom-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+        /* Scrollbars mejorados */
+        .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid #f8fafc; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* TARJETAS 3D AMPLIAS */
-        .flip-container { perspective: 1000px; height: 600px; width: 100%; margin-bottom: 2rem; } /* Más alto */
-        .flipper { transition: 0.8s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d; position: relative; height: 100%; width: 100%; }
+        /* EFECTO 3D DE GIRO (FLIP) - RESPONSIVE */
+        .flip-container { perspective: 1000px; cursor: pointer; width: 100%; margin-bottom: 2rem; }
+        .flipper { transition: 0.8s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
+        
+        /* Altura dinámica para las tarjetas */
+        .card-height { height: 400px; }
+        @media (min-width: 768px) { .card-height { height: 500px; } }
+        @media (min-width: 1024px) { .card-height { height: 600px; } }
+
         .front, .back { 
             backface-visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
             border-radius: 1.5rem; background: white; border: 1px solid #e2e8f0;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
             display: flex; flex-direction: column; overflow: hidden;
         }
         .front { z-index: 2; transform: rotateY(0deg); }
         .back { transform: rotateY(180deg); border: 2px solid #6366f1; }
         .flipped .flipper { transform: rotateY(180deg); }
 
-        /* Tablas */
+        /* Estilos Tabla */
         .excel-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.75rem; }
         .excel-table th { 
-            background: #f8fafc; position: sticky; top: 0; padding: 12px 16px; text-align: left; 
-            font-weight: 800; color: #475569; z-index: 10; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em;
+            background: #f1f5f9; position: sticky; top: 0; padding: 10px 12px; text-align: left; 
+            font-weight: 700; color: #475569; z-index: 10; border-bottom: 2px solid #e2e8f0; 
+            text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
         }
-        .excel-table td { padding: 10px 16px; border-bottom: 1px solid #f1f5f9; color: #334155; white-space: nowrap; max-width: 250px; overflow: hidden; text-overflow: ellipsis; }
+        .excel-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
         .excel-table tr:hover td { background: #f8fafc; }
 
-        .tab-active { @apply bg-indigo-600 text-white shadow-lg shadow-indigo-200; }
+        /* Tabs y Botones */
+        .tab-btn { @apply px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap; }
+        .tab-active { @apply bg-indigo-600 text-white shadow-md shadow-indigo-200; }
         .tab-inactive { @apply bg-white text-slate-500 hover:bg-slate-50 border border-slate-200; }
-        .sidebar-item { @apply bg-white border border-slate-200 p-4 rounded-xl shadow-sm transition-all hover:shadow-md; }
+        
+        .btn-primary { @apply bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all; }
+        .btn-success { @apply bg-emerald-500 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all; }
+
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden text-slate-800">
+<body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
 
-    <!-- HEADER -->
-    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 z-50 shrink-0">
-        <div class="flex items-center gap-3">
-            <div class="bg-gradient-to-br from-indigo-600 to-blue-500 text-white p-2 rounded-xl shadow-lg">
-                <i class="fas fa-database text-lg"></i>
+    <!-- HEADER RESPONSIVE -->
+    <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
+        <div class="flex items-center gap-2 md:gap-3">
+            <div class="bg-gradient-to-br from-indigo-600 to-blue-500 text-white p-2 rounded-xl shadow-md">
+                <i class="fas fa-database text-sm md:text-lg"></i>
             </div>
             <div>
-                <h1 class="text-sm font-black tracking-tighter uppercase text-slate-800 leading-none">Data<span class="text-indigo-600">Master</span></h1>
-                <p class="text-[10px] text-slate-400 font-bold tracking-widest">ENTERPRISE v30</p>
+                <h1 class="text-xs md:text-sm font-black tracking-tighter uppercase text-slate-800 leading-none">Data<span class="text-indigo-600">Master</span></h1>
+                <p class="text-[9px] text-slate-400 font-bold tracking-widest hidden md:block">ENTERPRISE v31</p>
             </div>
         </div>
         
-        <nav class="flex bg-slate-100 p-1.5 rounded-2xl gap-2 shadow-inner">
-            <button id="tab1" onclick="switchView(1)" class="px-5 py-2 rounded-xl text-xs font-bold transition-all tab-active">1. Carga</button>
-            <button id="tab2" onclick="switchView(2)" disabled class="px-5 py-2 rounded-xl text-xs font-bold transition-all tab-inactive opacity-50">2. Fuentes</button>
-            <button id="tab3" onclick="switchView(3)" disabled class="px-5 py-2 rounded-xl text-xs font-bold transition-all tab-inactive opacity-50">3. Dashboard</button>
-            <button id="tab4" onclick="switchView(4)" disabled class="px-5 py-2 rounded-xl text-xs font-bold transition-all tab-inactive opacity-50">4. Cumplimiento</button>
+        <!-- Navegación Stepper (Scrollable en móvil) -->
+        <nav class="flex bg-slate-100 p-1.5 rounded-2xl gap-2 shadow-inner overflow-x-auto custom-scroll max-w-[60vw] md:max-w-none">
+            <button id="tab1" onclick="switchView(1)" class="tab-btn tab-active">1. Carga</button>
+            <button id="tab2" onclick="switchView(2)" disabled class="tab-btn tab-inactive opacity-50">2. Fuentes</button>
+            <button id="tab3" onclick="switchView(3)" disabled class="tab-btn tab-inactive opacity-50">3. Dashboard</button>
+            <button id="tab4" onclick="switchView(4)" disabled class="tab-btn tab-inactive opacity-50">4. Unificar</button>
         </nav>
 
-        <div class="flex items-center gap-4">
-             <div id="authIndicator" class="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-black border border-green-100">
+        <div class="flex items-center gap-2 md:gap-4">
+             <div id="authIndicator" class="hidden md:flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-black border border-green-100">
                 <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> ONLINE
              </div>
+             <!-- Mobile Menu Placeholder (Optional) -->
         </div>
     </header>
 
-    <main class="flex-1 relative overflow-hidden bg-slate-50">
+    <main class="flex-1 relative overflow-hidden">
 
-        <!-- VISTA 1: CARGA -->
-        <div id="view-1" class="absolute inset-0 z-40 bg-slate-50 flex flex-col items-center justify-center p-8 fade-in">
-            <div class="bg-white p-16 rounded-[3rem] shadow-2xl border border-slate-100 text-center max-w-2xl w-full transform transition hover:scale-[1.005]">
-                <div class="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
-                    <i class="fas fa-cloud-upload-alt text-5xl"></i>
+        <!-- VISTA 1: CARGA (Centrada) -->
+        <div id="view-1" class="absolute inset-0 z-40 flex flex-col items-center justify-center p-4 md:p-8 fade-in overflow-y-auto">
+            <div class="bg-white p-8 md:p-12 rounded-[2rem] shadow-xl border border-slate-100 text-center w-full max-w-xl transition-all hover:shadow-2xl">
+                <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <i class="fas fa-cloud-upload-alt text-4xl"></i>
                 </div>
-                <h2 class="text-3xl font-black text-slate-800 mb-3 tracking-tight">Centro de Carga</h2>
-                <p class="text-slate-400 mb-10 text-sm font-medium">Sube tus reportes (.xlsx) para iniciar el análisis de cumplimiento.</p>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-3 tracking-tight">Centro de Carga</h2>
+                <p class="text-slate-400 mb-8 text-sm font-medium">Sube tus archivos Excel para iniciar el análisis.</p>
                 
-                <label class="block mb-8 cursor-pointer group">
+                <label class="block mb-6 cursor-pointer group">
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" multiple class="hidden"/>
-                    <div class="bg-slate-900 text-white px-10 py-6 rounded-2xl font-bold shadow-xl shadow-indigo-500/20 group-hover:bg-slate-800 transition-all flex items-center justify-center gap-4 active:scale-95">
-                        <i class="fas fa-folder-open text-2xl"></i>
-                        <span class="text-lg">Seleccionar Archivos</span>
+                    <div class="bg-slate-900 text-white px-8 py-5 rounded-2xl font-bold shadow-xl shadow-indigo-500/20 group-hover:bg-slate-800 group-active:scale-95 transition-all flex items-center justify-center gap-3">
+                        <i class="fas fa-folder-open text-xl"></i>
+                        <span class="text-base">Seleccionar Archivos</span>
                     </div>
                 </label>
                 <div id="uploadStatus" class="h-6 text-xs font-bold text-indigo-600 mb-4"></div>
                 
-                <button id="btnNext1" onclick="switchView(2)" class="hidden w-full bg-white border-2 border-indigo-600 text-indigo-600 py-4 rounded-2xl font-black text-sm uppercase shadow-lg hover:bg-indigo-50 transition-all">
-                    Configurar Datos <i class="fas fa-arrow-right ml-2"></i>
+                <button id="btnNext1" onclick="switchView(2)" class="hidden w-full bg-white border-2 border-indigo-600 text-indigo-600 py-3 rounded-2xl font-black text-sm uppercase shadow-lg hover:bg-indigo-50 transition-all flex justify-center items-center gap-2">
+                    Configurar Datos <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
             
-            <div class="mt-10 w-full max-w-2xl">
-                 <div class="flex justify-between items-end mb-4 px-4">
-                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Historial de Reportes</h3>
-                     <button onclick="loadProjs()" class="text-xs font-bold text-indigo-600 hover:underline"><i class="fas fa-sync"></i> Actualizar</button>
+            <!-- Historial -->
+            <div class="mt-8 w-full max-w-xl bg-white/50 p-4 rounded-2xl border border-slate-200 backdrop-blur-sm">
+                 <div class="flex justify-between items-center mb-3">
+                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Historial Reciente</h3>
+                     <button onclick="loadProjs()" class="text-[10px] bg-white border border-slate-200 px-2 py-1 rounded-lg text-indigo-600 font-bold hover:shadow-sm"><i class="fas fa-sync"></i></button>
                  </div>
-                 <div id="cloudProjectsList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto custom-scroll px-2"></div>
+                 <div id="cloudProjectsList" class="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto custom-scroll">
+                     <p class="text-xs text-center text-slate-400 py-2">No hay proyectos recientes.</p>
+                 </div>
             </div>
         </div>
 
-        <!-- VISTA 2: FUENTES -->
-        <div id="view-2" class="hidden absolute inset-0 w-full h-full flex flex-row fade-in">
-            <div class="w-[450px] bg-white border-r border-slate-200 flex flex-col z-20 shadow-2xl">
-                <div class="p-8 border-b border-slate-100 bg-slate-50/50"><h3 class="font-black text-slate-800 text-base uppercase tracking-wider">Gestión de Fuentes</h3></div>
-                <div class="p-8 space-y-6 flex-1 overflow-y-auto custom-scroll">
+        <!-- VISTA 2: FUENTES (Split View Adaptativo) -->
+        <div id="view-2" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row fade-in bg-white">
+            <!-- Sidebar Config -->
+            <div class="w-full lg:w-[400px] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col z-20 shadow-lg lg:shadow-none shrink-0 h-1/2 lg:h-full">
+                <div class="p-4 md:p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">Gestión de Fuentes</h3>
+                </div>
+                <div class="p-4 md:p-6 space-y-4 flex-1 overflow-y-auto custom-scroll">
                     <div class="sidebar-item">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">1. Archivo</label>
-                        <select id="fileSelector" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500" onchange="changeActiveFile()"></select>
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">1. Archivo</label>
+                        <select id="fileSelector" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500" onchange="changeActiveFile()"></select>
                     </div>
                     <div class="sidebar-item">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">2. Hoja</label>
-                        <select id="sheetSelector" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold outline-none focus:border-indigo-500" onchange="renderRawPreview()"></select>
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">2. Hoja</label>
+                        <select id="sheetSelector" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500" onchange="renderRawPreview()"></select>
                     </div>
                     <div class="sidebar-item">
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">3. Fila Encabezados</label>
-                        <input type="number" id="headerRow" value="1" min="1" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-indigo-500">
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">3. Fila Encabezados</label>
+                        <input type="number" id="headerRow" value="1" min="1" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-indigo-500">
                     </div>
-                    <button onclick="saveAsDataSource()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all flex justify-center items-center gap-3 text-sm active:scale-95"><i class="fas fa-save text-lg"></i> GUARDAR FUENTE</button>
+                    <button onclick="saveAsDataSource()" class="w-full btn-primary py-3 rounded-xl font-bold flex justify-center items-center gap-2 text-xs uppercase tracking-widest"><i class="fas fa-save text-base"></i> Guardar Fuente</button>
                     
-                    <div class="pt-6 border-t border-slate-100">
-                        <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Fuentes Listas</h4>
-                        <div id="processedSourcesList" class="space-y-3"></div>
+                    <div class="pt-4 border-t border-slate-100">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Fuentes Activas</h4>
+                        <div id="processedSourcesList" class="space-y-2 max-h-24 overflow-y-auto custom-scroll"></div>
                     </div>
                 </div>
+                <!-- Botones Continuar (Siempre visibles en móvil abajo del sidebar o fijos) -->
+                 <div class="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-3">
+                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="bg-slate-800 text-white py-2.5 rounded-xl font-bold text-xs disabled:opacity-30 flex justify-center gap-1">Dashboard <i class="fas fa-chevron-right"></i></button>
+                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs disabled:opacity-30 flex justify-center gap-1">Unificar <i class="fas fa-chevron-right"></i></button>
+                </div>
             </div>
-            <div class="flex-1 flex flex-col bg-slate-50">
-                <div class="h-16 border-b border-slate-200 px-8 flex items-center bg-white shadow-sm z-10"><span class="text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fas fa-table mr-2 text-indigo-500"></i> Previsualización de Datos</span></div>
-                <div class="flex-1 overflow-auto custom-scroll relative p-8"><div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"><table class="excel-table" id="rawTablePreview"></table></div></div>
+            
+            <!-- Preview Area -->
+            <div class="flex-1 flex flex-col bg-slate-50 h-1/2 lg:h-full border-t lg:border-t-0">
+                <div class="h-10 md:h-12 border-b border-slate-200 px-4 md:px-6 flex items-center bg-white shadow-sm z-10 justify-between">
+                    <span class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fas fa-table mr-2 text-indigo-500"></i> Vista Previa</span>
+                    <span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-500">Solo Lectura</span>
+                </div>
+                <div class="flex-1 overflow-auto custom-scroll relative p-4"><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="excel-table" id="rawTablePreview"></table></div></div>
             </div>
         </div>
 
-        <!-- VISTA 3: DASHBOARD INDIVIDUAL -->
-        <div id="view-3" class="hidden absolute inset-0 w-full h-full flex flex-row fade-in">
-            <aside class="w-[450px] bg-white border-r border-slate-200 flex flex-col z-20 shadow-2xl">
-                <div class="p-6 border-b"><h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">Constructor KPI Individual</h3></div>
-                <div class="p-6 flex-1 space-y-6 overflow-y-auto custom-scroll">
-                    <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100 shadow-sm"><label class="text-[10px] font-black text-indigo-900 uppercase mb-2 block tracking-widest">Fuente Activa</label><select id="dsSelector" class="w-full p-3 bg-white border-0 rounded-xl text-sm font-bold shadow-sm outline-none" onchange="onDataSourceChange()"></select></div>
-                    <div class="space-y-4">
-                        <input type="text" id="widgetTitle" placeholder="Título del Gráfico..." class="w-full p-4 border-b-2 border-slate-100 text-sm font-bold outline-none focus:border-indigo-500 bg-transparent placeholder-slate-400">
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Eje X (Agrupar)</label><select id="axisX" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold column-selector outline-none"></select></div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Cálculo</label><select id="aggType" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="percent">Porcentaje %</option></select></div>
-                            <div><label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Columna Valor</label><select id="axisY" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold column-selector outline-none" onchange="updatePercentTargets()"></select></div>
-                        </div>
-                        <div id="percentTargetUI" class="hidden bg-yellow-50 p-4 rounded-2xl border border-yellow-200"><label class="text-[10px] font-black text-yellow-800 uppercase mb-2 block tracking-widest">Valores de Éxito (Multi)</label><div id="percentTargetValue" class="max-h-40 overflow-y-auto custom-scroll bg-white p-2 rounded-xl border border-yellow-100 shadow-inner"></div></div>
+        <!-- VISTA 3: DASHBOARD INDIVIDUAL (Adaptativo) -->
+        <div id="view-3" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row fade-in bg-slate-50">
+            <!-- Sidebar Controles -->
+            <aside class="w-full lg:w-[400px] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col z-20 shadow-lg h-1/2 lg:h-full">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">Constructor</h3>
+                    <div class="flex gap-2">
+                         <button onclick="saveToFirebase()" class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg font-bold text-[10px] hover:bg-indigo-100 border border-indigo-100">GUARDAR</button>
                     </div>
-                    <div class="border-t pt-4 space-y-4"><div class="flex justify-between items-center"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filtros</label><button onclick="addGlobalFilter()" class="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-full font-bold shadow-sm hover:bg-indigo-100 transition-all">+ Filtro</button></div><div id="globalFiltersArea" class="space-y-2"></div></div>
+                </div>
+                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5">
+                    <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100 shadow-sm">
+                        <label class="text-[9px] font-black text-indigo-900 uppercase mb-1 block tracking-widest">Fuente de Datos</label>
+                        <select id="dsSelector" class="w-full p-2 bg-white border-0 rounded-xl text-xs font-bold shadow-sm outline-none" onchange="onDataSourceChange()"></select>
+                    </div>
+
+                    <div class="space-y-3">
+                        <input type="text" id="widgetTitle" placeholder="Título del Gráfico..." class="w-full p-2 border-b border-slate-200 text-sm font-bold outline-none bg-transparent focus:border-indigo-500">
+                        <div>
+                            <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Eje X (Agrupar)</label>
+                            <select id="axisX" class="w-full p-2 border border-slate-200 rounded-xl text-xs font-bold column-selector outline-none"></select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Operación</label><select id="aggType" class="w-full p-2 border border-slate-200 rounded-xl text-xs font-bold outline-none" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="percent">Porcentaje %</option></select></div>
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Valor</label><select id="axisY" class="w-full p-2 border border-slate-200 rounded-xl text-xs font-bold column-selector outline-none" onchange="updatePercentTargets()"></select></div>
+                        </div>
+                        <div id="percentTargetUI" class="hidden bg-yellow-50 p-3 rounded-2xl border border-yellow-200">
+                            <label class="text-[9px] font-black text-yellow-800 uppercase mb-1 block">Valor "Éxito"</label>
+                            <div id="percentTargetValue" class="max-h-24 overflow-y-auto custom-scroll bg-white p-2 rounded-xl border border-yellow-100 shadow-inner"></div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-3 gap-2">
-                        <button onclick="selectChartType('bar')" class="chart-btn active p-3 border rounded-xl hover:bg-slate-100 flex justify-center text-slate-600 bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar text-xl"></i></button>
-                        <button onclick="selectChartType('line')" class="chart-btn p-3 border rounded-xl hover:bg-slate-100 flex justify-center text-slate-600" data-type="line"><i class="fas fa-chart-line text-xl"></i></button>
-                        <button onclick="selectChartType('doughnut')" class="chart-btn p-3 border rounded-xl hover:bg-slate-100 flex justify-center text-slate-600" data-type="doughnut"><i class="fas fa-chart-pie text-xl"></i></button>
+                        <button onclick="selectChartType('bar')" class="chart-btn active p-2 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600 bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar"></i></button>
+                        <button onclick="selectChartType('line')" class="chart-btn p-2 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600" data-type="line"><i class="fas fa-chart-line"></i></button>
+                        <button onclick="selectChartType('doughnut')" class="chart-btn p-2 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600" data-type="doughnut"><i class="fas fa-chart-pie"></i></button>
                         <input type="hidden" id="selectedChartType" value="bar">
                     </div>
-                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95 border-b-4 border-indigo-800">GENERAR GRÁFICO</button>
+
+                    <button onclick="buildWidget()" class="w-full btn-primary py-3 rounded-xl font-black text-xs uppercase tracking-widest">
+                        GENERAR GRÁFICO
+                    </button>
                 </div>
-                <div class="p-6 bg-slate-900 border-t border-slate-800 flex gap-3"><input type="text" id="projectName3" placeholder="Nombre del Reporte..." class="flex-1 p-3 text-slate-300 bg-slate-800 rounded-xl text-xs outline-none border border-slate-700 focus:border-indigo-500"><button onclick="saveToFirebase()" class="bg-indigo-500 text-white px-6 py-2 rounded-xl font-bold text-[10px] hover:bg-indigo-400 shadow-lg tracking-wide uppercase">GUARDAR</button></div>
+                <!-- Input nombre proyecto -->
+                <div class="p-3 bg-white border-t border-slate-100">
+                     <input type="text" id="projectName3" placeholder="Nombre del Workspace..." class="w-full p-2 bg-slate-50 border-none rounded-lg text-xs outline-none text-slate-600 font-medium">
+                </div>
             </aside>
-            <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea3">
-                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-10 pb-40">
-                    <div id="emptyLocal" class="col-span-full h-96 border-4 border-dashed border-slate-300 rounded-[3rem] flex flex-col items-center justify-center text-slate-400 bg-slate-100/50"><i class="fas fa-chart-column text-7xl mb-4 opacity-20"></i><p class="text-lg font-bold tracking-tight">Configura y presiona "Generar"</p></div>
+
+            <!-- Content Area (Canvas) -->
+            <div class="flex-1 p-4 md:p-8 overflow-y-auto custom-scroll scroll-smooth h-1/2 lg:h-full bg-slate-50 border-t lg:border-t-0" id="canvasArea3">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg md:text-xl font-black text-slate-800 tracking-tight">Tablero</h2>
+                    <button onclick="switchView(4)" class="bg-white text-indigo-600 px-4 py-2 rounded-full font-bold text-[10px] shadow-sm hover:shadow-md border border-slate-100 transition-all uppercase tracking-widest">Ir a Unificar <i class="fas fa-arrow-right ml-1"></i></button>
+                </div>
+                
+                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-20">
+                    <div id="emptyLocal" class="col-span-full h-64 md:h-80 border-4 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-300">
+                        <i class="fas fa-chart-column text-5xl mb-3 opacity-20"></i>
+                        <p class="text-sm font-bold">Sin gráficos. Configura a la izquierda.</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- VISTA 4: CUMPLIMIENTO (VALIDAR VS) -->
-        <div id="view-4" class="hidden absolute inset-0 w-full h-full flex flex-row fade-in">
-            <aside class="w-[500px] bg-white border-r border-slate-200 flex flex-col z-20 shadow-2xl">
-                <div class="p-6 border-b bg-emerald-50/50"><h3 class="font-black text-emerald-900 text-sm uppercase tracking-wider">Auditoría de Cumplimiento</h3></div>
+        <!-- VISTA 4: UNIFICAR -->
+        <div id="view-4" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row fade-in bg-slate-50">
+            <aside class="w-full lg:w-[400px] bg-white border-r border-slate-200 flex flex-col z-20 shadow-xl h-1/2 lg:h-full">
+                <div class="p-5 border-b border-slate-100 bg-emerald-50/50 flex justify-between items-center">
+                    <h3 class="font-black text-emerald-900 text-sm uppercase tracking-wider">Unificación</h3>
+                    <div class="flex gap-2"><button onclick="saveToFirebase()" class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg font-bold text-[10px] hover:bg-emerald-100 border border-emerald-100">GUARDAR</button></div>
+                </div>
                 
-                <!-- CARGA EXTRA -->
-                <div class="p-6 border-b border-emerald-100 bg-emerald-50/10">
-                    <h4 class="text-[11px] font-black text-emerald-700 uppercase mb-3 flex items-center gap-2 tracking-widest"><i class="fas fa-balance-scale"></i> Cargar Hoja VS (Resta/Faltante)</h4>
-                    <div class="space-y-4">
-                        <button onclick="document.getElementById('secondaryFileInput').click()" class="w-full py-4 border-2 border-dashed border-emerald-300 rounded-2xl text-[10px] font-black text-emerald-600 hover:bg-emerald-50 transition-all uppercase tracking-widest active:scale-95 flex justify-center items-center gap-2">
-                            <i class="fas fa-file-circle-plus text-lg"></i> Seleccionar Archivo
-                        </button>
-                        <input type="file" id="secondaryFileInput" accept=".xlsx, .xls, .csv" class="hidden"/>
-                        <div id="secondarySheetWrapper" class="hidden space-y-2 fade-in">
-                             <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Hoja de Trabajo</label>
-                             <select id="secondarySheetSelector" class="w-full p-3 border border-emerald-200 rounded-xl text-xs font-bold outline-none bg-white shadow-sm" onchange="processSecondarySheet()"></select>
-                        </div>
-                        <div id="secondarySourceInfo" class="hidden p-3 bg-emerald-600 text-white rounded-xl text-[10px] font-bold truncate shadow-lg flex items-center gap-2"><i class="fas fa-check-circle"></i> Archivo Cargado Correctamente</div>
-                    </div>
+                <!-- Carga VS Rápida -->
+                <div class="p-4 bg-emerald-50/10 border-b border-emerald-100">
+                     <button onclick="document.getElementById('secondaryFileInput').click()" class="w-full py-2 border-2 border-dashed border-emerald-300 rounded-xl text-[10px] font-bold text-emerald-600 hover:bg-emerald-50 transition active:scale-95 mb-2"><i class="fas fa-file-circle-plus mr-1"></i> + Cargar Hoja VS</button>
+                     <input type="file" id="secondaryFileInput" accept=".xlsx, .xls, .csv" class="hidden"/>
+                     <div id="secondarySheetWrapper" class="hidden"><select id="secondarySheetSelector" class="w-full p-2 border border-emerald-200 rounded-lg text-[10px] font-bold outline-none bg-white" onchange="processSecondarySheet()"></select></div>
                 </div>
 
-                <div class="p-6 flex-1 space-y-6 overflow-y-auto custom-scroll">
-                    <div class="bg-slate-100 p-1.5 rounded-2xl flex text-[10px] font-black uppercase text-center shadow-inner">
-                        <label class="flex-1 cursor-pointer"><input type="radio" name="auditMode" value="merge" class="hidden peer" checked><span class="block py-3 rounded-xl peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm text-slate-400 transition-all">Consolidar (Cumplimiento)</span></label>
-                    </div>
-                    
-                    <input type="text" id="auditTitle" placeholder="Título del Reporte..." class="w-full p-3 border-b-2 border-slate-100 text-sm font-bold outline-none bg-transparent focus:border-emerald-500">
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Métrica</label><select id="auditAggType" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none" onchange="buildAuditSidebar()"><option value="percent">Porcentaje %</option><option value="sum">Sumatoria</option><option value="count">Contar</option></select></div>
-                        <div><label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Visual</label><select id="auditChartType" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none"><option value="bar">Barras</option><option value="doughnut">Dona</option></select></div>
+                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5">
+                    <div class="bg-slate-100 p-1 rounded-xl flex text-[10px] font-black uppercase text-center shadow-inner">
+                        <label class="flex-1 cursor-pointer"><input type="radio" name="auditMode" value="merge" class="hidden peer" checked onchange="toggleAuditMode()"><span class="block py-2 rounded-lg peer-checked:bg-white peer-checked:text-emerald-600 peer-checked:shadow-sm text-slate-400 transition-all">Suma Total</span></label>
+                        <label class="flex-1 cursor-pointer"><input type="radio" name="auditMode" value="compare" class="hidden peer" onchange="toggleAuditMode()"><span class="block py-2 rounded-lg peer-checked:bg-white peer-checked:text-blue-600 peer-checked:shadow-sm text-slate-400 transition-all">Comparar</span></label>
                     </div>
 
-                    <div id="auditMappingContainer" class="space-y-4"></div>
+                    <input type="text" id="auditTitle" placeholder="Título Global..." class="w-full p-2 border-b border-slate-200 text-sm font-bold outline-none bg-transparent">
 
-                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-emerald-700 transition-all active:scale-95 border-b-4 border-emerald-800">CALCULAR CUMPLIMIENTO</button>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Métrica</label><select id="auditAggType" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none" onchange="buildAuditSidebar()"><option value="percent">Porcentaje %</option><option value="sum">Sumatoria</option><option value="count">Contar</option></select></div>
+                        <div><label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Visual</label><select id="auditChartType" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none"><option value="bar">Barras</option><option value="doughnut">Dona</option><option value="line">Línea</option></select></div>
+                    </div>
+
+                    <div id="auditMappingContainer" class="space-y-3"></div>
+
+                    <button onclick="generateMergedAudit()" class="w-full btn-success py-3 rounded-xl font-black text-xs uppercase tracking-widest">
+                        GENERAR REPORTE
+                    </button>
                 </div>
-                <div class="p-6 bg-slate-900 border-t border-slate-800 flex gap-3"><input type="text" id="projectName4" placeholder="Nombre Global..." class="flex-1 p-3 text-slate-300 bg-slate-800 rounded-xl text-xs outline-none border border-slate-700"><button onclick="saveToFirebase()" class="bg-emerald-500 text-white px-6 py-2 rounded-xl font-bold text-[10px] hover:bg-emerald-400 shadow-md">GUARDAR</button></div>
+                 <div class="p-3 bg-white border-t border-slate-100">
+                     <input type="text" id="projectName4" placeholder="Nombre Global..." class="w-full p-2 bg-slate-50 border-none rounded-lg text-xs outline-none text-slate-600 font-medium">
+                </div>
             </aside>
-            <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea4">
-                <h2 class="text-3xl font-black text-slate-800 tracking-tight mb-2">Reporte de Eficiencia</h2>
-                <p class="text-slate-400 text-sm mb-10">Visualización ordenada de mayor a menor cumplimiento.</p>
-                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-12 pb-40">
-                     <div id="emptyAudit" class="col-span-full h-96 border-4 border-dashed border-slate-300 rounded-[3rem] flex flex-col items-center justify-center text-slate-300"><i class="fas fa-chart-area text-7xl mb-6 opacity-20"></i><p class="font-bold text-lg">Mapea: Origen (Verde) vs Faltante (Rojo)</p></div>
+
+            <div class="flex-1 p-4 md:p-8 overflow-y-auto custom-scroll scroll-smooth h-1/2 lg:h-full border-t lg:border-t-0" id="canvasArea4">
+                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-8 pb-32">
+                     <div id="emptyAudit" class="col-span-full h-64 border-4 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-300">
+                        <i class="fas fa-network-wired text-5xl mb-3 opacity-20"></i>
+                        <p class="text-sm font-bold text-center">Mapea los archivos a la izquierda</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -228,13 +295,18 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // FIREBASE CONFIG
+        // FIREBASE
         const firebaseConfig = { apiKey: "AIzaSyCZXwXN15MYVpFP0-QbgR-H4bHqMH4_EFA", authDomain: "reporte-d37d1.firebaseapp.com", projectId: "reporte-d37d1", storageBucket: "reporte-d37d1.firebasestorage.app", messagingSenderId: "995600823465", appId: "1:995600823465:web:3ae9ede621cf0631ad65b8" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        signInAnonymously(auth).then(() => loadProjs()).catch(() => console.log("Modo Local Activado"));
+        signInAnonymously(auth).then(() => {
+            document.getElementById('authIndicator').innerHTML = `<div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> ONLINE`;
+            loadProjs();
+        }).catch(() => {
+            document.getElementById('authIndicator').innerHTML = `<div class="w-2 h-2 bg-gray-400 rounded-full"></div> LOCAL`;
+        });
 
         let rawWorkbooks = {}; 
         let processedDataSources = {}; 
@@ -242,40 +314,35 @@
         let savedWidgetsConfig = []; 
         let savedAuditWidgetsConfig = [];
         let secondaryWb = null;
-        let currentStep = 1;
 
         window.switchView = function(step) {
-            currentStep = step;
             ['view-1','view-2','view-3','view-4'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById('view-' + step).classList.remove('hidden');
-            if(step === 2) document.getElementById('view-2').classList.add('flex');
-            if(step === 3) document.getElementById('view-3').classList.add('flex');
-            if(step === 4) { document.getElementById('view-4').classList.add('flex'); if(Object.keys(processedDataSources).length>0) buildAuditSidebar(); }
+            if(step >= 2 && step <= 4) document.getElementById('view-' + step).classList.add('flex');
+            if(step === 4 && Object.keys(processedDataSources).length > 0) buildAuditSidebar();
             
             [1,2,3,4].forEach(n => {
                 const btn = document.getElementById('tab'+n);
-                if(n===step) { btn.className = "btn-step tab-active"; }
-                else { btn.className = "btn-step " + (btn.disabled ? "tab-inactive opacity-50" : "tab-inactive"); }
+                if(n===step) { btn.className = "tab-btn tab-active"; }
+                else { btn.className = "tab-btn " + (btn.disabled ? "tab-inactive opacity-50 cursor-not-allowed" : "tab-inactive"); }
             });
         }
-        window.goBack = () => { if(currentStep > 1) switchView(currentStep - 1); };
-        window.goForward = () => { const nextTab = document.getElementById('tab' + (currentStep + 1)); if(nextTab && !nextTab.disabled) switchView(currentStep + 1); };
+        window.goBack = () => { let current = parseInt(document.querySelector('.tab-active').id.replace('tab','')); if(current > 1) switchView(current - 1); };
+        window.goForward = () => { let current = parseInt(document.querySelector('.tab-active').id.replace('tab','')); let next = document.getElementById('tab'+(current+1)); if(next && !next.disabled) switchView(current + 1); };
 
-        // --- CARGA ---
+        // --- 1. CARGA ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files); if(files.length===0) return;
-            document.getElementById('uploadStatus').innerText = `Procesando...`;
+            document.getElementById('uploadStatus').innerText = `Leyendo archivos...`;
             for(let i=0; i<files.length; i++) {
                 const data = await files[i].arrayBuffer();
                 rawWorkbooks['file_'+i] = { name: files[i].name, workbook: XLSX.read(data) };
             }
-            const fSel = document.getElementById('fileSelector'); if(fSel) {
-                fSel.innerHTML = '';
-                Object.keys(rawWorkbooks).forEach(id => fSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
-                document.getElementById('btnNext1').classList.remove('hidden');
-                window.changeActiveFile();
-                document.getElementById('tab2').disabled = false;
-            }
+            const fSel = document.getElementById('fileSelector'); fSel.innerHTML = '';
+            Object.keys(rawWorkbooks).forEach(id => fSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
+            document.getElementById('btnNext1').classList.remove('hidden');
+            window.changeActiveFile();
+            document.getElementById('tab2').disabled = false;
         });
 
         // CARGA SECUNDARIA
@@ -300,7 +367,7 @@
             buildAuditSidebar();
         };
 
-        // --- FUENTES ---
+        // --- 2. FUENTES ---
         window.changeActiveFile = function() {
             let id = document.getElementById('fileSelector').value; if(!id) return;
             const wb = rawWorkbooks[id].workbook;
@@ -328,7 +395,7 @@
             let id = 'ds_'+Date.now();
             processedDataSources[id] = { id: id, name: `${rawWorkbooks[fid].name} (${sid})`, columns: Object.keys(clean[0]), data: clean };
             document.getElementById('processedSourcesList').innerHTML += `<div class="p-3 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 shadow-sm flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> ${processedDataSources[id].name}</div>`;
-            ['tab3','tab4'].forEach(id => { let el = document.getElementById(id); if(el) { el.disabled = false; el.classList.remove('opacity-40'); } });
+            ['tab3','tab4','btnGoPlayground','btnGoAudit'].forEach(id => { let el = document.getElementById(id); if(el) { el.disabled = false; el.classList.remove('opacity-30'); } });
             updateSelectors();
         }
         function updateSelectors() {
@@ -337,19 +404,26 @@
             window.onDataSourceChange();
         }
 
-        // --- DASHBOARD ---
+        // --- 3. DASHBOARD ---
         window.onDataSourceChange = function() {
             let id = document.getElementById('dsSelector').value; if(!id) return;
             const cols = processedDataSources[id].columns;
             document.querySelectorAll('.column-selector').forEach(s => { s.innerHTML = ''; cols.forEach(c => s.innerHTML+=`<option value="${c}">${c}</option>`); });
         }
-        window.selectChartType = function(type) { document.getElementById('selectedChartType').value = type; document.querySelectorAll('.chart-btn').forEach(b => { b.classList.remove('bg-slate-800', 'text-white'); if(b.dataset.type === type) b.classList.add('bg-slate-800', 'text-white'); }); }
+        window.selectChartType = function(type) {
+            document.getElementById('selectedChartType').value = type;
+            document.querySelectorAll('.chart-btn').forEach(b => {
+                b.classList.remove('bg-slate-800', 'text-white');
+                if(b.dataset.type === type) b.classList.add('bg-slate-800', 'text-white');
+            });
+        }
         window.togglePercentUI = function() { const show = document.getElementById('aggType').value === 'percent'; document.getElementById('percentTargetUI').classList.toggle('hidden', !show); if(show) window.updatePercentTargets(); }
         window.updatePercentTargets = function() {
-            const col = document.getElementById('axisY').value; const id = document.getElementById('dsSelector').value; if(!col || !id) return;
+            const col = document.getElementById('axisY').value; const id = document.getElementById('dsSelector').value;
+            if(!col || !id) return;
             let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
             const container = document.getElementById('percentTargetValue'); container.innerHTML = '';
-            Array.from(vals).sort().forEach(v => { container.innerHTML += `<label class="flex items-center gap-2 p-1.5 hover:bg-indigo-50 cursor-pointer rounded-lg font-bold text-slate-700 text-xs border-b border-slate-50 last:border-0"><input type="checkbox" class="target-val-chk rounded" value="${v}"><span>${v}</span></label>`; });
+            Array.from(vals).sort().forEach(v => { container.innerHTML += `<label class="flex items-center gap-2 p-1.5 hover:bg-indigo-50 cursor-pointer rounded-lg font-bold text-slate-700 text-xs border-b border-indigo-50 last:border-0"><input type="checkbox" class="target-val-chk rounded" value="${v}"><span>${v}</span></label>`; });
         }
         window.addGlobalFilter = function() {
             const id = document.getElementById('dsSelector').value; const fId = 'gf_'+Date.now();
@@ -362,6 +436,7 @@
             let vals = new Set(); processedDataSources[dsId].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
             Array.from(vals).sort().forEach(v => box.innerHTML += `<label class="flex items-center gap-2 text-[10px] hover:bg-slate-50 p-1 rounded font-bold text-slate-600"><input type="checkbox" checked class="ck_${fId} rounded" value="${v}"><span>${v}</span></label>`);
         }
+
         window.buildWidget = function(cfg=null) {
             document.getElementById('emptyLocal')?.remove();
             let config = cfg;
@@ -374,17 +449,11 @@
             }
             const wid = 'chart_' + Date.now() + Math.random();
             const grid = document.getElementById('widgetsGrid');
-            const card = document.createElement('div'); card.className = "flip-container fade-in";
-            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front"><div class="p-4 flex justify-between"><h3 class="font-black text-sm">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-blue-500"><i class="fas fa-list"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="text-red-500"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative p-2"><canvas id="${wid}"></canvas></div></div><div class="back p-4 overflow-auto custom-scroll"><div class="flex gap-2 mb-2 border-b pb-2"><button onclick="showTab('resumen_${wid}')" class="text-xs font-bold text-indigo-600">Resumen</button><button onclick="showTab('detalle_${wid}')" class="text-xs font-bold text-slate-500 hover:text-indigo-600">Detalle Filas</button><button onclick="document.getElementById('flip_${wid}').classList.toggle('flipped')" class="ml-auto text-xs text-red-500 font-bold">X</button></div><div id="resumen_${wid}"><table class="excel-table" id="table_${wid}"></table></div><div id="detalle_${wid}" class="hidden"><table class="excel-table" id="raw_${wid}"></table></div></div></div>`;
+            const card = document.createElement('div'); card.className = "flip-container fade-in card-height";
+            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front"><div class="p-5 flex justify-between"><h3 class="font-black text-sm text-slate-800">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-indigo-500 hover:text-indigo-700 transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="text-slate-300 hover:text-red-500 transition"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-2 font-bold uppercase cursor-pointer">Toca para Detalles</p></div><div class="back"><div class="p-4 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center"><h3 class="font-black text-indigo-900 text-xs uppercase">Datos</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-indigo-600 bg-white border border-indigo-100 px-3 py-1 rounded shadow-sm">VOLVER</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><div class="flex gap-2 p-2 border-b"><button onclick="document.getElementById('res_${wid}').style.display='table'; document.getElementById('row_${wid}').style.display='none'" class="text-[10px] font-bold text-indigo-600">Resumen</button><button onclick="document.getElementById('res_${wid}').style.display='none'; document.getElementById('row_${wid}').style.display='table'" class="text-[10px] font-bold text-slate-400 hover:text-indigo-600">Filas Origen</button></div><table class="excel-table" id="res_${wid}"></table><table class="excel-table hidden" id="row_${wid}" style="display:none"></table></div></div></div>`;
             grid.prepend(card);
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 100);
-        }
-        
-        window.showTab = function(id) {
-            const wid = id.split('_')[1];
-            document.getElementById('resumen_'+wid).classList.add('hidden');
-            document.getElementById('detalle_'+wid).classList.add('hidden');
-            document.getElementById(id).classList.remove('hidden');
+            document.getElementById('canvasArea3').scrollTop = 0;
         }
 
         function renderChart(cfg, id, data) {
@@ -410,33 +479,38 @@
                 if(cfg.agg === 'count') return groups[l].v;
                 return groups[l].s;
             });
-            const tbody = document.getElementById('table_'+id); if(tbody) { tbody.innerHTML = `<thead><tr><th>Key</th><th>Val</th></tr></thead><tbody>` + labels.map((l,i) => `<tr><td>${l}</td><td>${vals[i].toFixed(1)}</td></tr>`).join('') + `</tbody>`; }
+            const tbody = document.getElementById('res_'+id); if(tbody) { tbody.innerHTML = `<thead><tr><th>Key</th><th>Val</th></tr></thead><tbody>` + labels.map((l,i) => `<tr><td class="font-bold">${l}</td><td class="text-right text-indigo-600 font-bold">${cfg.agg==='percent'?vals[i].toFixed(1)+'%':vals[i].toLocaleString()}</td></tr>`).join('') + `</tbody>`; }
             
-            // Detalle Filas
-            let rawT = `<thead><tr><th>${cfg.x}</th><th>${cfg.y}</th></tr></thead><tbody>`;
-            fdata.slice(0,100).forEach(r => { rawT += `<tr><td>${r[cfg.x]}</td><td>${r[cfg.y]}</td></tr>`; });
-            document.getElementById('raw_'+id).innerHTML = rawT + '</tbody>';
+            // Filas Origen
+            const trbody = document.getElementById('row_'+id);
+            if(trbody) {
+                let keys = Object.keys(fdata[0] || {}).slice(0,5);
+                let rh = `<thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>`;
+                fdata.slice(0,100).forEach(r => { rh += `<tr>${keys.map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`; });
+                trbody.innerHTML = rh + `</tbody>`;
+            }
 
-            new Chart(document.getElementById(id).getContext('2d'), { type: cfg.type, data: { labels: labels, datasets: [{ label: 'Val', data: vals, backgroundColor: '#3b82f6', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            const ctx = document.getElementById(id).getContext('2d');
+            let opts = { responsive: true, maintainAspectRatio: false, onClick: (e) => { let c = document.getElementById('flip_' + id); if(c) c.classList.toggle('flipped'); } };
+            if(cfg.type !== 'doughnut') opts.scales = { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } };
+            new Chart(ctx, { type: cfg.type, data: { labels: labels, datasets: [{ label: cfg.agg.toUpperCase(), data: vals, backgroundColor: ['#6366f1','#0ea5e9','#fbbf24','#f43f5e','#10b981'], borderRadius: 6, maxBarThickness: 50 }] }, options: opts });
         }
 
-        // --- 4. CUMPLIMIENTO ---
+        // --- 4. UNIFICACIÓN ---
         window.toggleAuditMode = function() { window.buildAuditSidebar(); }
         window.buildAuditSidebar = function() {
+            const agg = document.getElementById('auditAggType').value;
             const container = document.getElementById('auditMappingContainer'); container.innerHTML = '';
             Object.values(processedDataSources).forEach(ds => {
                 let opts = `<option value="">-- Columna --</option>` + ds.columns.map(c => `<option value="${c}">${c}</option>`).join('');
-                container.innerHTML += `
-                    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-3">
-                        <div class="flex justify-between font-black text-xs mb-2 text-slate-800"><span class="truncate w-2/3">${ds.name}</span><label class="flex items-center gap-1 cursor-pointer"><input type="checkbox" id="inc_${ds.id}" checked class="rounded accent-emerald-600"><span class="text-[9px]">Usar</span></label></div>
-                        <div class="bg-slate-100 p-2 rounded-lg mb-2"><label class="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-1">ROL DEL ARCHIVO</label><select id="role_${ds.id}" class="w-full p-1.5 border border-slate-300 rounded text-[10px] font-bold text-center"><option value="origin">🟢 ORIGEN (Realizado)</option><option value="gap">🔴 RESTA (Faltante)</option></select></div>
-                        <div class="space-y-2">
-                            <div><label class="text-[9px] text-slate-400 font-bold block">Agrupar por (Eje X)</label><select id="ax_${ds.id}" class="w-full p-1.5 border rounded text-[10px]">${opts}</select></div>
-                            <div><label class="text-[9px] text-slate-400 font-bold block">Columna a Contar</label><select id="ay_${ds.id}" class="w-full p-1.5 border rounded text-[10px]" onchange="fillVal('${ds.id}')">${opts}</select></div>
-                            <div class="border-t pt-2 mt-2"><div class="flex justify-between items-center"><label class="text-[9px] font-black text-slate-400">Filtrar Valor (Opcional)</label></div><div id="av_c_${ds.id}" class="max-h-20 overflow-y-auto bg-slate-50 border rounded p-1 text-[10px]">Selecciona columna...</div></div>
-                            <div class="border-t pt-2"><button onclick="addAuditFilter('${ds.id}')" class="text-[9px] w-full bg-slate-50 border hover:bg-slate-100 py-1 rounded font-bold text-slate-500">+ Filtro Adicional</button><div id="af_${ds.id}" class="mt-1 space-y-1"></div></div>
-                        </div>
-                    </div>`;
+                let extra = (agg === 'percent') 
+                    ? `<select id="ay_${ds.id}" class="w-full p-2 border border-slate-200 rounded-xl text-[10px] outline-none bg-slate-50 mb-1" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_c_${ds.id}" class="max-h-24 overflow-y-auto bg-white border border-slate-100 rounded-xl p-2 text-[10px] shadow-inner italic">Elegir éxito...</div>`
+                    : `<select id="ay_${ds.id}" class="w-full p-2 border border-slate-200 rounded-xl text-[10px] outline-none bg-slate-50 font-bold text-indigo-600">${opts}</select>`;
+                
+                // Opción ROL
+                let roles = `<div class="bg-indigo-50 p-2 rounded-lg mb-2"><label class="text-[9px] font-black text-indigo-900 block mb-1">ROL</label><select id="role_${ds.id}" class="w-full text-[10px] p-1 border rounded"><option value="origin">Realizado (Origen)</option><option value="gap">Faltante (Resta)</option></select></div>`;
+
+                container.innerHTML += `<div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-3"><div class="flex justify-between font-black text-xs mb-2 text-slate-800"><span class="truncate w-3/4">${ds.name}</span><input type="checkbox" id="inc_${ds.id}" checked class="w-4 h-4 accent-emerald-600"></div>${roles}<div class="space-y-2"><label class="text-[9px] text-slate-400 font-bold uppercase block">Agrupar por</label><select id="ax_${ds.id}" class="w-full p-1.5 border rounded text-[10px]">${opts}</select><div><label class="text-[9px] text-slate-400 font-bold uppercase block">Columna Datos</label>${extra}</div><div class="border-t pt-2"><button onclick="addAuditFilter('${ds.id}')" class="text-[9px] w-full bg-slate-50 border hover:bg-slate-100 py-1 rounded font-bold text-slate-500">+ Filtro Extra</button><div id="af_${ds.id}" class="mt-1 space-y-1"></div></div></div></div>`;
             });
         }
         window.fillVal = function(id) {
@@ -491,15 +565,16 @@
                     }
                 });
                 if(mappings.length === 0) return alert("Selecciona fuentes.");
-                config = { title: document.getElementById('auditTitle').value || 'Reporte Cumplimiento', mappings: mappings };
+                config = { title: document.getElementById('auditTitle').value || 'Reporte Cumplimiento', mode: mode, agg: agg, type: document.getElementById('auditChartType').value, mappings: mappings };
                 savedAuditWidgetsConfig.push(config);
             }
             const wid = 'aw_'+Date.now()+Math.random();
             const grid = document.getElementById('auditWidgetsGrid');
             const card = document.createElement('div');
-            card.className = "flip-container h-[450px] fade-in";
-            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front p-4 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between mb-4"><h3 class="font-black text-sm">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-blue-500"><i class="fas fa-list"></i></button><button onclick="this.closest('.flip-container').remove()" class="text-red-500"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-2">Toca para ver filas</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-emerald-500 overflow-hidden"><div class="p-3 bg-emerald-50 border-b flex justify-between"><h3 class="font-bold text-xs text-emerald-800">Detalle Eficiencia</h3><div class="flex gap-2"><button onclick="showTab('resumen_${wid}')" class="text-[9px] bg-white px-2 rounded">Resumen</button><button onclick="showTab('detalle_${wid}')" class="text-[9px] bg-emerald-100 px-2 rounded">Filas</button><button onclick="document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-emerald-600">X</button></div></div><div id="resumen_${wid}" class="flex-1 overflow-auto custom-scroll p-2"><table class="excel-table" id="tb_${wid}"></table></div><div id="detalle_${wid}" class="hidden flex-1 overflow-auto custom-scroll p-2"><table class="excel-table" id="rw_${wid}"></table></div></div></div>`;
+            card.className = "flip-container h-[450px] fade-in card-height";
+            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front p-4 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between mb-4"><h3 class="font-black text-sm uppercase text-slate-800">${config.title}</h3><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-blue-500"><i class="fas fa-list"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="text-red-500"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-2">Toca para ver filas</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-emerald-500 overflow-hidden"><div class="p-3 bg-emerald-50 border-b flex justify-between"><h3 class="font-bold text-xs text-emerald-800">Detalle Eficiencia</h3><div class="flex gap-2"><button onclick="showTab('resumen_${wid}')" class="text-[9px] bg-white px-2 rounded font-bold">Resumen</button><button onclick="showTab('detalle_${wid}')" class="text-[9px] bg-emerald-100 px-2 rounded font-bold">Filas</button><button onclick="document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-emerald-600">X</button></div></div><div id="resumen_${wid}" class="flex-1 overflow-auto custom-scroll p-2"><table class="excel-table" id="tb_${wid}"></table></div><div id="detalle_${wid}" class="hidden flex-1 overflow-auto custom-scroll p-2"><table class="excel-table" id="rw_${wid}"></table></div></div></div>`;
             grid.prepend(card); setTimeout(() => renderUnifiedChart(config, wid), 100);
+            document.getElementById('canvasArea4').scrollTop = 0;
         }
 
         function renderUnifiedChart(cfg, id) {
@@ -523,7 +598,6 @@
                     if(match) {
                         if(map.role === 'origin') tableData[k].realized++;
                         if(map.role === 'gap') tableData[k].gap++;
-                        // Guardar filas para Drill Down
                         allRows.push({ ...r, _source: map.name, _cat: k });
                     }
                 });
