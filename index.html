@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v26 - UX Pro (Fixed)</title>
+    <title>DataMaster v26 - UX Pro</title>
     
-    <!-- Librerías -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -59,7 +58,6 @@
 </head>
 <body class="h-screen flex flex-col overflow-hidden text-slate-800">
 
-    <!-- HEADER -->
     <header class="bg-white border-b border-slate-200 h-14 flex items-center justify-between px-6 z-30 shadow-sm flex-none">
         <div class="flex items-center gap-3">
             <div class="bg-gradient-to-br from-indigo-600 to-blue-500 text-white p-1.5 rounded-lg shadow-sm">
@@ -75,13 +73,10 @@
             <button id="step4" onclick="switchView(4)" disabled class="step-btn step-inactive step-disabled">4. Unificar</button>
         </nav>
 
-        <div class="w-24"></div> <!-- Spacer for balance -->
-    </header>
+        <div class="w-24"></div> </header>
 
-    <!-- MAIN CONTAINER -->
     <main class="flex-1 relative overflow-hidden flex">
 
-        <!-- VISTA 1: CARGA (Centrada) -->
         <div id="view-1" class="absolute inset-0 z-30 bg-slate-50 flex flex-col items-center justify-center p-6 fade-in">
             <div class="bg-white p-10 rounded-2xl shadow-xl border border-slate-200 text-center max-w-lg w-full">
                 <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
@@ -108,13 +103,10 @@
                 <button onclick="loadProjs()" class="text-xs text-slate-400 hover:text-indigo-600 font-medium flex items-center gap-2">
                     <i class="fas fa-sync-alt"></i> Cargar proyectos guardados
                 </button>
-                <div id="cloudProjectsList" class="mt-2 hidden"></div> <!-- Hidden container for logic -->
-            </div>
+                <div id="cloudProjectsList" class="mt-2 hidden"></div> </div>
         </div>
 
-        <!-- VISTA 2: FUENTES (Split View) -->
         <div id="view-2" class="hidden absolute inset-0 w-full h-full flex flex-row bg-white">
-            <!-- Sidebar Config -->
             <div class="panel-sidebar">
                 <div class="p-5 border-b border-slate-100">
                     <h3 class="font-bold text-slate-800">Configuración de Fuente</h3>
@@ -153,7 +145,6 @@
                 </div>
             </div>
 
-            <!-- Content Area (Preview) -->
             <div class="panel-content">
                 <div class="h-10 bg-white border-b border-slate-200 flex items-center px-4 justify-between">
                     <span class="text-xs font-bold text-slate-500 uppercase"><i class="fas fa-table mr-2"></i> Previsualización de Datos</span>
@@ -165,9 +156,7 @@
             </div>
         </div>
 
-        <!-- VISTA 3: DASHBOARD INDIVIDUAL (Split View) -->
         <div id="view-3" class="hidden absolute inset-0 w-full h-full flex flex-row bg-slate-50">
-            <!-- Sidebar Controles -->
             <div class="panel-sidebar">
                 <div class="p-4 border-b border-slate-100 flex justify-between items-center">
                     <h3 class="font-bold text-slate-800">Constructor</h3>
@@ -175,13 +164,11 @@
                 </div>
                 <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5">
                     
-                    <!-- 1. Fuente -->
                     <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                         <label class="text-[10px] text-slate-400 font-bold uppercase mb-1 block">Fuente de Datos</label>
                         <select id="dsSelector" class="w-full p-2 text-xs font-bold border border-slate-200 rounded-lg outline-none focus:border-indigo-500 bg-slate-50" onchange="onDataSourceChange()"></select>
                     </div>
 
-                    <!-- 2. Config -->
                     <div class="space-y-3">
                         <input type="text" id="widgetTitle" placeholder="Título del Gráfico..." class="w-full p-2 border-b border-slate-200 text-sm font-semibold outline-none bg-transparent focus:border-indigo-500 placeholder-slate-400">
                         
@@ -211,7 +198,6 @@
                         </div>
                     </div>
 
-                    <!-- 3. Filtros -->
                     <div class="border-t border-slate-100 pt-3">
                         <div class="flex justify-between items-center mb-2">
                             <label class="text-[10px] text-slate-400 font-bold uppercase">Filtros</label>
@@ -220,7 +206,6 @@
                         <div id="globalFiltersArea" class="space-y-2"></div>
                     </div>
 
-                    <!-- 4. Tipo -->
                     <div class="grid grid-cols-3 gap-2">
                         <button onclick="selectChartType('bar')" class="chart-btn active p-2 border rounded hover:bg-slate-50 flex justify-center text-slate-600 bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar"></i></button>
                         <button onclick="selectChartType('line')" class="chart-btn p-2 border rounded hover:bg-slate-50 flex justify-center text-slate-600" data-type="line"><i class="fas fa-chart-line"></i></button>
@@ -241,7 +226,6 @@
                 </div>
             </div>
 
-            <!-- Content Area (Canvas) -->
             <div class="panel-content p-6 overflow-y-auto custom-scroll scroll-smooth" id="canvasArea3">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl font-bold text-slate-800">Tablero de Resultados</h2>
@@ -249,7 +233,6 @@
                 </div>
                 
                 <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-20">
-                    <!-- Placeholder -->
                     <div id="emptyLocal" class="col-span-full h-64 border-2 border-dashed border-slate-300 rounded-2xl flex flex-col items-center justify-center text-slate-400 bg-slate-50/50">
                         <i class="fas fa-chart-column text-4xl mb-3 opacity-50"></i>
                         <p class="text-sm font-medium">Configura los parámetros a la izquierda y presiona "Generar"</p>
@@ -258,14 +241,12 @@
             </div>
         </div>
 
-        <!-- VISTA 4: UNIFICAR (Split View) -->
         <div id="view-4" class="hidden absolute inset-0 w-full h-full flex flex-row bg-slate-50">
             <div class="panel-sidebar">
                 <div class="p-4 border-b border-slate-100 bg-emerald-50/50">
                     <h3 class="font-bold text-emerald-900">Unificar Fuentes</h3>
                 </div>
                 <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-4">
-                    <!-- Modo -->
                     <div class="flex bg-slate-100 p-1 rounded-lg">
                         <label class="flex-1 text-center cursor-pointer">
                             <input type="radio" name="auditMode" value="merge" class="hidden peer" checked onchange="toggleAuditMode()">
@@ -328,7 +309,6 @@
 
     </main>
 
-    <!-- JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -349,19 +329,41 @@
         let savedAuditWidgetsConfig = [];
 
         window.switchView = function(step) {
-            ['view-1','view-2','view-3','view-4'].forEach(v => document.getElementById(v).classList.add('hidden'));
-            if(step===1) document.getElementById('view-1').classList.remove('hidden');
-            if(step===2) document.getElementById('view-2').classList.remove('hidden', 'flex');
-            if(step===3) document.getElementById('view-3').classList.remove('hidden', 'flex');
-            if(step===4) { document.getElementById('view-4').classList.remove('hidden', 'flex'); if(Object.keys(processedDataSources).length>0) buildAuditSidebar(); }
+            // 1. Ocultar todas las vistas de forma segura
+            ['view-1','view-2','view-3','view-4'].forEach(v => {
+                const el = document.getElementById(v);
+                if(el) {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                }
+            });
             
+            // 2. Mostrar la vista seleccionada
+            const targetView = document.getElementById('view-' + step);
+            if(targetView) {
+                targetView.classList.remove('hidden');
+                if(step !== 1) targetView.classList.add('flex');
+            }
+
+            if(step === 4 && Object.keys(processedDataSources).length > 0) {
+                buildAuditSidebar(); 
+            }
+            
+            // 3. Actualizar los botones de navegación
             [1,2,3,4].forEach(n => {
-                const btn = document.getElementById('step'+n);
-                if(n===step) { btn.classList.add('step-active'); btn.classList.remove('step-inactive', 'step-disabled'); }
-                else { 
-                    btn.classList.remove('step-active'); 
-                    if(document.getElementById('step'+n).disabled) btn.classList.add('step-disabled');
-                    else btn.classList.add('step-inactive');
+                const btn = document.getElementById('step' + n);
+                if(btn) {
+                    if(n === step) { 
+                        btn.classList.add('step-active'); 
+                        btn.classList.remove('step-inactive', 'step-disabled'); 
+                    } else { 
+                        btn.classList.remove('step-active'); 
+                        if(btn.disabled) {
+                            btn.classList.add('step-disabled');
+                        } else {
+                            btn.classList.add('step-inactive');
+                        }
+                    }
                 }
             });
         }
@@ -378,6 +380,8 @@
             Object.keys(rawWorkbooks).forEach(id => fSel.innerHTML += `<option value="${id}">${rawWorkbooks[id].name}</option>`);
             document.getElementById('btnNext1').classList.remove('hidden');
             window.changeActiveFile();
+            
+            // Corrección aquí (step en lugar de tab)
             document.getElementById('step2').disabled = false;
             document.getElementById('step2').classList.remove('step-disabled');
         });
@@ -413,7 +417,7 @@
             let data = XLSX.utils.sheet_to_json(sheet, {range: XLSX.utils.encode_range(range), defval:null});
             let clean = data.map(r => { let c={}; for(let k in r) if(!k.includes("__EMPTY")) c[k.trim()]=r[k]; return c; }).filter(r=>Object.keys(r).length>0);
 
-            if(clean.length===0) return alert("Error: Hoja vacía.");
+            if(clean.length===0) return alert("Hoja vacía.");
             let id = 'ds_'+Date.now();
             processedDataSources[id] = { id: id, name: `${rawWorkbooks[currentFileId].name} (${sName})`, columns: Object.keys(clean[0]), data: clean };
             
@@ -421,9 +425,10 @@
             if(list.children[0]?.tagName === 'P') list.innerHTML = '';
             list.innerHTML += `<div class="p-3 bg-white border border-indigo-100 rounded-lg text-xs text-slate-600 shadow-sm flex items-center gap-2 animate-pulse"><div class="w-2 h-2 rounded-full bg-green-500"></div> ${processedDataSources[id].name}</div>`;
             
+            // Corrección aquí (steps en lugar de tabs)
             ['step3','step4','btnGoPlayground','btnGoAudit'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) { el.disabled=false; el.classList.remove('step-disabled', 'opacity-50', 'cursor-not-allowed'); }
+                if(el) { el.disabled = false; el.classList.remove('step-disabled', 'opacity-50', 'cursor-not-allowed'); }
             });
             updateSelectors();
         }
@@ -492,7 +497,7 @@
             const card = document.createElement('div');
             card.className = "flip-container w-full h-[400px]"; // Altura fija
             
-            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800 text-lg">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wide">${config.agg} por ${config.x}</p></div><div class="flex gap-1"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-1.5 text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[10px] text-center text-slate-400 mt-2 italic"><i class="fas fa-hand-pointer mr-1"></i> Toca para ver datos</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden"><div class="p-3 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center"><h3 class="font-bold text-indigo-900 text-xs uppercase">Datos Detallados</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-bold text-indigo-600 bg-white border border-indigo-100 px-2 py-1 rounded shadow-sm">Volver</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="w-full text-xs text-left" id="table_${wid}"></table></div></div></div>`;
+            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200"><div class="flex justify-between items-start mb-2"><div><h3 class="font-bold text-slate-800">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-bold tracking-wide">${config.agg} por ${config.x}</p></div><div class="flex gap-1"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-1.5 text-slate-400 hover:text-indigo-600 transition"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-1.5 text-slate-400 hover:text-red-500 transition"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[10px] text-center text-slate-300 mt-2">Toca para ver datos</p></div><div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-indigo-100 overflow-hidden"><div class="p-3 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center"><h3 class="font-bold text-indigo-900 text-xs uppercase">Datos Detallados</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-bold text-indigo-600 bg-white border border-indigo-100 px-2 py-1 rounded shadow-sm">Volver</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="w-full text-xs text-left" id="table_${wid}"></table></div></div></div>`;
             grid.prepend(card);
             
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 50);
@@ -536,7 +541,6 @@
 
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // Fix: remove scales for circular charts
             let options = {
                 responsive: true, maintainAspectRatio: false,
                 onClick: (e) => { const card = document.getElementById('flip_' + canvasId); if(card) card.classList.toggle('flipped'); }
@@ -652,7 +656,7 @@
             if(cfg.mode === 'compare') {
                 cfg.mappings.forEach((map, i) => {
                     let d = labels.map(l => (tableData[l] && tableData[l][map.name]) || 0);
-                    const colors = ['#4f46e5','#06b6d4','#f59e0b','#ef4444'];
+                    const colors = ['#4f46e5','#06b6d4','#f59e0b','#ec4899'];
                     datasets.push({ label: map.name, data: d, backgroundColor: colors[i%4], maxBarThickness: 40, borderRadius: 4 });
                 });
             } else {
@@ -707,7 +711,15 @@
                         Object.values(processedDataSources).forEach(dx => dsSel.innerHTML += `<option value="${dx.id}">${dx.name}</option>`);
                         document.getElementById('widgetsGrid').innerHTML = ''; savedWidgetsConfig.forEach(c => window.buildWidget(c));
                         document.getElementById('auditWidgetsGrid').innerHTML = ''; savedAuditWidgetsConfig.forEach(c => window.generateMergedAudit(c));
-                        ['tab2','tab3','tab4'].forEach(id => { document.getElementById(id).disabled=false; document.getElementById(id).classList.remove('tab-disabled'); });
+                        
+                        // Corrección de carga de Firebase (usando steps en lugar de tabs)
+                        ['step2','step3','step4'].forEach(id => { 
+                            const btn = document.getElementById(id);
+                            if(btn) {
+                                btn.disabled = false; 
+                                btn.classList.remove('step-disabled');
+                            }
+                        });
                         switchView(3);
                     };
                     list.appendChild(b);
