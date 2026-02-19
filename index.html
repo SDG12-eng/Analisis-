@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster Pro v26 - Expert Edition</title>
+    <title>DataMaster Pro v26 - Compliance Edition</title>
     
     <!-- Librerías de Alta Disponibilidad -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,8 +24,8 @@
         .sidebar { width: 420px; height: 100%; overflow-y: auto; background: white; border-right: 1px solid #e2e8f0; flex-shrink: 0; position: relative; }
         .canvas-area { flex-grow: 1; height: 100%; overflow-y: auto; background: #f1f5f9; padding: 2rem; position: relative; }
 
-        /* Tarjetas Giratorias */
-        .flip-container { perspective: 1000px; height: 450px; margin-bottom: 2rem; }
+        /* Tarjetas Giratorias y de Cumplimiento */
+        .flip-container { perspective: 1000px; height: 480px; margin-bottom: 2rem; }
         .flipper { transition: 0.6s; transform-style: preserve-3d; position: relative; height: 100%; width: 100%; }
         .front, .back { 
             backface-visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
@@ -53,6 +53,10 @@
         .tab-active { @apply bg-indigo-600 text-white shadow-lg ring-2 ring-indigo-100; }
         .tab-inactive { @apply bg-white text-slate-500 hover:bg-slate-50 border border-slate-200; }
         .tab-disabled { @apply opacity-40 cursor-not-allowed grayscale; }
+
+        /* Barra de Progreso */
+        .progress-bar-bg { background: #e2e8f0; height: 8px; border-radius: 4px; overflow: hidden; }
+        .progress-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease-out; }
     </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800">
@@ -61,7 +65,7 @@
     <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 z-50 shadow-sm shrink-0">
         <div class="flex items-center gap-3">
             <div class="bg-indigo-600 text-white p-2 rounded-xl shadow-lg">
-                <i class="fas fa-chart-pie text-lg"></i>
+                <i class="fas fa-chart-line text-lg"></i>
             </div>
             <h1 class="text-sm font-black tracking-tighter uppercase text-slate-800">Data<span class="text-indigo-600">Master</span> Pro</h1>
         </div>
@@ -70,36 +74,36 @@
             <button id="tab1" onclick="switchView(1)" class="btn-step tab-active">1. Carga</button>
             <button id="tab2" onclick="switchView(2)" disabled class="btn-step tab-disabled">2. Fuentes</button>
             <button id="tab3" onclick="switchView(3)" disabled class="btn-step tab-disabled">3. Dashboard</button>
-            <button id="tab4" onclick="switchView(4)" disabled class="btn-step tab-disabled">4. Unificar</button>
+            <button id="tab4" onclick="switchView(4)" disabled class="btn-step tab-disabled">4. Unificar / VS</button>
         </nav>
 
         <div class="flex items-center gap-4">
-            <button onclick="goBack()" class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full hover:bg-slate-200 transition-all text-slate-600"><i class="fas fa-chevron-left"></i></button>
-            <button onclick="goForward()" class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full hover:bg-slate-200 transition-all text-slate-600"><i class="fas fa-chevron-right"></i></button>
+            <button onclick="goBack()" class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full hover:bg-slate-200 transition-all text-slate-600 shadow-sm"><i class="fas fa-chevron-left"></i></button>
+            <button onclick="goForward()" class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full hover:bg-slate-200 transition-all text-slate-600 shadow-sm"><i class="fas fa-chevron-right"></i></button>
         </div>
     </header>
 
     <main class="flex-1 app-layout relative">
 
-        <!-- VISTA 1: CARGA INICIAL -->
+        <!-- PASO 1: CARGA INICIAL -->
         <div id="view-1" class="absolute inset-0 z-40 bg-slate-50 flex flex-col items-center justify-center p-6 transition-all duration-500">
             <div class="bg-white p-12 rounded-[2.5rem] shadow-2xl border border-slate-100 text-center max-w-xl w-full">
                 <div class="w-24 h-24 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
-                    <i class="fas fa-cloud-arrow-up text-4xl"></i>
+                    <i class="fas fa-file-invoice text-4xl"></i>
                 </div>
-                <h2 class="text-3xl font-black text-slate-800 mb-3 tracking-tight">Carga de Reportes</h2>
-                <p class="text-slate-400 mb-10 text-sm">Selecciona tus archivos .xlsx para iniciar la proyección de datos.</p>
+                <h2 class="text-3xl font-black text-slate-800 mb-3 tracking-tight">Análisis de Gestión</h2>
+                <p class="text-slate-400 mb-10 text-sm">Carga tus reportes de embarque o stock para medir cumplimiento por departamento y usuario.</p>
                 
                 <label class="block mb-6 group cursor-pointer">
                     <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" multiple class="hidden"/>
                     <div class="bg-slate-900 text-white px-10 py-5 rounded-2xl font-bold shadow-xl shadow-indigo-500/10 hover:bg-slate-800 transition-all flex items-center justify-center gap-4">
-                        <i class="fas fa-plus text-xl"></i>
-                        <span class="text-lg">Seleccionar Archivos</span>
+                        <i class="fas fa-upload text-xl"></i>
+                        <span class="text-lg">Cargar Archivos Excel</span>
                     </div>
                 </label>
                 
-                <div id="uploadStatus" class="h-6 text-sm font-bold text-indigo-500 mb-6 italic"></div>
-                <button id="btnNext1" onclick="switchView(2)" class="hidden w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm uppercase shadow-lg hover:bg-indigo-700 transition-all">Siguiente Paso <i class="fas fa-arrow-right ml-2"></i></button>
+                <div id="uploadStatus" class="h-6 text-sm font-bold text-indigo-500 mb-6 italic text-center"></div>
+                <button id="btnNext1" onclick="switchView(2)" class="hidden w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-sm uppercase shadow-lg hover:bg-indigo-700 transition-all">Siguiente <i class="fas fa-arrow-right ml-2"></i></button>
             </div>
             
             <div class="mt-8 w-full max-w-xl text-center">
@@ -108,7 +112,7 @@
             </div>
         </div>
 
-        <!-- VISTA 2: FUENTES Y PREVISUALIZACIÓN -->
+        <!-- PASO 2: FUENTES Y PREVISUALIZACIÓN -->
         <div id="view-2" class="hidden absolute inset-0 w-full h-full flex flex-row fade-in">
             <div class="sidebar custom-scroll shadow-lg">
                 <div class="p-6 border-b border-slate-100 bg-slate-50/50">
@@ -146,7 +150,7 @@
             </div>
         </div>
 
-        <!-- VISTA 3: DASHBOARD INDIVIDUAL -->
+        <!-- PASO 3: DASHBOARD INDIVIDUAL -->
         <div id="view-3" class="hidden absolute inset-0 w-full h-full flex flex-row fade-in">
             <aside class="sidebar custom-scroll flex flex-col shadow-lg border-r">
                 <div class="p-6 border-b"><h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">Constructor KPI</h3></div>
@@ -155,39 +159,32 @@
                         <label class="text-[10px] font-black text-indigo-900 uppercase mb-2 block tracking-widest">Fuente Activa</label>
                         <select id="dsSelector" class="w-full p-2.5 bg-white border-0 rounded-lg text-xs font-bold shadow-sm outline-none" onchange="onDataSourceChange()"></select>
                     </div>
-
                     <div class="space-y-4">
                         <input type="text" id="widgetTitle" placeholder="Título..." class="w-full p-3 border-b border-slate-200 text-sm font-bold outline-none focus:border-indigo-500 bg-transparent">
-                        
                         <div>
-                            <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Agrupar Por (Eje X)</label>
+                            <label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Eje X (Usuarios / Dept)</label>
                             <select id="axisX" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold column-selector outline-none"></select>
                         </div>
-
                         <div class="grid grid-cols-2 gap-4">
                             <div><label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Cálculo</label><select id="aggType" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold outline-none" onchange="togglePercentUI()"><option value="count">Contar</option><option value="sum">Sumar</option><option value="percent">Porcentaje %</option></select></div>
                             <div><label class="text-[10px] font-black text-slate-400 uppercase mb-2 block tracking-widest">Columna Valor</label><select id="axisY" class="w-full p-3 bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold column-selector outline-none" onchange="updatePercentTargets()"></select></div>
                         </div>
-
                         <div id="percentTargetUI" class="hidden bg-yellow-50 p-4 rounded-2xl border border-yellow-200">
-                            <label class="text-[10px] font-black text-yellow-800 uppercase mb-2 block tracking-widest">Criterio de Éxito</label>
+                            <label class="text-[10px] font-black text-yellow-800 uppercase mb-2 block tracking-widest">Valores que cuentan como éxito</label>
                             <div id="percentTargetValue" class="max-h-32 overflow-y-auto custom-scroll bg-white p-2 rounded-xl border border-yellow-100 shadow-inner"></div>
                         </div>
                     </div>
-
                     <div class="border-t pt-4 space-y-4">
-                        <div class="flex justify-between items-center"><label class="text-[10px] font-black text-slate-400 uppercase">Filtros</label><button onclick="addGlobalFilter()" class="text-[10px] bg-indigo-600 text-white px-3 py-1 rounded-full font-bold shadow-sm hover:bg-indigo-700 transition-all">+ Filtro</button></div>
+                        <div class="flex justify-between items-center"><label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filtros Activos</label><button onclick="addGlobalFilter()" class="text-[10px] bg-indigo-600 text-white px-3 py-1 rounded-full font-bold shadow-sm hover:bg-indigo-700 transition-all">+ Filtro</button></div>
                         <div id="globalFiltersArea" class="space-y-2"></div>
                     </div>
-
                     <div class="grid grid-cols-3 gap-2">
                         <button onclick="selectChartType('bar')" class="chart-btn active p-3 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600 bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar"></i></button>
                         <button onclick="selectChartType('line')" class="chart-btn p-3 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600" data-type="line"><i class="fas fa-chart-line"></i></button>
                         <button onclick="selectChartType('doughnut')" class="chart-btn p-3 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600" data-type="doughnut"><i class="fas fa-chart-pie"></i></button>
                         <input type="hidden" id="selectedChartType" value="bar">
                     </div>
-
-                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95 border-b-4 border-indigo-800">GENERAR GRÁFICO</button>
+                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-indigo-700 transition-all active:scale-95 border-b-4 border-indigo-800">GENERAR DASHBOARD</button>
                 </div>
                 
                 <div class="p-4 bg-slate-900 border-t border-slate-800 flex gap-2">
@@ -197,9 +194,9 @@
             </aside>
             <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea3">
                 <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-32">
-                    <div id="emptyLocal" class="col-span-full h-80 border-4 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-300">
+                    <div id="emptyLocal" class="col-span-full h-80 border-4 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-300 text-center">
                         <i class="fas fa-chart-column text-6xl mb-4 opacity-10"></i>
-                        <p class="text-base font-bold tracking-tight">Configure los parámetros para proyectar el dashboard</p>
+                        <p class="text-base font-bold tracking-tight px-8">Configura los parámetros para proyectar el dashboard de cumplimiento</p>
                     </div>
                 </div>
             </div>
@@ -208,23 +205,22 @@
         <!-- VISTA 4: UNIFICAR + VALIDAR VS -->
         <div id="view-4" class="hidden absolute inset-0 w-full h-full flex flex-row fade-in">
             <aside class="sidebar custom-scroll flex flex-col shadow-lg border-r">
-                <div class="p-6 border-b bg-emerald-50/50"><h3 class="font-black text-emerald-900 text-sm uppercase tracking-wider">Módulo: Validar VS</h3></div>
+                <div class="p-6 border-b bg-emerald-50/50"><h3 class="font-black text-emerald-900 text-sm uppercase tracking-wider">Unificación y Auditoría</h3></div>
                 
-                <!-- SECCIÓN CARGA COMPARATIVA DINÁMICA -->
+                <!-- SECCIÓN VALIDAR VS -->
                 <div class="p-6 border-b border-emerald-100 bg-emerald-50/20">
                     <h4 class="text-[11px] font-black text-emerald-700 uppercase mb-3 flex items-center gap-2 tracking-widest"><i class="fas fa-balance-scale"></i> Cargar Hoja VS</h4>
                     <div class="space-y-3">
-                        <button onclick="document.getElementById('secondaryFileInput').click()" class="w-full py-3 border-2 border-dashed border-emerald-300 rounded-2xl text-[10px] font-black text-emerald-600 hover:bg-emerald-50 transition-all uppercase tracking-widest">
-                            <i class="fas fa-file-circle-plus mr-1"></i> Seleccionar Nuevo Archivo
+                        <button onclick="document.getElementById('secondaryFileInput').click()" class="w-full py-3 border-2 border-dashed border-emerald-300 rounded-2xl text-[10px] font-black text-emerald-600 hover:bg-emerald-50 transition-all uppercase tracking-widest active:scale-95">
+                            <i class="fas fa-file-circle-plus mr-1 text-base"></i> Cargar Archivo Comparativo
                         </button>
                         <input type="file" id="secondaryFileInput" accept=".xlsx, .xls, .csv" class="hidden"/>
                         
-                        <!-- Selector de hoja secundaria -->
-                        <div id="secondarySheetWrapper" class="hidden space-y-2">
-                             <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Elegir Hoja del Archivo Nuevo</label>
-                             <select id="secondarySheetSelector" class="w-full p-2.5 border border-emerald-200 rounded-xl text-[10px] font-bold outline-none bg-white shadow-sm" onchange="processSecondarySheet()"></select>
+                        <div id="secondarySheetWrapper" class="hidden space-y-2 fade-in">
+                             <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Seleccionar Hoja Comparativa</label>
+                             <select id="secondarySheetSelector" class="w-full p-3 border border-emerald-200 rounded-xl text-[11px] font-bold outline-none bg-white shadow-sm" onchange="processSecondarySheet()"></select>
                         </div>
-                        <div id="secondarySourceInfo" class="hidden p-2.5 bg-emerald-600 text-white rounded-xl text-[9px] font-bold truncate shadow-lg shadow-emerald-100 flex items-center gap-2"><i class="fas fa-check-circle"></i> Cargado</div>
+                        <div id="secondarySourceInfo" class="hidden p-3 bg-emerald-600 text-white rounded-xl text-[10px] font-bold truncate shadow-lg flex items-center gap-2"><i class="fas fa-check-circle"></i> Fuente VS Lista</div>
                     </div>
                 </div>
 
@@ -243,17 +239,16 @@
 
                     <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl hover:bg-emerald-700 transition-all active:scale-95 border-b-4 border-emerald-800">GENERAR REPORTE GLOBAL</button>
                 </div>
-                <div class="p-4 bg-slate-900 border-t border-slate-800 flex gap-2">
-                    <input type="text" id="projectName4" placeholder="Nombre Global..." class="flex-1 p-2 text-slate-300 bg-slate-800 rounded-lg text-xs outline-none">
-                    <button onclick="saveToFirebase()" class="bg-emerald-500 text-white px-4 py-2 rounded-lg font-bold text-[10px] hover:bg-emerald-400 shadow-md">GUARDAR</button>
-                </div>
             </aside>
             <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea4">
-                <h2 class="text-2xl font-black text-slate-800 tracking-tight mb-8">Resultados Consolidados y Comparativos</h2>
-                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-10 pb-32">
+                <div class="flex flex-col gap-4 mb-8">
+                    <h2 class="text-2xl font-black text-slate-800 tracking-tight">Análisis de Cumplimiento Consolidado</h2>
+                    <p class="text-slate-400 text-sm">Visualización detallada de brechas de rendimiento al 100%.</p>
+                </div>
+                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-12 pb-32">
                      <div id="emptyAudit" class="col-span-full h-80 border-4 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-300">
                         <i class="fas fa-network-wired text-6xl mb-4 opacity-10"></i>
-                        <p class="text-base font-bold text-center tracking-tight">Mapea los archivos y presiona Generar</p>
+                        <p class="text-base font-bold text-center tracking-tight px-12">Mapea los archivos a la izquierda para proyectar el comparativo VS</p>
                     </div>
                 </div>
             </div>
@@ -273,7 +268,7 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Auto-login silencioso con fallback
+        // Autenticación Silenciosa
         signInAnonymously(auth).then(() => {
             const badge = document.getElementById('authStatus');
             if(badge) {
@@ -291,7 +286,7 @@
         let processedDataSources = {}; 
         let savedWidgetsConfig = []; 
         let savedAuditWidgetsConfig = [];
-        let secondaryWb = null; // Para Validar VS
+        let secondaryWb = null;
 
         window.switchView = function(step) {
             currentStep = step;
@@ -326,7 +321,7 @@
         // --- 1. CARGA ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files); if(files.length===0) return;
-            document.getElementById('uploadStatus').innerText = `Procesando ${files.length} archivos...`;
+            document.getElementById('uploadStatus').innerText = `Procesando reportes...`;
             for(let i=0; i<files.length; i++) {
                 const data = await files[i].arrayBuffer();
                 rawWorkbooks['file_'+i] = { name: files[i].name, workbook: XLSX.read(data) };
@@ -348,7 +343,6 @@
                 const file = e.target.files[0]; if(!file) return;
                 const data = await file.arrayBuffer();
                 secondaryWb = XLSX.read(data);
-                
                 const sel = document.getElementById('secondarySheetSelector');
                 if(sel) {
                     sel.innerHTML = '<option value="">-- Seleccionar Hoja --</option>';
@@ -362,21 +356,15 @@
             const sid = document.getElementById('secondarySheetSelector').value;
             if(!sid || !secondaryWb) return;
             const rawData = XLSX.utils.sheet_to_json(secondaryWb.Sheets[sid], {defval:""});
-            
             let clean = rawData.map(r => { 
                 let c={}; 
                 for(let k in r) if(!k.startsWith("__EMPTY")) c[String(k).trim()] = String(r[k]).trim(); 
                 return c; 
             }).filter(r=>Object.keys(r).length > 0);
-            
             let dsId = 'ds_sec_'+Date.now();
             processedDataSources[dsId] = { id: dsId, name: `[VS] ${sid}`, columns: Object.keys(clean[0]), data: clean };
-            
             const info = document.getElementById('secondarySourceInfo');
-            if(info) {
-                info.innerText = `Hoja Cargada: ${sid}`;
-                info.classList.remove('hidden');
-            }
+            if(info) { info.innerText = `Cargado: ${sid}`; info.classList.remove('hidden'); }
             buildAuditSidebar();
         };
 
@@ -392,11 +380,8 @@
         };
 
         window.renderRawPreview = function() {
-            const fidEl = document.getElementById('fileSelector');
-            const sidEl = document.getElementById('sheetSelector');
-            if(!fidEl || !sidEl) return;
-            let fid = fidEl.value;
-            let sid = sidEl.value;
+            let fid = document.getElementById('fileSelector').value;
+            let sid = document.getElementById('sheetSelector').value;
             if(!fid || !sid || !rawWorkbooks[fid]) return;
             const raw = XLSX.utils.sheet_to_json(rawWorkbooks[fid].workbook.Sheets[sid], {header:1, defval:""});
             const tbody = document.getElementById('rawTablePreview'); if(!tbody) return;
@@ -410,18 +395,12 @@
         };
 
         window.saveAsDataSource = function() {
-            const fidEl = document.getElementById('fileSelector');
-            const sidEl = document.getElementById('sheetSelector');
-            const hrEl = document.getElementById('headerRow');
-            if(!fidEl || !sidEl || !hrEl) return;
-            
-            let fid = fidEl.value;
-            let sid = sidEl.value;
-            let hRow = parseInt(hrEl.value)-1;
+            let fid = document.getElementById('fileSelector').value;
+            let sid = document.getElementById('sheetSelector').value;
+            let hRow = parseInt(document.getElementById('headerRow').value)-1;
             const sheet = rawWorkbooks[fid].workbook.Sheets[sid]; 
             let range = XLSX.utils.decode_range(sheet['!ref']); range.s.r = Math.max(0, hRow);
             let data = XLSX.utils.sheet_to_json(sheet, {range: XLSX.utils.encode_range(range), defval:null});
-            
             let clean = data.map(r => { 
                 let c={}; 
                 for(let k in r) if(!k.includes("__EMPTY")) c[String(k).trim()] = r[k]; 
@@ -502,14 +481,12 @@
                 const axY = document.getElementById('axisY');
                 const aggT = document.getElementById('aggType');
                 const scT = document.getElementById('selectedChartType');
-                
                 if(!dsS || !axX || !axY || !aggT || !scT) return;
-                
                 let id = dsS.value; if(!id || !processedDataSources[id]) return;
                 let filters = []; 
                 document.querySelectorAll('[id^="c_gf_"]').forEach(s => { if(s.value && s.value !== 'Elegir Columna...') { let fid = s.id.split('_')[2]; let allowed = Array.from(document.querySelectorAll(`.ck_gf_${fid}:checked`)).map(c=>c.value); filters.push({col: s.value, allowed: allowed}); } });
                 let targets = Array.from(document.querySelectorAll('.target-val-chk:checked')).map(c=>c.value);
-                config = { title: document.getElementById('widgetTitle').value || 'Reporte Dinámico', dsId: id, x: axX.value, y: axY.value, agg: aggT.value, targets: targets, type: scT.value, filters: filters };
+                config = { title: document.getElementById('widgetTitle').value || 'Métrica de Gestión', dsId: id, x: axX.value, y: axY.value, agg: aggT.value, targets: targets, type: scT.value, filters: filters };
                 savedWidgetsConfig.push(config);
             }
 
@@ -517,7 +494,7 @@
             const grid = document.getElementById('widgetsGrid'); if(!grid) return;
             const card = document.createElement('div');
             card.className = "flip-container fade-in";
-            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front"><div class="flex justify-between items-start mb-6"><div><h3 class="font-black text-slate-800 text-lg leading-tight truncate max-w-[250px] font-black">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">${config.agg} por ${config.x}</p></div><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-2 text-indigo-400 hover:bg-indigo-50 rounded-full transition-all"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-2 text-slate-300 hover:text-red-500 rounded-full transition-all"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-4 font-black uppercase">Toca para auditoría</p></div><div class="back flex flex-col"><div class="p-4 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center shrink-0"><h3 class="font-black text-indigo-900 text-xs uppercase tracking-widest">Matriz por Fila</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-indigo-600 bg-white border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">VOLVER</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="excel-table" id="table_${wid}"></table></div></div></div>`;
+            card.innerHTML = `<div class="flipper" id="flip_${wid}"><div class="front"><div class="flex justify-between items-start mb-6"><div><h3 class="font-black text-slate-800 text-lg leading-tight truncate max-w-[250px] uppercase">${config.title}</h3><p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">${config.agg} por ${config.x}</p></div><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-2 text-indigo-400 hover:bg-indigo-50 rounded-full transition-all"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-2 text-slate-300 hover:text-red-500 rounded-full transition-all"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-4 font-black uppercase tracking-widest">Toca para auditoría detallada</p></div><div class="back flex flex-col"><div class="p-4 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center shrink-0"><h3 class="font-black text-indigo-900 text-xs uppercase tracking-widest">Ficha de Cumplimiento</h3><button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-indigo-600 bg-white border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">VOLVER</button></div><div class="flex-1 overflow-auto custom-scroll bg-white"><table class="excel-table" id="table_${wid}"></table></div></div></div>`;
             grid.prepend(card);
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 100);
             document.getElementById('canvasArea3').scrollTop = 0;
@@ -528,7 +505,7 @@
             if(cfg.filters) cfg.filters.forEach(f => fdata = fdata.filter(r => f.allowed.includes(String(r[f.col]).trim())));
             let groups = {};
             fdata.forEach(r => {
-                let k = r[cfg.x] ? String(r[cfg.x]).trim() : '(Sin Clasificar)';
+                let k = r[cfg.x] ? String(r[cfg.x]).trim() : '(General)';
                 let raw = r[cfg.y] ? String(r[cfg.y]).trim() : "";
                 if(!groups[k]) groups[k] = { s: 0, c: 0, h: 0, v: 0 };
                 groups[k].c++;
@@ -546,8 +523,12 @@
 
             const tbody = document.getElementById('table_'+canvasId);
             if(tbody) {
-                tbody.innerHTML = `<thead><tr><th>Segmento</th><th class="text-right">Métrica Final</th></tr></thead><tbody>`;
-                labels.forEach((l, i) => { tbody.innerHTML += `<tr><td class="font-bold text-slate-700">${l}</td><td class="text-right font-black text-indigo-600">${cfg.agg==='percent'?vals[i].toFixed(1)+'%':vals[i].toLocaleString()}</td></tr>`; });
+                tbody.innerHTML = `<thead><tr><th>Entidad</th><th class="text-right">Puntaje (%)</th><th class="text-right">Faltante</th></tr></thead><tbody>`;
+                labels.forEach((l, i) => { 
+                    let score = cfg.agg==='percent' ? vals[i].toFixed(1) : vals[i];
+                    let gap = cfg.agg==='percent' ? (100 - vals[i]).toFixed(1) : 'N/A';
+                    tbody.innerHTML += `<tr><td class="font-bold text-slate-700">${l}</td><td class="text-right font-black text-green-600">${score}%</td><td class="text-right font-black text-red-500">${gap}%</td></tr>`; 
+                });
             }
 
             const ctx = document.getElementById(canvasId);
@@ -588,9 +569,7 @@
                 const modeEl = document.querySelector('input[name="auditMode"]:checked');
                 const aggEl = document.getElementById('auditAggType');
                 const chartEl = document.getElementById('auditChartType');
-                
                 if(!modeEl || !aggEl || !chartEl) return;
-                
                 const mode = modeEl.value;
                 const agg = aggEl.value;
                 let mappings = [];
@@ -599,26 +578,22 @@
                     if(incEl && incEl.checked) {
                         const axEl = document.getElementById(`ax_${ds.id}`);
                         const ayEl = document.getElementById(`ay_${ds.id}`);
-                        
                         if(!axEl || !ayEl) return;
-
                         let targets = []; 
-                        if (agg === 'percent') {
-                            targets = Array.from(document.querySelectorAll(`.av_chk_${ds.id}:checked`)).map(c=>c.value);
-                        }
+                        if (agg === 'percent') targets = Array.from(document.querySelectorAll(`.av_chk_${ds.id}:checked`)).map(c=>c.value);
                         mappings.push({ dsId: ds.id, name: ds.name, x: axEl.value, y: ayEl.value, targets: targets });
                     }
                 });
                 if(mappings.length === 0) return alert("Selecciona fuentes activas.");
                 const titleEl = document.getElementById('auditTitle');
-                config = { title: (titleEl ? titleEl.value : 'Reporte Consolidado'), mode: mode, agg: agg, type: chartEl.value, mappings: mappings };
+                config = { title: (titleEl ? titleEl.value : 'Reporte Consolidado de Cumplimiento'), mode: mode, agg: agg, type: chartEl.value, mappings: mappings };
                 savedAuditWidgetsConfig.push(config);
             }
             const wid = 'aw_'+Date.now()+Math.random();
             const grid = document.getElementById('auditWidgetsGrid'); if(!grid) return;
             const card = document.createElement('div');
             card.className = "flip-container h-[450px] fade-in";
-            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front flex flex-col"><div class="flex justify-between items-center mb-4"><h3 class="font-black text-slate-800 text-lg tracking-tight">${config.title}</h3><div class="flex gap-2 mt-1"><span class="px-2 py-0.5 bg-slate-100 rounded-md text-[8px] font-black text-slate-500 uppercase tracking-tighter">${config.mode}</span></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-4 uppercase font-black">Toca para auditoría detallada</p></div><div class="back flex flex-col"><div class="p-4 border-b border-emerald-50 bg-emerald-50/30 flex justify-between items-center shrink-0"><h3 class="font-black text-emerald-900 text-xs uppercase tracking-widest">Matriz Global</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-indigo-600 bg-white border border-indigo-100 px-4 py-1.5 rounded-full shadow-sm">VOLVER</button></div><div class="flex-1 overflow-auto custom-scroll bg-white p-2" id="tb_${wid}"></div></div></div>`;
+            card.innerHTML = `<div class="flipper" id="f_${wid}"><div class="front flex flex-col"><div class="flex justify-between items-center mb-6"><div><h3 class="font-black text-slate-800 text-lg tracking-tight uppercase">${config.title}</h3><div class="flex gap-2 mt-1"><span class="px-2 py-0.5 bg-slate-100 rounded-md text-[8px] font-black text-slate-500 uppercase tracking-tighter">${config.mode}</span></div></div><div class="flex gap-2"><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="p-2 text-emerald-400 hover:bg-emerald-50 rounded-full transition-all"><i class="fas fa-table"></i></button><button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-2 text-slate-300 hover:text-red-500 rounded-full transition-all"><i class="fas fa-trash"></i></button></div></div><div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div><p class="text-[9px] text-center text-slate-300 mt-4 uppercase font-black">Toca para análisis de brechas al 100%</p></div><div class="back flex flex-col"><div class="p-4 border-b border-emerald-50 bg-emerald-50/30 flex justify-between items-center shrink-0"><h3 class="font-black text-emerald-900 text-xs uppercase tracking-widest">Matriz de Cumplimiento Real</h3><button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-emerald-600 bg-white border border-emerald-100 px-4 py-1.5 rounded-full shadow-sm">VOLVER</button></div><div class="flex-1 overflow-auto custom-scroll bg-white p-2" id="tb_${wid}"></div></div></div>`;
             grid.prepend(card); setTimeout(() => renderUnifiedChart(config, wid), 100);
             document.getElementById('canvasArea4').scrollTop = 0;
         }
@@ -626,10 +601,8 @@
         function renderUnifiedChart(cfg, id) {
             let labelsS = new Set(); let tableData = {};
             cfg.mappings.forEach(map => {
-                let source = processedDataSources[map.dsId];
-                if(!source) return;
-                let data = source.data;
-                let local = {};
+                let source = processedDataSources[map.dsId]; if(!source) return;
+                let data = source.data; let local = {};
                 data.forEach(r => {
                     let k = r[map.x] ? String(r[map.x]).trim().toLowerCase() : String(map.name).toLowerCase(); 
                     labelsS.add(k);
@@ -650,27 +623,29 @@
             if(cfg.mode === 'compare') {
                 cfg.mappings.forEach((map, i) => { datasets.push({ label: map.name, data: labels.map(l => (tableData[l] && tableData[l].vs[map.name]) || 0), backgroundColor: ['#6366f1','#10b981','#f59e0b','#ef4444'][i%4], maxBarThickness: 40, borderRadius: 10 }); });
             } else {
-                datasets.push({ label: 'Métrica Global', data: labels.map(l => (cfg.agg==='percent') ? (tableData[l].h/tableData[l].c)*100 : tableData[l].s), backgroundColor: '#10b981', maxBarThickness: 60, borderRadius: 10 });
+                datasets.push({ label: 'Brecha de Cumplimiento', data: labels.map(l => (cfg.agg==='percent') ? (tableData[l].h/tableData[l].c)*100 : tableData[l].s), backgroundColor: '#10b981', maxBarThickness: 60, borderRadius: 10 });
             }
             
-            const headerRow = `<tr><th>Categoría (Unificada)</th>` + cfg.mappings.map(m => `<th class="text-right">${String(m.name).substring(0,8)}...</th>`).join('') + `</tr>`;
+            const headerRow = `<tr><th>Normalizado (Dept/User)</th>` + cfg.mappings.map(m => `<th class="text-right">Puntaje VS</th>`).join('') + `<th class="text-right">Faltante %</th></tr>`;
             const rows = labels.map(l => {
-                return `<tr><td class="font-bold text-slate-700 capitalize">${l}</td>` + 
-                cfg.mappings.map(m => `<td class="text-right font-black text-indigo-600">${((tableData[l] && tableData[l].vs[m.name]) || 0).toFixed(1)}</td>`).join('') + 
-                `</tr>`;
+                let score = 0;
+                let cells = cfg.mappings.map(m => {
+                    score = (tableData[l] && tableData[l].vs[m.name]) || 0;
+                    return `<td class="text-right font-black text-green-600">${score.toFixed(1)}%</td>`;
+                }).join('');
+                let gap = (100 - score).toFixed(1);
+                return `<tr><td class="font-bold text-slate-700 capitalize">${l}</td>${cells}<td class="text-right font-black text-red-500">${gap}%</td></tr>`;
             }).join('');
             const tb = document.getElementById('tb_'+id);
             if(tb) tb.innerHTML = `<table class="excel-table"><thead>${headerRow}</thead><tbody>${rows}</tbody></table>`;
-            
             const ctx = document.getElementById(id);
             if(ctx) new Chart(ctx.getContext('2d'), { type: cfg.type, data: { labels: labels, datasets: datasets }, options: { maintainAspectRatio: false, onClick: (e) => { let c = document.getElementById('f_' + id); if(c) c.classList.toggle('flipped'); }, scales: { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined, grid: { color: '#f8fafc' } } } } });
         }
 
         window.saveToFirebase = async function() {
             try { 
-                const n3 = document.getElementById('projectName3');
-                const n4 = document.getElementById('projectName4');
-                await addDoc(collection(db, "reportes_v26"), { nombre: (n3 ? n3.value : '') || (n4 ? n4.value : '') || 'Proyecto Consolidado', date: serverTimestamp(), sources: JSON.stringify(processedDataSources), widgetsLocal: savedWidgetsConfig, widgetsGlobal: savedAuditWidgetsConfig }); alert("¡Workspace guardado con éxito!"); loadProjs(); 
+                const n3 = document.getElementById('projectName3'); const n4 = document.getElementById('projectName4');
+                await addDoc(collection(db, "reportes_v26"), { nombre: (n3 ? n3.value : '') || (n4 ? n4.value : '') || 'Auditoría de Gestión', date: serverTimestamp(), sources: JSON.stringify(processedDataSources), widgetsLocal: savedWidgetsConfig, widgetsGlobal: savedAuditWidgetsConfig }); alert("¡Dashboard guardado correctamente!"); loadProjs(); 
             } catch(e) { alert("Error al conectar con la nube."); }
         }
 
