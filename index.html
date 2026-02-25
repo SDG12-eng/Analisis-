@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DataMaster v31 - Adaptativo & Visual</title>
+    <title>DataMaster v30 - Auditoría Total</title>
     
-    <!-- Librerías -->
+    <!-- Librerías de Alta Disponibilidad -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,48 +15,47 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; height: 100vh; overflow: hidden; }
         
-        /* Scrollbars mejorados */
         .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: transparent; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .custom-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* EFECTO 3D DE GIRO (FLIP) - RESPONSIVE */
+        /* Layout de Paneles Estancos */
+        .app-layout { display: flex; height: calc(100vh - 4rem); overflow: hidden; }
+        .sidebar { width: 420px; height: 100%; overflow-y: auto; background: white; border-right: 1px solid #e2e8f0; flex-shrink: 0; position: relative; z-index: 30; }
+        .canvas-area { flex-grow: 1; height: 100%; overflow-y: auto; background: #f1f5f9; padding: 2rem; position: relative; z-index: 10; }
+
+        /* Tarjetas Giratorias Amplias */
         .flip-container { perspective: 1000px; width: 100%; margin-bottom: 2rem; }
-        .flipper { transition: 0.8s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
+        .flipper { transition: 0.7s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d; position: relative; width: 100%; height: 100%; }
         
-        /* Altura dinámica para las tarjetas */
-        .card-height { height: 450px; }
-        @media (min-width: 768px) { .card-height { height: 500px; } }
-        @media (min-width: 1024px) { .card-height { height: 600px; } }
+        .card-height { height: 550px; }
+        @media (min-width: 1024px) { .card-height { height: 650px; } }
 
         .front, .back { 
             backface-visibility: hidden; position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
             border-radius: 1.5rem; background: white; border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
             display: flex; flex-direction: column; overflow: hidden;
         }
         .front { z-index: 2; transform: rotateY(0deg); }
-        .back { transform: rotateY(180deg); border: 2px solid #6366f1; }
+        .back { transform: rotateY(180deg); border: 2px solid #10b981; }
         .flipped .flipper { transform: rotateY(180deg); }
 
-        /* Estilos Tabla */
+        /* Estilos Tabla de Auditoría */
         .excel-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.75rem; }
         .excel-table th { 
-            background: #f1f5f9; position: sticky; top: 0; padding: 10px 12px; text-align: left; 
-            font-weight: 700; color: #475569; z-index: 10; border-bottom: 2px solid #e2e8f0; 
+            background: #f1f5f9; position: sticky; top: 0; padding: 10px 14px; text-align: left; 
+            font-weight: 800; color: #475569; z-index: 10; border-bottom: 2px solid #e2e8f0; 
             text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;
         }
-        .excel-table td { padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; white-space: nowrap; max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+        .excel-table td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; color: #334155; white-space: nowrap; max-width: 250px; overflow: hidden; text-overflow: ellipsis; }
         .excel-table tr:hover td { background: #f8fafc; }
 
-        /* Tabs y Botones */
-        .tab-btn { @apply px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap; }
+        .btn-step { @apply px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap; }
         .tab-active { @apply bg-indigo-600 text-white shadow-md shadow-indigo-200; }
         .tab-inactive { @apply bg-white text-slate-500 hover:bg-slate-50 border border-slate-200; }
-        
-        .btn-primary { @apply bg-indigo-600 text-white shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all; }
-        .btn-success { @apply bg-emerald-500 text-white shadow-lg shadow-emerald-200 hover:bg-emerald-600 active:scale-95 transition-all; }
+        .tab-disabled { @apply opacity-40 cursor-not-allowed grayscale; }
 
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -64,11 +63,11 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden text-slate-800 bg-slate-50">
 
-    <!-- HEADER RESPONSIVE -->
+    <!-- HEADER NAVEGACIÓN -->
     <header class="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-4 md:px-8 z-50 shrink-0">
         <div class="flex items-center gap-2 md:gap-3">
             <div class="bg-gradient-to-br from-indigo-600 to-blue-500 text-white p-2 rounded-xl shadow-md">
-                <i class="fas fa-database text-sm md:text-lg"></i>
+                <i class="fas fa-shield-alt text-sm md:text-lg"></i>
             </div>
             <div>
                 <h1 class="text-xs md:text-sm font-black tracking-tighter uppercase text-slate-800 leading-none">Data<span class="text-indigo-600">Master</span></h1>
@@ -77,20 +76,22 @@
         </div>
         
         <nav class="flex bg-slate-100 p-1.5 rounded-2xl gap-2 shadow-inner overflow-x-auto custom-scroll max-w-[60vw] md:max-w-none">
-            <button id="tab1" onclick="switchView(1)" class="tab-btn tab-active">1. Carga</button>
-            <button id="tab2" onclick="switchView(2)" disabled class="tab-btn tab-inactive opacity-50">2. Fuentes</button>
-            <button id="tab3" onclick="switchView(3)" disabled class="tab-btn tab-inactive opacity-50">3. Dashboard</button>
-            <button id="tab4" onclick="switchView(4)" disabled class="tab-btn tab-inactive opacity-50">4. Cumplimiento</button>
+            <button id="tab1" onclick="switchView(1)" class="btn-step tab-active">1. Carga</button>
+            <button id="tab2" onclick="switchView(2)" disabled class="btn-step tab-disabled">2. Fuentes</button>
+            <button id="tab3" onclick="switchView(3)" disabled class="btn-step tab-disabled">3. Dashboard</button>
+            <button id="tab4" onclick="switchView(4)" disabled class="btn-step tab-disabled">4. Auditoría 100%</button>
         </nav>
 
         <div class="flex items-center gap-2 md:gap-4">
+             <button onclick="goBack()" class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full hover:bg-slate-200 transition-all text-slate-600"><i class="fas fa-chevron-left"></i></button>
+             <button onclick="goForward()" class="w-8 h-8 flex items-center justify-center bg-slate-100 rounded-full hover:bg-slate-200 transition-all text-slate-600"><i class="fas fa-chevron-right"></i></button>
              <div id="authIndicator" class="hidden md:flex items-center gap-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[10px] font-black border border-green-100">
-                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> ONLINE
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div> NUBE ACTIVA
              </div>
         </div>
     </header>
 
-    <main class="flex-1 relative overflow-hidden flex flex-col md:flex-row">
+    <main class="flex-1 app-layout relative">
 
         <!-- VISTA 1: CARGA -->
         <div id="view-1" class="absolute inset-0 z-40 flex flex-col items-center justify-center p-4 md:p-8 fade-in overflow-y-auto bg-slate-50 w-full">
@@ -98,7 +99,7 @@
                 <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
                     <i class="fas fa-cloud-upload-alt text-4xl"></i>
                 </div>
-                <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-3 tracking-tight">Centro de Carga</h2>
+                <h2 class="text-2xl md:text-3xl font-black text-slate-800 mb-3 tracking-tight">Centro de Datos</h2>
                 <p class="text-slate-400 mb-8 text-sm font-medium">Sube tus archivos de operaciones y excepciones para medir métricas.</p>
                 
                 <label class="block mb-6 cursor-pointer group">
@@ -111,7 +112,7 @@
                 <div id="uploadStatus" class="h-6 text-xs font-bold text-indigo-600 mb-4"></div>
                 
                 <button id="btnNext1" onclick="switchView(2)" class="hidden w-full bg-white border-2 border-indigo-600 text-indigo-600 py-3 rounded-2xl font-black text-sm uppercase shadow-lg hover:bg-indigo-50 transition-all flex justify-center items-center gap-2">
-                    Configurar Datos <i class="fas fa-arrow-right"></i>
+                    Configurar Fuentes <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
             
@@ -128,40 +129,40 @@
 
         <!-- VISTA 2: FUENTES -->
         <div id="view-2" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row fade-in bg-white">
-            <div class="w-full lg:w-[400px] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col z-20 shadow-lg lg:shadow-none shrink-0 h-1/2 lg:h-full">
-                <div class="p-4 md:p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <div class="sidebar shadow-lg">
+                <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                     <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">Gestión de Fuentes</h3>
                 </div>
-                <div class="p-4 md:p-6 space-y-4 flex-1 overflow-y-auto custom-scroll">
-                    <div class="sidebar-item bg-white border rounded-xl p-3 shadow-sm">
+                <div class="p-6 space-y-4 overflow-y-auto custom-scroll">
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                         <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">1. Archivo</label>
-                        <select id="fileSelector" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500" onchange="changeActiveFile()"></select>
+                        <select id="fileSelector" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-indigo-500" onchange="changeActiveFile()"></select>
                     </div>
-                    <div class="sidebar-item bg-white border rounded-xl p-3 shadow-sm">
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                         <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">2. Hoja</label>
-                        <select id="sheetSelector" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-indigo-500" onchange="renderRawPreview()"></select>
+                        <select id="sheetSelector" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold outline-none focus:border-indigo-500" onchange="renderRawPreview()"></select>
                     </div>
-                    <div class="sidebar-item bg-white border rounded-xl p-3 shadow-sm">
+                    <div class="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
                         <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block tracking-widest">3. Fila Encabezados</label>
-                        <input type="number" id="headerRow" value="1" min="1" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-center font-bold outline-none focus:border-indigo-500">
+                        <input type="number" id="headerRow" value="1" min="1" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-center font-bold outline-none focus:border-indigo-500">
                     </div>
-                    <button onclick="saveAsDataSource()" class="w-full btn-primary py-3 rounded-xl font-bold flex justify-center items-center gap-2 text-xs uppercase tracking-widest"><i class="fas fa-save text-base"></i> Guardar Fuente</button>
+                    <button onclick="saveAsDataSource()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all flex justify-center items-center gap-2 text-xs uppercase tracking-widest"><i class="fas fa-save text-base"></i> Guardar Fuente</button>
                     
                     <div class="pt-4 border-t border-slate-100">
                         <h4 class="text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest">Fuentes Activas</h4>
                         <div id="processedSourcesList" class="space-y-2 max-h-24 overflow-y-auto custom-scroll"></div>
                     </div>
                 </div>
-                 <div class="p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-3">
-                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="bg-slate-800 text-white py-2.5 rounded-xl font-bold text-xs disabled:opacity-30 flex justify-center gap-1">Dashboard <i class="fas fa-chevron-right"></i></button>
-                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs disabled:opacity-30 flex justify-center gap-1">Unificar <i class="fas fa-chevron-right"></i></button>
+                 <div class="absolute bottom-0 w-full p-4 border-t border-slate-100 bg-white grid grid-cols-2 gap-3 z-10">
+                    <button onclick="switchView(3)" id="btnGoPlayground" disabled class="bg-slate-800 text-white py-2.5 rounded-xl font-bold text-xs disabled:opacity-30 flex justify-center gap-1 shadow-md">Dashboard <i class="fas fa-chevron-right"></i></button>
+                    <button onclick="switchView(4)" id="btnGoAudit" disabled class="bg-emerald-600 text-white py-2.5 rounded-xl font-bold text-xs disabled:opacity-30 flex justify-center gap-1 shadow-md">Auditoría <i class="fas fa-chevron-right"></i></button>
                 </div>
             </div>
             
-            <div class="flex-1 flex flex-col bg-slate-50 h-1/2 lg:h-full border-t lg:border-t-0">
-                <div class="h-10 md:h-12 border-b border-slate-200 px-4 md:px-6 flex items-center bg-white shadow-sm z-10 justify-between">
+            <div class="canvas-area p-0 flex flex-col bg-slate-50">
+                <div class="h-12 border-b border-slate-200 px-6 flex items-center bg-white shadow-sm z-10 justify-between">
                     <span class="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-widest"><i class="fas fa-table mr-2 text-indigo-500"></i> Vista Previa</span>
-                    <span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-500">Solo Lectura</span>
+                    <span class="text-[9px] bg-slate-100 px-2 py-0.5 rounded text-slate-500">Lectura</span>
                 </div>
                 <div class="flex-1 overflow-auto custom-scroll relative p-4"><div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden"><table class="excel-table" id="rawTablePreview"></table></div></div>
             </div>
@@ -169,102 +170,111 @@
 
         <!-- VISTA 3: DASHBOARD INDIVIDUAL -->
         <div id="view-3" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row fade-in bg-slate-50">
-            <aside class="w-full lg:w-[400px] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col z-20 shadow-lg h-1/2 lg:h-full">
+            <aside class="sidebar shadow-lg">
                 <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">Métricas Individuales</h3>
-                    <div class="flex gap-2">
-                         <button onclick="saveToFirebase()" class="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg font-bold text-[10px] hover:bg-indigo-100 border border-indigo-100"><i class="fas fa-cloud-upload-alt"></i> Subir a Firebase</button>
-                    </div>
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-wider">Dashboard Básico</h3>
                 </div>
-                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5">
+                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5 pb-24">
                     <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-100 shadow-sm">
                         <label class="text-[9px] font-black text-indigo-900 uppercase mb-1 block tracking-widest">Fuente de Datos</label>
                         <select id="dsSelector" class="w-full p-2 bg-white border-0 rounded-xl text-xs font-bold shadow-sm outline-none" onchange="onDataSourceChange()"></select>
                     </div>
 
                     <div class="space-y-3">
-                        <input type="text" id="widgetTitle" placeholder="Título del Gráfico..." class="w-full p-2 border-b border-slate-200 text-sm font-bold outline-none bg-transparent focus:border-indigo-500">
+                        <input type="text" id="widgetTitle" placeholder="Título del Gráfico..." class="w-full p-3 border-b-2 border-slate-100 text-sm font-bold outline-none bg-transparent focus:border-indigo-500">
                         <div>
                             <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block tracking-widest">Eje X (Agrupar)</label>
-                            <select id="axisX" class="w-full p-2 border border-slate-200 rounded-xl text-xs font-bold column-selector outline-none"></select>
+                            <select id="axisX" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold column-selector outline-none"></select>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Operación</label><select id="aggType" class="w-full p-2 border border-slate-200 rounded-xl text-xs font-bold outline-none" onchange="togglePercentUI()"><option value="count">Contar Todo</option><option value="sum">Sumar</option><option value="percent">Porcentaje %</option></select></div>
-                            <div><label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Valor</label><select id="axisY" class="w-full p-2 border border-slate-200 rounded-xl text-xs font-bold column-selector outline-none" onchange="updatePercentTargets()"></select></div>
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Operación</label><select id="aggType" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold outline-none" onchange="togglePercentUI()"><option value="count">Contar Todo</option><option value="sum">Sumar</option><option value="percent">Porcentaje %</option></select></div>
+                            <div><label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Valor</label><select id="axisY" class="w-full p-2.5 border border-slate-200 rounded-xl text-xs font-bold column-selector outline-none" onchange="updatePercentTargets()"></select></div>
                         </div>
                         <div id="percentTargetUI" class="hidden bg-yellow-50 p-3 rounded-2xl border border-yellow-200">
-                            <label class="text-[9px] font-black text-yellow-800 uppercase mb-1 block">Valores Considerados como "Éxito"</label>
+                            <label class="text-[9px] font-black text-yellow-800 uppercase mb-1 block">Considerar como "Éxito"</label>
                             <div id="percentTargetValue" class="max-h-24 overflow-y-auto custom-scroll bg-white p-2 rounded-xl border border-yellow-100 shadow-inner"></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-2">
+                    <div class="border-t border-slate-100 pt-4 space-y-2">
+                        <div class="flex justify-between items-center"><label class="text-[10px] font-black text-slate-400 uppercase">Filtros Activos</label><button onclick="addGlobalFilter()" class="text-[9px] bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-bold hover:bg-indigo-100">+ Añadir</button></div>
+                        <div id="globalFiltersArea" class="space-y-2"></div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 pt-2">
                         <button onclick="selectChartType('bar')" class="chart-btn active p-2 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600 bg-slate-800 text-white" data-type="bar"><i class="fas fa-chart-bar"></i></button>
                         <button onclick="selectChartType('line')" class="chart-btn p-2 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600" data-type="line"><i class="fas fa-chart-line"></i></button>
                         <button onclick="selectChartType('doughnut')" class="chart-btn p-2 border rounded-xl hover:bg-slate-50 flex justify-center text-slate-600" data-type="doughnut"><i class="fas fa-chart-pie"></i></button>
                         <input type="hidden" id="selectedChartType" value="bar">
                     </div>
 
-                    <button onclick="buildWidget()" class="w-full btn-primary py-3 rounded-xl font-black text-xs uppercase tracking-widest">
+                    <button onclick="buildWidget()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-indigo-700 active:scale-95 border-b-4 border-indigo-800">
                         GENERAR GRÁFICO
                     </button>
                 </div>
             </aside>
 
-            <!-- Lienzo Dashboard -->
-            <div class="flex-1 p-4 md:p-8 overflow-y-auto custom-scroll scroll-smooth h-1/2 lg:h-full bg-slate-50" id="canvasArea3">
+            <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea3">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-lg md:text-xl font-black text-slate-800 tracking-tight">Tablero de Análisis</h2>
+                    <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Análisis Rápido</h2>
                 </div>
-                
-                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 pb-20">
-                    <div id="emptyLocal" class="col-span-full h-64 md:h-80 border-4 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-300">
-                        <i class="fas fa-chart-column text-5xl mb-3 opacity-20"></i>
-                        <p class="text-sm font-bold">Genera visualizaciones a la izquierda</p>
+                <div id="widgetsGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-8 pb-32">
+                    <div id="emptyLocal" class="col-span-full h-80 border-4 border-dashed border-slate-200 rounded-[2.5rem] flex flex-col items-center justify-center text-slate-300">
+                        <i class="fas fa-chart-pie text-6xl mb-4 opacity-20"></i>
+                        <p class="text-sm font-bold">Genera visualizaciones configurando a la izquierda</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- VISTA 4: UNIFICAR CUMPLIMIENTO -->
+        <!-- VISTA 4: AUDITORÍA DE CUMPLIMIENTO -->
         <div id="view-4" class="hidden absolute inset-0 w-full h-full flex-col lg:flex-row fade-in bg-slate-50">
-            <aside class="w-full lg:w-[400px] bg-white border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col z-20 shadow-xl h-1/2 lg:h-full">
-                <div class="p-5 border-b border-slate-100 bg-emerald-50/50 flex justify-between items-center">
-                    <h3 class="font-black text-emerald-900 text-sm uppercase tracking-wider">Unificación (Auditoría)</h3>
-                    <button onclick="saveToFirebase()" class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg font-bold text-[10px] border border-emerald-100"><i class="fas fa-cloud-upload-alt"></i> Firebase</button>
+            <aside class="sidebar shadow-lg">
+                <div class="p-5 border-b bg-emerald-50 flex justify-between items-center sticky top-0 z-10">
+                    <h3 class="font-black text-emerald-900 text-sm uppercase tracking-wider">Auditoría 100%</h3>
+                    <button onclick="saveToFirebase()" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-bold text-[9px] shadow-sm hover:bg-emerald-700"><i class="fas fa-cloud-upload-alt"></i> Firebase</button>
                 </div>
                 
-                <!-- Carga VS Rápida -->
-                <div class="p-4 bg-emerald-50/20 border-b border-emerald-100">
-                     <button onclick="document.getElementById('secondaryFileInput').click()" class="w-full py-2 border-2 border-dashed border-emerald-400 rounded-xl text-[10px] font-bold text-emerald-700 hover:bg-emerald-50 transition active:scale-95 mb-2 shadow-sm bg-white"><i class="fas fa-file-circle-plus mr-1"></i> + Cargar Hoja VS (Para Resta/Comparar)</button>
+                <!-- CARGA VS RÁPIDA -->
+                <div class="p-5 bg-emerald-50/20 border-b border-emerald-100">
+                     <button onclick="document.getElementById('secondaryFileInput').click()" class="w-full py-3 border-2 border-dashed border-emerald-400 rounded-xl text-[10px] font-bold text-emerald-700 hover:bg-emerald-50 transition active:scale-95 shadow-sm bg-white mb-2">
+                        <i class="fas fa-file-circle-plus text-base mr-1"></i> Cargar Hoja VS Extra
+                     </button>
                      <input type="file" id="secondaryFileInput" accept=".xlsx, .xls, .csv" class="hidden"/>
-                     <div id="secondarySheetWrapper" class="hidden"><select id="secondarySheetSelector" class="w-full p-2 border border-emerald-200 rounded-lg text-[10px] font-bold outline-none bg-white shadow-sm" onchange="processSecondarySheet()"></select></div>
+                     <div id="secondarySheetWrapper" class="hidden space-y-2 mt-2 fade-in">
+                         <label class="text-[9px] font-black text-slate-400 uppercase block tracking-widest">Elegir Hoja del VS</label>
+                         <select id="secondarySheetSelector" class="w-full p-2 border border-emerald-200 rounded-lg text-xs font-bold outline-none bg-white shadow-sm" onchange="processSecondarySheet()"></select>
+                     </div>
                 </div>
 
-                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5">
-                    <input type="text" id="auditTitle" placeholder="Título Reporte de Auditoría..." class="w-full p-2 border-b border-slate-200 text-sm font-bold outline-none bg-transparent focus:border-emerald-500">
+                <div class="p-5 flex-1 overflow-y-auto custom-scroll space-y-5 pb-24">
+                    <input type="text" id="auditTitle" placeholder="Título Reporte (Ej: Auditoría Enero)..." class="w-full p-3 border-b-2 border-slate-200 text-sm font-bold outline-none bg-transparent focus:border-emerald-500">
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Medición</label><select id="auditAggType" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none" onchange="buildAuditSidebar()"><option value="percent">Porcentaje de Meta</option><option value="count">Conteo Absoluto</option><option value="sum">Sumatoria</option></select></div>
-                        <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Visual</label><select id="auditChartType" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold outline-none"><option value="bar">Barras</option><option value="doughnut">Dona</option><option value="line">Línea</option></select></div>
+                    <div class="bg-slate-100 p-3 rounded-xl border border-slate-200">
+                        <label class="text-[10px] font-black text-slate-500 uppercase mb-2 block tracking-widest"><i class="fas fa-cogs"></i> Formato de Auditoría</label>
+                        <select id="auditAggType" class="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-bold outline-none" onchange="buildAuditSidebar()">
+                            <option value="percent">Porcentaje de Meta 100%</option>
+                            <option value="count">Conteo Absoluto (#)</option>
+                        </select>
                     </div>
 
-                    <div id="auditMappingContainer" class="space-y-3"></div>
+                    <div id="auditMappingContainer" class="space-y-4"></div>
 
-                    <button onclick="generateMergedAudit()" class="w-full btn-success py-3 rounded-xl font-black text-xs uppercase tracking-widest border-b-4 border-emerald-700">
+                    <button onclick="generateMergedAudit()" class="w-full bg-emerald-600 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg hover:bg-emerald-700 transition active:scale-95 border-b-4 border-emerald-800">
                         GENERAR REPORTE GLOBAL
                     </button>
                 </div>
             </aside>
 
-            <div class="flex-1 p-4 md:p-8 overflow-y-auto custom-scroll scroll-smooth h-1/2 lg:h-full border-t lg:border-t-0" id="canvasArea4">
-                <div class="mb-6 flex justify-between items-center">
-                    <h2 class="text-xl md:text-2xl font-black text-slate-800 tracking-tight">Cumplimiento General</h2>
+            <div class="canvas-area custom-scroll scroll-smooth" id="canvasArea4">
+                <div class="mb-6">
+                    <h2 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Reporte de Eficiencia</h2>
+                    <p class="text-slate-500 text-sm font-medium mt-1">Comparativa de cumplimiento ordenado de mayor a menor.</p>
                 </div>
-                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-8 pb-32">
-                     <div id="emptyAudit" class="col-span-full h-64 md:h-80 border-4 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center text-slate-300">
-                        <i class="fas fa-balance-scale text-5xl mb-3 opacity-20"></i>
-                        <p class="text-sm font-bold text-center">Configura "Origen" y "Resta" para calcular eficiencia al 100%.</p>
+                <div id="auditWidgetsGrid" class="grid grid-cols-1 gap-12 pb-32">
+                     <div id="emptyAudit" class="col-span-full h-80 border-4 border-dashed border-slate-200 rounded-[3rem] flex flex-col items-center justify-center text-slate-300">
+                        <i class="fas fa-balance-scale text-7xl mb-4 opacity-20"></i>
+                        <p class="text-sm font-bold text-center uppercase tracking-widest">Asigna Rol "Realizado" o "Faltante" a las hojas</p>
                     </div>
                 </div>
             </div>
@@ -272,15 +282,16 @@
 
     </main>
 
-    <!-- ESTADO GLOBAL DE GRÁFICOS (Para Filtros Dinámicos) -->
+    <!-- REGISTRO GLOBAL DE GRÁFICOS -->
     <script> window.chartRegistry = {}; </script>
 
-    <!-- LOGICA -->
+    <!-- LOGICA MAESTRA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // FIREBASE CONFIG
         const firebaseConfig = { apiKey: "AIzaSyCZXwXN15MYVpFP0-QbgR-H4bHqMH4_EFA", authDomain: "reporte-d37d1.firebaseapp.com", projectId: "reporte-d37d1", storageBucket: "reporte-d37d1.firebasestorage.app", messagingSenderId: "995600823465", appId: "1:995600823465:web:3ae9ede621cf0631ad65b8" };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -291,6 +302,7 @@
             loadProjs();
         }).catch(() => console.log("Modo Local"));
 
+        let currentStep = 1;
         let rawWorkbooks = {}; 
         let processedDataSources = {}; 
         let savedWidgetsConfig = []; 
@@ -298,6 +310,7 @@
         let secondaryWb = null;
 
         window.switchView = function(step) {
+            currentStep = step;
             ['view-1','view-2','view-3','view-4'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById('view-' + step).classList.remove('hidden');
             if(step >= 2 && step <= 4) document.getElementById('view-' + step).classList.add('flex');
@@ -305,15 +318,17 @@
             
             [1,2,3,4].forEach(n => {
                 const btn = document.getElementById('tab'+n);
-                if(n===step) { btn.className = "tab-btn tab-active"; }
-                else { btn.className = "tab-btn " + (btn.disabled ? "tab-inactive opacity-50 cursor-not-allowed" : "tab-inactive"); }
+                if(n===step) { btn.className = "btn-step tab-active"; }
+                else { btn.className = "btn-step " + (btn.disabled ? "tab-inactive opacity-50 cursor-not-allowed" : "tab-inactive"); }
             });
         }
+        window.goBack = () => { if(currentStep > 1) switchView(currentStep - 1); };
+        window.goForward = () => { const nextTab = document.getElementById('tab' + (currentStep + 1)); if(nextTab && !nextTab.disabled) switchView(currentStep + 1); };
 
-        // --- 1. CARGA ---
+        // --- 1. CARGA INICIAL ---
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const files = Array.from(e.target.files); if(files.length===0) return;
-            document.getElementById('uploadStatus').innerText = `Leyendo archivos...`;
+            document.getElementById('uploadStatus').innerText = `Procesando...`;
             for(let i=0; i<files.length; i++) {
                 const data = await files[i].arrayBuffer();
                 rawWorkbooks['file_'+i] = { name: files[i].name, workbook: XLSX.read(data) };
@@ -327,7 +342,7 @@
             }
         });
 
-        // CARGA SECUNDARIA
+        // CARGA SECUNDARIA DINÁMICA (VS)
         document.getElementById('secondaryFileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0]; if(!file) return;
             const data = await file.arrayBuffer();
@@ -347,7 +362,7 @@
             processedDataSources[dsId] = { id: dsId, name: `[VS] ${sid}`, columns: Object.keys(clean[0]), data: clean };
             buildAuditSidebar();
             document.getElementById('secondarySheetWrapper').classList.add('hidden');
-            alert("Hoja Comparativa Cargada. Ahora puedes mapearla abajo.");
+            alert("Hoja Comparativa Cargada exitosamente. Mapeala asignándole el ROL Faltante.");
         };
 
         // --- 2. FUENTES ---
@@ -377,8 +392,8 @@
             if(clean.length===0) return alert("Hoja vacía.");
             let id = 'ds_'+Date.now();
             processedDataSources[id] = { id: id, name: `${rawWorkbooks[fid].name} (${sid})`, columns: Object.keys(clean[0]), data: clean };
-            document.getElementById('processedSourcesList').innerHTML += `<div class="p-3 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 shadow-sm flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> ${processedDataSources[id].name}</div>`;
-            ['tab3','tab4','btnGoPlayground','btnGoAudit'].forEach(id => { let el = document.getElementById(id); if(el) { el.disabled = false; el.classList.remove('opacity-50'); } });
+            document.getElementById('processedSourcesList').innerHTML += `<div class="p-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 shadow-sm flex items-center gap-2"><div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-md"></div> <span class="font-bold truncate">${processedDataSources[id].name}</span></div>`;
+            ['tab3','tab4'].forEach(id => { let el = document.getElementById(id); if(el) { el.disabled = false; el.classList.remove('tab-disabled'); } });
             updateSelectors();
         }
         function updateSelectors() {
@@ -410,7 +425,7 @@
             if(!col || !id) return;
             let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
             const container = document.getElementById('percentTargetValue'); container.innerHTML = '';
-            Array.from(vals).sort().forEach(v => { container.innerHTML += `<label class="flex items-center gap-2 p-1.5 hover:bg-indigo-50 cursor-pointer rounded-lg font-bold text-slate-700 text-xs border-b border-slate-50 last:border-0"><input type="checkbox" class="target-val-chk rounded" value="${v}"><span>${v}</span></label>`; });
+            Array.from(vals).sort().forEach(v => { container.innerHTML += `<label class="flex items-center gap-2 p-1.5 hover:bg-indigo-50 cursor-pointer rounded-lg font-bold text-slate-700 text-[10px] border-b border-slate-50 last:border-0"><input type="checkbox" class="target-val-chk rounded focus:ring-0" value="${v}"><span>${v}</span></label>`; });
         }
 
         window.buildWidget = function(cfg=null) {
@@ -419,55 +434,38 @@
             if(!config) {
                 let id = document.getElementById('dsSelector').value; if(!id) return alert("Selecciona fuente");
                 let targets = Array.from(document.querySelectorAll('.target-val-chk:checked')).map(c=>c.value);
-                config = { title: document.getElementById('widgetTitle').value || 'Métrica Individual', dsId: id, x: document.getElementById('axisX').value, y: document.getElementById('axisY').value, agg: document.getElementById('aggType').value, targets: targets, type: document.getElementById('selectedChartType').value };
+                config = { title: document.getElementById('widgetTitle').value || 'Análisis', dsId: id, x: document.getElementById('axisX').value, y: document.getElementById('axisY').value, agg: document.getElementById('aggType').value, targets: targets, type: document.getElementById('selectedChartType').value };
                 savedWidgetsConfig.push(config);
             }
             const wid = 'chart_' + Date.now() + Math.random();
             const grid = document.getElementById('widgetsGrid');
             const card = document.createElement('div'); card.className = "flip-container fade-in card-height";
             
-            // FRENTE CON FILTRO DINÁMICO
             card.innerHTML = `
                 <div class="flipper" id="flip_${wid}">
-                    <div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200">
+                    <div class="front p-6 bg-white">
                         <div class="flex justify-between items-start mb-2">
-                            <div class="w-2/3">
-                                <h3 class="font-black text-slate-800 text-lg leading-tight truncate">${config.title}</h3>
-                                <p class="text-[10px] text-slate-400 uppercase font-bold">${config.agg} por ${config.x}</p>
+                            <div class="w-3/4">
+                                <h3 class="font-black text-slate-800 text-lg leading-tight truncate uppercase">${config.title}</h3>
+                                <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">${config.agg} por ${config.x}</p>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="toggleChartView('${wid}')" class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100">Ver % / #</button>
-                                <button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-1.5 text-indigo-500 hover:bg-indigo-50 rounded-full transition"><i class="fas fa-list"></i></button>
-                                <button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-1.5 text-red-400 hover:bg-red-50 rounded-full transition"><i class="fas fa-trash"></i></button>
+                                <button onclick="event.stopPropagation(); document.getElementById('flip_${wid}').classList.toggle('flipped')" class="p-2 text-indigo-500 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition"><i class="fas fa-table"></i></button>
+                                <button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-2 text-slate-400 bg-slate-50 rounded-lg hover:text-red-500 hover:bg-red-50 transition"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
-                        <div class="mb-3"><input type="text" id="search_${wid}" oninput="filterDynamicChart('${wid}')" placeholder="Filtrar categorías visualmente..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-[10px] outline-none font-medium"></div>
                         <div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div>
                     </div>
-                    <div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-indigo-400 overflow-hidden">
-                        <div class="p-4 border-b border-indigo-50 bg-indigo-50/50 flex justify-between items-center shrink-0">
-                            <h3 class="font-black text-indigo-900 text-xs uppercase">Datos por Fila</h3>
-                            <div class="flex gap-2">
-                                <button onclick="showTab('resumen_${wid}')" class="text-[10px] bg-white px-2 py-1 rounded shadow-sm font-bold text-indigo-600 border border-indigo-100">Resumen</button>
-                                <button onclick="showTab('detalle_${wid}')" class="text-[10px] bg-indigo-100 px-2 py-1 rounded shadow-sm font-bold text-indigo-700 hover:bg-indigo-200"><i class="fas fa-search mr-1"></i> Ver Filas (Origen)</button>
-                                <button onclick="exportCSV('${wid}')" class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded shadow-sm font-bold"><i class="fas fa-download"></i> CSV</button>
-                                <button onclick="document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-xs font-bold text-red-500 bg-white px-2 py-1 rounded shadow-sm">X</button>
-                            </div>
+                    <div class="back flex flex-col bg-white overflow-hidden">
+                        <div class="p-4 border-b border-indigo-100 bg-indigo-50/50 flex justify-between items-center shrink-0">
+                            <h3 class="font-black text-indigo-900 text-xs uppercase"><i class="fas fa-list mr-1"></i> Resumen de Datos</h3>
+                            <button onclick="document.getElementById('flip_${wid}').classList.toggle('flipped')" class="text-[10px] font-black text-indigo-600 bg-white border border-indigo-200 px-3 py-1.5 rounded-lg shadow-sm">VOLVER</button>
                         </div>
-                        <div id="resumen_${wid}" class="flex-1 overflow-auto custom-scroll bg-white"><table class="excel-table" id="table_${wid}"></table></div>
-                        <div id="detalle_${wid}" class="hidden flex-1 overflow-auto custom-scroll bg-slate-50 p-2"><table class="excel-table" id="row_${wid}"></table></div>
+                        <div class="flex-1 overflow-auto custom-scroll bg-white"><table class="excel-table" id="table_${wid}"></table></div>
                     </div>
                 </div>`;
             grid.prepend(card);
             setTimeout(() => renderChart(config, wid, processedDataSources[config.dsId].data), 100);
-            document.getElementById('canvasArea3').scrollTop = 0;
-        }
-
-        window.showTab = function(id) {
-            const wid = id.split('_')[1];
-            document.getElementById('resumen_'+wid).classList.add('hidden');
-            document.getElementById('detalle_'+wid).classList.add('hidden');
-            document.getElementById(id).classList.remove('hidden');
         }
 
         function renderChart(cfg, canvasId, data) {
@@ -476,53 +474,37 @@
                 let k = r[cfg.x] ? String(r[cfg.x]).trim() : 'N/A'; let v = parseFloat(r[cfg.y]) || 0; let raw = r[cfg.y] ? String(r[cfg.y]).trim() : "";
                 if(!groups[k]) groups[k] = { s: 0, c: 0, h: 0, v: 0 };
                 groups[k].c++;
-                if(cfg.agg === 'percent') { if(cfg.targets && cfg.targets.some(t => t.toLowerCase().trim() === raw.toLowerCase().trim())) groups[k].h++; }
-                else if(cfg.agg === 'count') { if(r[cfg.y]) groups[k].v++; } else { groups[k].s += v; }
+                if(cfg.agg === 'percent') { if(cfg.targets && cfg.targets.some(t => t.toLowerCase() === raw.toLowerCase())) groups[k].h++; }
+                else if(cfg.agg === 'count') { if(r[cfg.y]) groups[k].v++; }
+                else groups[k].s += v;
             });
-            
-            // ORDENAR MAYOR A MENOR
+
             let labels = Object.keys(groups).sort((a,b) => {
                 let vA = cfg.agg==='percent' ? (groups[a].h/groups[a].c) : (cfg.agg==='count'?groups[a].v:groups[a].s);
                 let vB = cfg.agg==='percent' ? (groups[b].h/groups[b].c) : (cfg.agg==='count'?groups[b].v:groups[b].s);
                 return vB - vA;
             });
 
-            let valsPercent = labels.map(l => groups[l].c > 0 ? (groups[l].h / groups[l].c) * 100 : 0);
-            let valsAbs = labels.map(l => cfg.agg==='count' ? groups[l].v : groups[l].s);
-            let displayVals = cfg.agg === 'percent' ? valsPercent : valsAbs;
+            let vals = labels.map(l => {
+                if(cfg.agg === 'percent') return groups[l].c > 0 ? (groups[l].h / groups[l].c) * 100 : 0;
+                if(cfg.agg === 'count') return groups[l].v;
+                return groups[l].s;
+            });
 
-            // Almacenar en registry para filtros
-            window.chartRegistry[canvasId] = {
-                type: cfg.type, agg: cfg.agg,
-                labels: labels,
-                percents: valsPercent,
-                absolutes: valsAbs,
-                currentView: cfg.agg === 'percent' ? 'percent' : 'abs'
-            };
-
-            // Llenar Tablas
             const tbody = document.getElementById('table_'+canvasId);
             if(tbody) {
-                tbody.innerHTML = `<thead><tr><th>Categoría</th><th class="text-right">Valor Calculado</th></tr></thead><tbody>` + labels.map((l,i) => `<tr><td class="font-bold">${l}</td><td class="text-right text-indigo-600 font-bold">${cfg.agg==='percent'?valsPercent[i].toFixed(1)+'%':valsAbs[i].toLocaleString()}</td></tr>`).join('') + `</tbody>`;
-            }
-            
-            const trbody = document.getElementById('row_'+canvasId);
-            if(trbody) {
-                let keys = Object.keys(data[0] || {}).slice(0,6); // Muestra hasta 6 columnas origen
-                let rh = `<thead><tr>${keys.map(k=>`<th>${k}</th>`).join('')}</tr></thead><tbody>`;
-                data.slice(0,100).forEach(r => { rh += `<tr>${keys.map(k=>`<td>${r[k]||''}</td>`).join('')}</tr>`; });
-                trbody.innerHTML = rh + `</tbody>`;
+                tbody.innerHTML = `<thead><tr><th>Segmento</th><th class="text-right">Valor Evaluado</th></tr></thead><tbody>`;
+                labels.forEach((l, i) => { tbody.innerHTML += `<tr><td class="font-bold text-slate-700">${l}</td><td class="text-right font-black text-indigo-600">${cfg.agg==='percent'?vals[i].toFixed(1)+'%':vals[i].toLocaleString()}</td></tr>`; });
             }
 
-            const ctx = document.getElementById(canvasId).getContext('2d');
+            const ctx = document.getElementById(canvasId);
+            if(!ctx) return;
             let opts = { responsive: true, maintainAspectRatio: false, onClick: (e) => { let c = document.getElementById('flip_' + canvasId); if(c) c.classList.toggle('flipped'); } };
             if(cfg.type !== 'doughnut') opts.scales = { y: { beginAtZero: true, max: cfg.agg==='percent'?100:undefined, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } };
-            
-            const chart = new Chart(ctx, { type: cfg.type, data: { labels: labels, datasets: [{ label: 'Resultado', data: displayVals, backgroundColor: ['#6366f1','#0ea5e9','#fbbf24','#f43f5e','#10b981'], borderRadius: 6, maxBarThickness: 50 }] }, options: opts });
-            window.chartRegistry[canvasId].chart = chart;
+            new Chart(ctx.getContext('2d'), { type: cfg.type, data: { labels: labels, datasets: [{ label: cfg.agg.toUpperCase(), data: vals, backgroundColor: ['#6366f1','#0ea5e9','#fbbf24','#f43f5e','#10b981'], borderRadius: 8, maxBarThickness: 45 }] }, options: opts });
         }
 
-        // --- 4. UNIFICACIÓN: COMPLIANCE TOTAL ---
+        // --- 4. UNIFICACIÓN: AUDITORÍA TOTAL ---
         window.toggleAuditMode = function() { window.buildAuditSidebar(); }
         window.buildAuditSidebar = function() {
             const agg = document.getElementById('auditAggType').value;
@@ -530,20 +512,19 @@
             Object.values(processedDataSources).forEach(ds => {
                 let opts = `<option value="">-- Columna --</option>` + ds.columns.map(c => `<option value="${c}">${c}</option>`).join('');
                 let extra = (agg === 'percent') 
-                    ? `<select id="ay_${ds.id}" class="w-full p-2 border border-slate-200 rounded-xl text-[10px] outline-none bg-slate-50 mb-1" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_c_${ds.id}" class="max-h-24 overflow-y-auto bg-white border border-slate-100 rounded-xl p-2 text-[10px] shadow-inner italic">Elegir éxito...</div>`
-                    : `<select id="ay_${ds.id}" class="w-full p-2 border border-slate-200 rounded-xl text-[10px] outline-none bg-slate-50 font-bold text-indigo-600">${opts}</select>`;
+                    ? `<select id="ay_${ds.id}" class="w-full p-2.5 border border-slate-200 rounded-xl text-[10px] outline-none bg-white mb-1" onchange="fillVal('${ds.id}')">${opts}</select><div id="av_c_${ds.id}" class="max-h-24 overflow-y-auto bg-white border border-slate-200 rounded-xl p-2 text-[10px] shadow-inner italic">Elegir filtros de estado...</div>`
+                    : `<select id="ay_${ds.id}" class="w-full p-2.5 border border-slate-200 rounded-xl text-[10px] outline-none bg-white font-bold text-indigo-600">${opts}</select>`;
                 
-                // Opción ROL (Crucial para Meta 100%)
-                let roles = `<div class="bg-indigo-50 p-2 rounded-lg mb-2"><label class="text-[9px] font-black text-indigo-900 block mb-1">ROL DEL ARCHIVO (META)</label><select id="role_${ds.id}" class="w-full text-[10px] p-1.5 border border-indigo-200 rounded-lg font-bold"><option value="origin">✅ TRABAJO LOGRADO (Digitalizado)</option><option value="gap">❌ TRABAJO FALTANTE (Pendiente)</option></select></div>`;
+                let roles = `<div class="bg-indigo-50 p-2.5 rounded-xl border border-indigo-100 mb-3 shadow-sm"><label class="text-[9px] font-black text-indigo-900 block mb-1">ROL DEL ARCHIVO EN LA META 100%</label><select id="role_${ds.id}" class="w-full text-[10px] p-2 border border-white rounded-lg font-bold outline-none shadow-sm"><option value="origin">✅ Logrado / Base (Origen)</option><option value="gap">❌ Faltante / Resta (VS)</option></select></div>`;
 
-                container.innerHTML += `<div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm mb-3 hover:border-emerald-300 transition-all"><div class="flex justify-between font-black text-xs mb-2 text-slate-800"><span class="truncate w-3/4">${ds.name}</span><input type="checkbox" id="inc_${ds.id}" checked class="w-4 h-4 accent-emerald-600"></div>${roles}<div class="space-y-2"><div class="bg-slate-50 p-2 rounded-lg"><label class="text-[9px] text-slate-400 font-bold uppercase block mb-1">Agrupar Entidad (Ej. Usuario)</label><select id="ax_${ds.id}" class="w-full p-1.5 border border-slate-200 rounded text-[10px]">${opts}</select></div><div><label class="text-[9px] text-slate-400 font-bold uppercase block mb-1">Columna Analizada</label>${extra}</div></div></div>`;
+                container.innerHTML += `<div class="bg-white border border-slate-200 rounded-[1.25rem] p-5 shadow-sm mb-4 hover:border-emerald-300 hover:shadow-md transition-all"><div class="flex justify-between font-black text-xs mb-3 text-slate-800"><span class="truncate w-3/4">${ds.name}</span><label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="inc_${ds.id}" checked class="w-4 h-4 rounded text-emerald-600 focus:ring-0"><span class="text-[10px]">Usar</span></label></div>${roles}<div class="space-y-3"><div class="bg-slate-50 p-3 rounded-xl border border-slate-100"><label class="text-[9px] text-slate-400 font-black uppercase tracking-widest block mb-1">Emparejar Usuarios Por</label><select id="ax_${ds.id}" class="w-full p-2 border border-slate-200 rounded-lg text-[10px] outline-none font-bold bg-white">${opts}</select></div><div class="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100"><label class="text-[9px] text-emerald-700 font-black uppercase tracking-widest block mb-1">Columna a Evaluar</label>${extra}</div></div></div>`;
             });
         }
         window.fillVal = function(id) {
             let colEl = document.getElementById(`ay_${id}`); let container = document.getElementById(`av_c_${id}`);
             if(!colEl || !container) return; let col = colEl.value; if(!col) return;
             let vals = new Set(); processedDataSources[id].data.forEach(r => { if(r[col]) vals.add(String(r[col]).trim()); });
-            container.innerHTML = ''; Array.from(vals).sort().forEach(v => container.innerHTML+=`<label class="flex items-center gap-2 p-1 border-b border-slate-50 last:border-0 hover:bg-slate-50 cursor-pointer font-bold text-slate-600 text-[10px]"><input type="checkbox" class="av_chk_${id} rounded text-emerald-600" value="${v}"> ${v}</label>`);
+            container.innerHTML = ''; Array.from(vals).sort().forEach(v => container.innerHTML+=`<label class="flex items-center gap-2 p-1.5 border-b border-slate-50 last:border-0 hover:bg-slate-50 cursor-pointer font-bold text-slate-600 text-[10px]"><input type="checkbox" class="av_chk_${id} rounded text-emerald-600" value="${v}"> ${v}</label>`);
         }
 
         window.generateMergedAudit = function(cfg=null) {
@@ -563,45 +544,59 @@
                         mappings.push({ dsId: ds.id, name: ds.name, x: axEl.value, y: ayEl.value, role: roleEl.value, targets: targets });
                     }
                 });
-                if(mappings.length === 0) return alert("Selecciona fuentes.");
-                config = { title: document.getElementById('auditTitle').value || 'Reporte de Meta 100%', agg: agg, type: document.getElementById('auditChartType').value, mappings: mappings };
+                if(mappings.length === 0) return alert("Debe mapear al menos una fuente.");
+                config = { title: document.getElementById('auditTitle').value || 'Reporte de Cumplimiento', agg: agg, mappings: mappings };
                 savedAuditWidgetsConfig.push(config);
             }
             const wid = 'aw_'+Date.now()+Math.random();
             const grid = document.getElementById('auditWidgetsGrid');
             const card = document.createElement('div');
-            card.className = "flip-container h-[550px] fade-in";
+            card.className = "flip-container h-[600px] fade-in";
             
-            // FRENTE: Grafico + Filtros + Botones
             card.innerHTML = `
                 <div class="flipper" id="f_${wid}">
-                    <div class="front p-5 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200">
+                    <div class="front p-6 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex justify-between items-start mb-2">
                             <div class="w-3/4">
                                 <h3 class="font-black text-slate-800 text-xl tracking-tight uppercase">${config.title}</h3>
-                                <p class="text-[10px] text-emerald-600 uppercase font-black tracking-widest bg-emerald-50 inline-block px-2 py-1 rounded mt-1">Cumplimiento vs Meta</p>
+                                <p class="text-[10px] text-emerald-700 uppercase font-black tracking-widest bg-emerald-100 inline-block px-2 py-0.5 rounded mt-1 shadow-sm">Auditoría de Meta 100%</p>
                             </div>
                             <div class="flex gap-2">
-                                <button onclick="toggleChartView('${wid}')" class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-2 py-1 rounded hover:bg-indigo-100">Ver Absolutos</button>
-                                <button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="p-2 text-emerald-500 bg-emerald-50 rounded-full transition"><i class="fas fa-table"></i></button>
-                                <button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-2 text-slate-300 hover:text-red-500 rounded-full transition"><i class="fas fa-trash"></i></button>
+                                <button id="btnView_${wid}" onclick="toggleAuditView('${wid}')" class="text-[10px] font-bold bg-slate-900 text-white px-3 py-1.5 rounded-xl hover:bg-slate-800 transition shadow-sm">Ver Absolutos (#)</button>
+                                <button onclick="event.stopPropagation(); document.getElementById('f_${wid}').classList.toggle('flipped')" class="p-2 text-emerald-600 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition shadow-sm" title="Detalle Fila a Fila"><i class="fas fa-search-plus"></i> Origen</button>
+                                <button onclick="event.stopPropagation(); this.closest('.flip-container').remove()" class="p-2 text-slate-400 hover:text-red-500 rounded-xl transition"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
-                        <div class="mb-4"><input type="text" id="search_${wid}" oninput="filterDynamicChart('${wid}')" placeholder="Buscar departamento o usuario..." class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none font-bold"></div>
+                        
+                        <div class="flex flex-wrap gap-2 mb-3 mt-2 border-t border-slate-100 pt-3">
+                            <button onclick="filterAuditChart('${wid}', 'all')" class="text-[10px] font-bold px-3 py-1 bg-slate-800 text-white rounded-full shadow-sm hover:bg-slate-700">Todos</button>
+                            <button onclick="filterAuditChart('${wid}', 'perfect')" class="text-[10px] font-bold px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full shadow-sm hover:bg-green-100">100% Logrado</button>
+                            <button onclick="filterAuditChart('${wid}', 'pending')" class="text-[10px] font-bold px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full shadow-sm hover:bg-yellow-100">Con Faltantes</button>
+                            <button onclick="filterAuditChart('${wid}', 'critical')" class="text-[10px] font-bold px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full shadow-sm hover:bg-red-100">0% (Críticos)</button>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-4 top-3.5 text-slate-400 text-sm"></i>
+                                <input type="text" id="search_${wid}" oninput="filterAuditChart('${wid}', window.chartRegistry['${wid}'].currentFilter)" placeholder="Buscar departamento o usuario para filtrar..." class="w-full pl-10 p-3 bg-slate-50 border border-slate-200 shadow-inner rounded-xl text-xs outline-none font-bold focus:border-indigo-500 transition">
+                            </div>
+                        </div>
+                        
                         <div class="flex-1 relative w-full h-full min-h-0"><canvas id="${wid}"></canvas></div>
                     </div>
+                    
                     <div class="back flex flex-col bg-white rounded-2xl shadow-sm border border-emerald-500 overflow-hidden">
-                        <div class="p-4 border-b bg-emerald-50 flex justify-between items-center shrink-0">
-                            <h3 class="font-black text-emerald-900 text-xs uppercase">Tabla de Auditoría Real</h3>
+                        <div class="p-5 border-b bg-emerald-50 flex justify-between items-center shrink-0">
+                            <h3 class="font-black text-emerald-900 text-sm uppercase tracking-widest"><i class="fas fa-clipboard-check mr-2"></i>Tabla de Auditoría Real</h3>
                             <div class="flex gap-2">
-                                <button onclick="showTab('resumen_${wid}')" class="text-[10px] bg-white px-2 py-1 rounded shadow-sm font-bold text-emerald-700">Resumen</button>
-                                <button onclick="showTab('detalle_${wid}')" class="text-[10px] bg-emerald-100 px-2 py-1 rounded shadow-sm font-bold text-emerald-800"><i class="fas fa-search"></i> Ver Origen</button>
-                                <button onclick="exportCSV('${wid}')" class="text-[10px] bg-slate-800 text-white px-2 py-1 rounded shadow-sm font-bold"><i class="fas fa-download"></i> CSV</button>
-                                <button onclick="document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-xs font-black text-red-500 bg-white px-2 rounded">X</button>
+                                <button onclick="showTab('resumen_${wid}')" class="text-xs bg-white border border-emerald-200 px-4 py-2 rounded-xl shadow-sm font-bold text-emerald-700 hover:bg-emerald-100 transition">Resumen General</button>
+                                <button onclick="showTab('detalle_${wid}')" class="text-xs bg-emerald-600 text-white px-4 py-2 rounded-xl shadow-sm font-bold hover:bg-emerald-700 transition"><i class="fas fa-list-ul mr-1"></i> Filas de Origen</button>
+                                <button onclick="exportCSV('${wid}')" class="text-xs bg-slate-800 text-white px-4 py-2 rounded-xl shadow-sm font-bold hover:bg-slate-700 transition"><i class="fas fa-download mr-1"></i> CSV</button>
+                                <button onclick="document.getElementById('f_${wid}').classList.toggle('flipped')" class="text-sm font-black text-red-500 bg-white border border-red-100 px-4 rounded-xl hover:bg-red-50 transition">X</button>
                             </div>
                         </div>
-                        <div id="resumen_${wid}" class="flex-1 overflow-auto custom-scroll p-2"><table class="excel-table" id="tb_${wid}"></table></div>
-                        <div id="detalle_${wid}" class="hidden flex-1 overflow-auto custom-scroll p-2 bg-slate-50"><table class="excel-table" id="rw_${wid}"></table></div>
+                        <div id="resumen_${wid}" class="flex-1 overflow-auto custom-scroll p-0"><table class="excel-table" id="tb_${wid}"></table></div>
+                        <div id="detalle_${wid}" class="hidden flex-1 overflow-auto custom-scroll p-0 bg-slate-50"><table class="excel-table" id="rw_${wid}"></table></div>
                     </div>
                 </div>`;
             grid.prepend(card); setTimeout(() => renderUnifiedChart(config, wid), 100);
@@ -626,120 +621,126 @@
                     if(match) {
                         if(map.role === 'origin') tableData[k].realized++;
                         if(map.role === 'gap') tableData[k].gap++;
-                        allRows.push({ _Entidad: k, _Archivo: map.name, _Rol: map.role, _Valor: val, ...r });
+                        allRows.push({ _Entidad: k, _Rol: map.role, ...r });
                     }
                 });
             });
 
-            // Ordenar por Mayor Eficiencia
             let labels = Array.from(labelsS).sort((a, b) => {
                 let totalA = tableData[a].realized + tableData[a].gap; let pctA = totalA > 0 ? (tableData[a].realized / totalA) : 0;
                 let totalB = tableData[b].realized + tableData[b].gap; let pctB = totalB > 0 ? (tableData[b].realized / totalB) : 0;
-                // Si el porcentaje es igual, ordenar por volumen total
-                if(Math.abs(pctB - pctA) < 0.01) return totalB - totalA;
+                if(Math.abs(pctB - pctA) < 0.001) return totalB - totalA;
                 return pctB - pctA;
             });
 
-            // Arreglos de Datos (Para alternar % vs Absoluto)
-            let dataPercent = labels.map(l => {
-                let total = tableData[l].realized + tableData[l].gap;
-                return total > 0 ? (tableData[l].realized / total) * 100 : 0;
+            let dataPercentLogrado = labels.map(l => {
+                let t = tableData[l].realized + tableData[l].gap; return t > 0 ? (tableData[l].realized / t) * 100 : 0;
             });
-            let dataLogrado = labels.map(l => tableData[l].realized);
-            let dataMeta = labels.map(l => tableData[l].realized + tableData[l].gap); // Para hover
+            let dataPercentFaltante = labels.map(l => {
+                let t = tableData[l].realized + tableData[l].gap; return t > 0 ? (tableData[l].gap / t) * 100 : 0;
+            });
 
-            // Guardar en Registry para Filtros en Tiempo Real
             window.chartRegistry[id] = {
-                type: cfg.type, labels: labels, percents: dataPercent, absolutes: dataLogrado, metas: dataMeta,
-                currentView: 'percent' // o 'abs'
+                originalLabels: labels, 
+                originalPercentsLogrado: dataPercentLogrado, 
+                originalPercentsFaltante: dataPercentFaltante,
+                originalAbsLogrado: labels.map(l => tableData[l].realized),
+                originalAbsFaltante: labels.map(l => tableData[l].gap),
+                metas: labels.map(l => tableData[l].realized + tableData[l].gap),
+                currentView: 'percent', currentFilter: 'all'
             };
 
-            // TABLA RESUMEN META 100%
-            let thHtml = `<thead><tr><th>Entidad (Usuario/Dpt)</th><th class="text-center bg-slate-100">Meta 100% (Total)</th><th class="text-center text-green-700 bg-green-50">Logrado (✓)</th><th class="text-center text-red-600 bg-red-50">Faltante (X)</th><th class="text-right font-black bg-indigo-50">% Eficiencia</th></tr></thead><tbody>`;
+            // TABLA RESUMEN
+            let thHtml = `<thead><tr><th class="w-1/3">Usuario / Dept</th><th class="text-center bg-slate-200">Meta (Total)</th><th class="text-center text-green-700 bg-green-50">Hecho</th><th class="text-center text-red-600 bg-red-50">Debe</th><th class="text-right font-black bg-indigo-50">% Eficiencia</th></tr></thead><tbody>`;
             labels.forEach((l, i) => { 
                 let d = tableData[l]; let total = d.realized + d.gap; let pct = total > 0 ? (d.realized / total) * 100 : 0;
-                thHtml += `<tr><td class="font-bold text-slate-700 uppercase text-[10px]">${l}</td><td class="text-center font-bold">${total}</td><td class="text-center font-black text-green-600">${d.realized}</td><td class="text-center font-black text-red-500">${d.gap}</td><td class="text-right font-black text-indigo-700 text-sm">${pct.toFixed(1)}%</td></tr>`; 
+                thHtml += `<tr><td class="font-bold text-slate-700 uppercase text-[10px]">${l}</td><td class="text-center font-black">${total}</td><td class="text-center font-black text-green-600">${d.realized}</td><td class="text-center font-black text-red-500">${d.gap}</td><td class="text-right font-black text-indigo-700 text-sm">${pct.toFixed(1)}%</td></tr>`; 
             });
             document.getElementById('tb_'+id).innerHTML = thHtml + '</tbody>';
 
-            // TABLA FILAS ORIGEN
-            let rwHtml = `<thead><tr><th>Entidad</th><th>Rol Info</th><th>Valor Base</th></tr></thead><tbody>`;
-            allRows.slice(0,100).forEach(r => { rwHtml += `<tr><td class="font-bold uppercase">${r._Entidad}</td><td><span class="px-2 rounded text-[9px] ${r._Rol==='origin'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${r._Rol==='origin'?'Logrado':'Falta'}</span></td><td>${r._Valor}</td></tr>`; });
-            document.getElementById('rw_'+id).innerHTML = rwHtml + `</tbody>${allRows.length>100?'<tfoot><tr><td colspan="3" class="text-center text-xs p-2 italic text-slate-400">Limitado a 100 filas para fluidez</td></tr></tfoot>':''}`;
+            // TABLA FILAS ORIGEN (DRILL DOWN)
+            let rwHtml = `<thead><tr><th>Entidad (Usuario)</th><th>Estado Auditoría</th><th>Detalles Extraídos del Excel</th></tr></thead><tbody>`;
+            allRows.slice(0, 300).forEach(r => { 
+                let details = Object.entries(r).filter(([k]) => !k.startsWith('_')).slice(0, 4).map(([k,v]) => `<b>${k}:</b> ${v}`).join(' | ');
+                let badge = r._Rol === 'origin' ? `<span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[9px] font-bold">LOGRADO</span>` : `<span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-[9px] font-bold">FALTANTE</span>`;
+                rwHtml += `<tr><td class="font-bold uppercase text-slate-700">${r._Entidad}</td><td>${badge}</td><td class="text-slate-500 text-[10px] whitespace-normal">${details}</td></tr>`; 
+            });
+            document.getElementById('rw_'+id).innerHTML = rwHtml + `</tbody>${allRows.length>300?'<tfoot><tr><td colspan="3" class="text-center text-xs p-2 italic text-slate-400">Limitado a 300 filas para mantener rendimiento</td></tr></tfoot>':''}`;
 
-            // CREAR GRÁFICO INICIAL (%)
+            // CHART STACKED 100%
             const ctx = document.getElementById(id).getContext('2d');
             const chart = new Chart(ctx, { 
-                type: cfg.type, 
+                type: 'bar', 
                 data: { 
                     labels: labels, 
-                    datasets: [{ 
-                        label: '% Cumplimiento', 
-                        data: dataPercent, 
-                        backgroundColor: dataPercent.map(v => v >= 95 ? '#10b981' : (v >= 70 ? '#f59e0b' : '#ef4444')), 
-                        borderRadius: 6, maxBarThickness: 60 
-                    }] 
+                    datasets: [
+                        { label: '% Logrado (Hecho)', data: dataPercentLogrado, backgroundColor: '#10b981', borderRadius: {topLeft:0, topRight:0, bottomLeft:6, bottomRight:6}, maxBarThickness: 50 },
+                        { label: '% Faltante (Debe)', data: dataPercentFaltante, backgroundColor: '#ef4444', borderRadius: {topLeft:6, topRight:6, bottomLeft:0, bottomRight:0}, maxBarThickness: 50 }
+                    ] 
                 }, 
                 options: { 
                     responsive: true, maintainAspectRatio: false, 
                     onClick: (e) => { let c = document.getElementById('f_' + id); if(c) c.classList.toggle('flipped'); }, 
-                    scales: { y: { beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } }, x: { grid: { display: false } } },
-                    plugins: { tooltip: { callbacks: { label: function(context) { return ` Cumplimiento: ${context.raw.toFixed(1)}% (Meta: ${window.chartRegistry[id].metas[context.dataIndex]})`; } } } }
+                    scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true, max: 100, grid: { color: '#f1f5f9' } } },
+                    plugins: { tooltip: { callbacks: { label: function(context) { return ` ${context.dataset.label}: ${context.raw.toFixed(1)}${window.chartRegistry[id].currentView==='percent'?'%':''} (Total Meta: ${window.chartRegistry[id].metas[context.dataIndex]})`; } } } }
                 } 
             });
             window.chartRegistry[id].chart = chart;
         }
 
-        // --- FUNCIONES DE INTERACCIÓN POST-GENERACIÓN ---
-        
-        window.filterDynamicChart = function(id) {
-            const query = document.getElementById('search_' + id).value.toLowerCase();
-            const reg = window.chartRegistry[id];
-            if(!reg) return;
+        // --- FUNCIONES INTERACTIVAS DASHBOARD ---
+        window.filterAuditChart = function(id, filterType = 'all') {
+            const reg = window.chartRegistry[id]; if(!reg) return;
+            reg.currentFilter = filterType;
             
-            let filteredLabels = []; let filteredData = []; let filteredMeta = [];
-            reg.labels.forEach((lbl, i) => {
-                if(lbl.toLowerCase().includes(query)) {
-                    filteredLabels.push(lbl);
-                    filteredData.push(reg.currentView === 'percent' ? reg.percents[i] : reg.absolutes[i]);
-                    if(reg.metas) filteredMeta.push(reg.metas[i]);
+            let fLab = []; let fLog = []; let fFal = [];
+            const query = document.getElementById('search_' + id)?.value.toLowerCase() || '';
+
+            reg.originalLabels.forEach((lbl, i) => {
+                let pct = reg.originalPercentsLogrado[i];
+                let include = false;
+                if(filterType === 'all') include = true;
+                if(filterType === 'perfect' && pct === 100) include = true;
+                if(filterType === 'pending' && pct < 100 && pct > 0) include = true;
+                if(filterType === 'critical' && pct === 0) include = true;
+                
+                if(include && lbl.toLowerCase().includes(query)) {
+                    fLab.push(lbl);
+                    fLog.push(reg.currentView === 'percent' ? reg.originalPercentsLogrado[i] : reg.originalAbsLogrado[i]);
+                    fFal.push(reg.currentView === 'percent' ? reg.originalPercentsFaltante[i] : reg.originalAbsFaltante[i]);
                 }
             });
 
-            reg.chart.data.labels = filteredLabels;
-            reg.chart.data.datasets[0].data = filteredData;
-            // Mantener colores condicionales si es porcentaje
-            if(reg.currentView === 'percent') {
-                reg.chart.data.datasets[0].backgroundColor = filteredData.map(v => v >= 95 ? '#10b981' : (v >= 70 ? '#f59e0b' : '#ef4444'));
-            } else {
-                reg.chart.data.datasets[0].backgroundColor = '#6366f1'; // Azul absoluto
-            }
+            reg.chart.data.labels = fLab;
+            reg.chart.data.datasets[0].data = fLog;
+            reg.chart.data.datasets[1].data = fFal;
             reg.chart.update();
         }
 
-        window.toggleChartView = function(id) {
-            const reg = window.chartRegistry[id];
-            if(!reg) return;
+        window.toggleAuditView = function(id) {
+            const reg = window.chartRegistry[id]; if(!reg) return;
+            const btn = document.getElementById('btnView_' + id);
             
             if(reg.currentView === 'percent') {
                 reg.currentView = 'abs';
-                reg.chart.data.datasets[0].label = 'Cantidad Absoluta (#)';
-                if(reg.chart.options.scales.y) delete reg.chart.options.scales.y.max; // Remover límite 100
-                event.target.innerText = 'Ver Porcentajes (%)';
+                reg.chart.data.datasets[0].label = 'Logrado (#)';
+                reg.chart.data.datasets[1].label = 'Faltante (#)';
+                if(reg.chart.options.scales.y) delete reg.chart.options.scales.y.max;
+                if(btn) btn.innerText = 'Ver en Porcentajes (%)';
             } else {
                 reg.currentView = 'percent';
-                reg.chart.data.datasets[0].label = '% Cumplimiento';
+                reg.chart.data.datasets[0].label = '% Logrado (Meta)';
+                reg.chart.data.datasets[1].label = '% Faltante (Deuda)';
                 if(reg.chart.options.scales.y) reg.chart.options.scales.y.max = 100;
-                event.target.innerText = 'Ver Absolutos (#)';
+                if(btn) btn.innerText = 'Ver en Absolutos (#)';
             }
-            // Re-aplicar filtro actual al cambiar de vista
-            filterDynamicChart(id);
+            filterAuditChart(id, reg.currentFilter);
         }
 
         window.exportCSV = function(id) {
             let table = document.getElementById('tb_'+id);
-            if(!table) table = document.getElementById('table_'+id);
-            if(!table) return alert("Tabla no encontrada");
+            if(!table || table.style.display === 'none') table = document.getElementById('rw_'+id);
+            if(!table) return alert("No hay tabla visible para exportar.");
             
             let csv = [];
             for (let i = 0; i < table.rows.length; i++) {
@@ -747,8 +748,7 @@
                 for (let j = 0; j < cols.length; j++) row.push('"' + cols[j].innerText.replace(/"/g, '""') + '"');
                 csv.push(row.join(","));
             }
-            let csvStr = csv.join("\n");
-            let blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8;' });
+            let blob = new Blob([csv.join("\n")], { type: 'text/csv;charset=utf-8;' });
             let link = document.createElement("a");
             if (link.download !== undefined) {
                 let url = URL.createObjectURL(blob); link.setAttribute("href", url);
@@ -759,7 +759,7 @@
         }
 
         window.saveToFirebase = async function() {
-            try { await addDoc(collection(db, "reportes_v31"), { nombre: document.getElementById('projectName3')?.value || document.getElementById('projectName4')?.value || 'Proyecto Audit', date: serverTimestamp(), sources: JSON.stringify(processedDataSources), widgetsLocal: savedWidgetsConfig, widgetsGlobal: savedAuditWidgetsConfig }); alert("¡Guardado Seguro!"); loadProjs(); } catch(e) { alert("Error al conectar."); }
+            try { await addDoc(collection(db, "reportes_v31"), { nombre: document.getElementById('projectName3')?.value || document.getElementById('projectName4')?.value || 'Auditoría', date: serverTimestamp(), sources: JSON.stringify(processedDataSources), widgetsLocal: savedWidgetsConfig, widgetsGlobal: savedAuditWidgetsConfig }); alert("¡Guardado Exitosamente!"); loadProjs(); } catch(e) { alert("Error al conectar."); }
         }
 
         async function loadProjs() {
@@ -768,7 +768,7 @@
                 const list = document.getElementById('cloudProjectsList'); if(!list) return; list.innerHTML = '';
                 snaps.forEach(doc => {
                     const d = doc.data(); const b = document.createElement('button'); b.className = "w-full text-left p-3 border border-slate-200 rounded-xl mb-2 text-xs hover:border-indigo-500 shadow-sm transition-all group bg-white";
-                    b.innerHTML = `<div class="font-black text-slate-700 group-hover:text-indigo-600 truncate">${d.nombre}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(d.date.seconds*1000).toLocaleDateString()}</div>`;
+                    b.innerHTML = `<div class="font-black text-slate-700 group-hover:text-indigo-600 truncate uppercase">${d.nombre}</div><div class="text-[9px] text-slate-400 mt-1">${new Date(d.date.seconds*1000).toLocaleDateString()}</div>`;
                     b.onclick = () => {
                         processedDataSources = JSON.parse(d.sources); savedWidgetsConfig = d.widgetsLocal||[]; savedAuditWidgetsConfig = d.widgetsGlobal||[];
                         updateSelectors();
